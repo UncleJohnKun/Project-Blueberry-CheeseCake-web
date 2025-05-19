@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Home - Kamusta Po Guro</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="home-container">
+        <header class="home-header">
+            <h1>Admin Dashboard</h1>
+            <button id="logoutButton" class="secondary">Logout Admin</button>
+        </header>
+
+        <nav class="home-nav">
+            <a href="createAccount.html" class="nav-button primary">Create New Teacher Account</a>
+        </nav>
+
+        <main class="home-main">
+            <h2>List of Teachers</h2>
+            <!-- Search Input -->
+            <div class="search-container">
+                <input type="text" id="searchTeacherInput" placeholder="Search by Name, Email, or ID...">
+            </div>
+
+            <div id="teacherListContainer" class="teacher-list vertical-scroll">
+                <!-- Teacher items will be dynamically inserted here by home.js -->
+                <p id="loadingMessage">Loading teachers...</p>
+            </div>
+        </main>
+    </div>
+    <script src="home.js"></script>
+</body>
+</html>

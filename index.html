@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Kamusta Po Guro</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container admin-login-container">
+        <div class="form-container">
+            <h1>ADMIN LOGIN</h1>
+            <p id="subTitle" class="subtitle">Please enter admin credentials</p>
+
+            <form id="adminLoginForm">
+                <div class="input-row single-input">
+                    <input type="text" id="adminUsername" placeholder="Admin Username" required>
+                </div>
+                <div class="input-row single-input">
+                    <input type="password" id="adminPassword" placeholder="Admin Password" required>
+                </div>
+
+                <div class="buttons">
+                    <button type="submit" id="adminLoginButton" class="primary">LOGIN</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="adminChecker.js"></script>
+</body>
+</html>

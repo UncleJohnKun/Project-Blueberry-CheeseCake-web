@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kamusta Po Guro - Create Teacher Account</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="illustration">
+            <!-- From your original image, you might have an illustration here -->
+            <p style="text-align: center; font-size: 1.5em; color: #ddd;">[Teacher Illustration Area]</p>
+        </div>
+        <div class="form-container">
+            <h1>KAMUSTA PO GURO</h1>
+            <p id="subTitle" class="subtitle">Create New Teacher Account</p>
+
+            <form id="signUpForm">
+                <div class="input-row">
+                    <input type="email" id="email" placeholder="Email" required>
+                    <input type="password" id="password" placeholder="Password" required>
+                </div>
+                <div class="input-row">
+                    <input type="text" id="fullName" placeholder="Full Name" required>
+                    <input type="password" id="rePassword" placeholder="Re-type Password" required>
+                </div>
+                <div class="input-row">
+                    <input type="text" id="username" placeholder="Username" required>
+                    <input type="text" id="id" placeholder="Teacher ID" required>
+                </div>
+
+                <div class="buttons">
+                    <!-- If you want a "Go Back" button, it should probably go to index.html or clear admin session -->
+                    <!-- <button type="button" id="goBackButton" class="secondary">LOGOUT ADMIN</button> -->
+                    <button type="submit" id="signUpButton" class="primary">CREATE ACCOUNT</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="menu-button">
+        MENU <kbd>Esc</kbd>
+    </div>
+
+    <script src="createAccount.js"></script>
+</body>
+</html>
