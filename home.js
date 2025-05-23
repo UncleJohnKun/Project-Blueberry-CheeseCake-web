@@ -9,16 +9,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- CONFIGURATION ---
-    const PROJECT_ID = "capstoneproject-2b428"; // YOUR ACTUAL PROJECT ID
-    const API_KEY = "AIzaSyAjCVBgzAoJTjfzj_1DbnrKmIBcfVTWop0"; // YOUR ACTUAL API KEY
+    const PROJECT_ID = "capstoneproject-2b428";
+    const API_KEY = "AIzaSyAjCVBgzAoJTjfzj_1DbnrKmIBcfVTWop0";
     const TEACHER_COLLECTION = "teacherData";
-    console.log("home.js: Config - PROJECT_ID:", PROJECT_ID, "API_KEY:", API_KEY ? "Loaded" : "MISSING!");
+    const STUDENT_COLLECTION = "studentData"; // Collection for student data
+    const FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER = "id"; // Field in studentData docs that holds the teacher's ID
 
+    console.log("home.js: Config - PROJECT_ID:", PROJECT_ID, "API_KEY:", API_KEY ? "Loaded" : "MISSING!");
 
     // --- DOM ELEMENTS (Home Page) ---
     const logoutButton = document.getElementById('logoutButton');
     const teacherListContainer = document.getElementById('teacherListContainer');
-    const loadingMessage = document.getElementById('loadingMessage'); // For the main list
+    const loadingMessage = document.getElementById('loadingMessage');
     const searchTeacherInput = document.getElementById('searchTeacherInput');
 
     // --- MODAL DOM ELEMENTS ---
@@ -28,6 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalTeacherInfo = document.getElementById('modalTeacherInfo');
     const modalSubcollectionTitle = document.getElementById('modalSubcollectionTitle');
     const modalTeacherSubcollectionData = document.getElementById('modalTeacherSubcollectionData');
+    const modalStudentListTitle = document.getElementById('modalStudentListTitle');
+    const modalStudentList = document.getElementById('modalStudentList');
 
     let allTeachersData = [];
 
@@ -37,9 +41,8 @@ document.addEventListener('DOMContentLoaded', () => {
             loadingMessage.textContent = "Configuration Error: Firebase settings missing.";
             loadingMessage.style.color = "red";
         }
-        return; // Stop if config is bad
+        return;
     }
-
 
     // --- EVENT LISTENERS ---
     if (logoutButton) {
@@ -49,14 +52,12 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = 'index.html';
         });
     }
-
     if (searchTeacherInput) {
         searchTeacherInput.addEventListener('input', (event) => {
             const searchTerm = event.target.value.toLowerCase();
             filterAndDisplayTeachers(searchTerm);
         });
     }
-
     if (closeModalButton) closeModalButton.addEventListener('click', closeTeacherModal);
     if (teacherInfoModal) {
         teacherInfoModal.addEventListener('click', (event) => {
@@ -69,11 +70,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+
     // --- MODAL FUNCTIONS ---
     function openTeacherModal() {
         if (teacherInfoModal) {
             teacherInfoModal.style.display = 'flex';
-            setTimeout(() => teacherInfoModal.classList.add('active'), 10); // For CSS transition
+            setTimeout(() => teacherInfoModal.classList.add('active'), 10);
         } else {
             console.error("home.js: teacherInfoModal element not found.");
         }
@@ -82,14 +84,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function closeTeacherModal() {
         if (teacherInfoModal) {
             teacherInfoModal.classList.remove('active');
-            setTimeout(() => teacherInfoModal.style.display = 'none', 300); // Match CSS transition
+            setTimeout(() => teacherInfoModal.style.display = 'none', 300);
         }
     }
 
     function formatFirestoreValue(fieldValue) {
         if (fieldValue === null || fieldValue === undefined) return "<span class='value-na'>N/A</span>";
-        if (typeof fieldValue !== 'object') return String(fieldValue); // Should not happen with REST API fields
-
+        if (typeof fieldValue !== 'object') return String(fieldValue);
         if (fieldValue.stringValue !== undefined) return fieldValue.stringValue;
         if (fieldValue.integerValue !== undefined) return String(fieldValue.integerValue);
         if (fieldValue.doubleValue !== undefined) return String(fieldValue.doubleValue);
@@ -120,8 +121,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return "<span class='value-unknown'>[Unknown Field Type]</span>";
     }
 
-    function displayTeacherDataInModal(mainDocFields, subcollectionDocs = [], dynamicSubcollectionName = "Details") {
-        if (!modalTeacherName || !modalTeacherInfo || !modalTeacherSubcollectionData || !modalSubcollectionTitle) {
+    function displayTeacherDataInModal(mainDocFields, subcollectionDocs = [], dynamicSubcollectionName = "Details", studentDocs = []) {
+        if (!modalTeacherName || !modalTeacherInfo || !modalTeacherSubcollectionData || !modalSubcollectionTitle || !modalStudentListTitle || !modalStudentList) {
             console.error("home.js: Modal DOM elements not found for display.");
             return;
         }
@@ -129,239 +130,204 @@ document.addEventListener('DOMContentLoaded', () => {
         modalTeacherName.textContent = formatFirestoreValue(mainDocFields.fullname) || 'Teacher Details';
         modalTeacherInfo.innerHTML = `
             <p><strong>Email:</strong> ${formatFirestoreValue(mainDocFields.email)}</p>
-            <p><strong>ID:</strong> ${formatFirestoreValue(mainDocFields.id)}</p>
+            <p><strong>ID (Teacher's):</strong> ${formatFirestoreValue(mainDocFields.id)}</p>
             <p><strong>Username:</strong> ${formatFirestoreValue(mainDocFields.username)}</p>
             <p><strong>Full Name:</strong> ${formatFirestoreValue(mainDocFields.fullname)}</p>
             <p><strong>Password:</strong> ${formatFirestoreValue(mainDocFields.password)}</p>
             <p><strong>Total Students:</strong> ${formatFirestoreValue(mainDocFields.totalStudents)}</p>
             <p><strong>Timestamp:</strong> ${formatFirestoreValue(mainDocFields.timestamp)}</p>
         `;
-        // Add any other main document fields you want to display directly
 
         modalSubcollectionTitle.textContent = `Data from "${dynamicSubcollectionName}" Subcollection:`;
-        modalTeacherSubcollectionData.innerHTML = ''; // Clear previous
-
+        modalTeacherSubcollectionData.innerHTML = '';
         if (subcollectionDocs.length > 0) {
             subcollectionDocs.forEach(subDoc => {
                 const subItemDiv = document.createElement('div');
-                subItemDiv.classList.add('sub-document-item'); // Changed class name from sub-item
-                let itemHTML = `<h4>Document: ${subDoc.name.split('/').pop()}</h4>`; // Use h4 for subdoc name
+                subItemDiv.classList.add('sub-document-item');
+                let itemHTML = `<h4>Document: ${subDoc.name.split('/').pop()}</h4>`;
                 if (subDoc.fields) {
                     for (const fieldName in subDoc.fields) {
                         itemHTML += `<p><strong>${fieldName}:</strong> ${formatFirestoreValue(subDoc.fields[fieldName])}</p>`;
                     }
-                } else {
-                    itemHTML += '<p>(No fields in this subdocument)</p>';
-                }
+                } else { itemHTML += '<p>(No fields in this subdocument)</p>'; }
                 subItemDiv.innerHTML = itemHTML;
                 modalTeacherSubcollectionData.appendChild(subItemDiv);
             });
         } else {
             modalTeacherSubcollectionData.innerHTML = `<p>No data found in the "${dynamicSubcollectionName}" subcollection for this teacher, or the subcollection doesn't exist.</p>`;
         }
+
+        // --- Display Students ---
+        modalStudentListTitle.textContent = `Associated Students (${studentDocs.length})`;
+        modalStudentList.innerHTML = '';
+        if (studentDocs.length > 0) {
+            studentDocs.forEach(studentDoc => { // studentDoc is now a full document from studentData
+                const studentItemDiv = document.createElement('div');
+                studentItemDiv.classList.add('student-item');
+                
+                // Get student's own name/ID for display
+                const studentFullName = studentDoc.fields?.fullname?.stringValue || 'Unknown Student';
+                const studentOwnId = studentDoc.fields?.id?.stringValue; // This is the teacher's ID stored in student doc
+                const studentDocName = studentDoc.name.split('/').pop(); // This is the student's actual document ID
+
+                let studentHTML = `<h4>${studentFullName} (Student Doc ID: ${studentDocName})</h4>`;
+                if (studentDoc.fields) {
+                    for (const fieldName in studentDoc.fields) {
+                        // Don't repeat the linking teacher ID if it's the same as FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER
+                        if (fieldName === FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER) {
+                            studentHTML += `<p><strong>Teacher's ID (in student record):</strong> ${formatFirestoreValue(studentDoc.fields[fieldName])}</p>`;
+                        } else {
+                            studentHTML += `<p><strong>${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}:</strong> ${formatFirestoreValue(studentDoc.fields[fieldName])}</p>`;
+                        }
+                    }
+                } else {
+                    studentHTML += '<p>(No fields in this student document)</p>';
+                }
+                studentItemDiv.innerHTML = studentHTML;
+                modalStudentList.appendChild(studentItemDiv);
+            });
+        } else {
+            modalStudentList.innerHTML = `<p>No students found associated with this teacher.</p>`;
+        }
     }
 
     async function handleTeacherItemClick(teacherDocPath) {
         console.log("home.js: handleTeacherItemClick - Fetching details for teacher path:", teacherDocPath);
-        if (!modalTeacherInfo || !modalTeacherSubcollectionData || !modalTeacherName) {
-            console.error("home.js: Modal elements not ready for loading message.");
-            openTeacherModal(); // Open modal even if elements are missing, to show it's trying
-            return;
+        if (!modalTeacherInfo || !modalTeacherSubcollectionData || !modalTeacherName || !modalStudentList) {
+            openTeacherModal(); return;
         }
         modalTeacherName.textContent = "Loading Teacher...";
         modalTeacherInfo.innerHTML = "<p class='loading-text'>Loading main teacher data...</p>";
-        modalTeacherSubcollectionData.innerHTML = "<p class='loading-text'>Waiting for main data to determine subcollection...</p>";
+        modalTeacherSubcollectionData.innerHTML = "<p class='loading-text'>Waiting for main data...</p>";
+        modalStudentList.innerHTML = "<p class='loading-text'>Waiting for teacher ID...</p>";
         openTeacherModal();
 
         let mainDocFields = null;
         let subcollectionDocs = [];
+        let studentDocs = [];
         let subcollectionNameToFetch = "";
+        let teacherIdToQueryStudents = "";
 
         try {
             const mainDocUrl = `https://firestore.googleapis.com/v1/${teacherDocPath}?key=${API_KEY}`;
-            console.log("home.js: Fetching main doc from:", mainDocUrl);
-
             const mainDocResponse = await fetch(mainDocUrl);
-            console.log("home.js: Main doc response status:", mainDocResponse.status);
-
             if (!mainDocResponse.ok) {
-                let errorText = mainDocResponse.statusText;
-                try { const errorData = await mainDocResponse.json(); errorText = errorData.error?.message || errorText; } catch (e) {}
+                let errorText = mainDocResponse.statusText; try { const ed = await mainDocResponse.json(); errorText = ed.error?.message || errorText; } catch(e){}
                 throw new Error(`Failed to fetch main teacher document (${mainDocResponse.status}): ${errorText}`);
             }
             const mainDocData = await mainDocResponse.json();
-            console.log("home.js: Main doc data received:", JSON.stringify(mainDocData).substring(0, 500) + "..."); // Log snippet
             mainDocFields = mainDocData.fields;
-
             if (!mainDocFields) throw new Error("Main teacher document has no fields or data is malformed.");
+            
+            teacherIdToQueryStudents = (mainDocFields.id?.stringValue || "").trim();
 
-            // --- !!! CRITICAL: DETERMINE SUBCOLLECTION NAME HERE !!! ---
-            // Based on your example "les", "01", "aa" being both fullname/id AND subcollection name.
-            // Adjust which field from mainDocFields you use to name the subcollection.
-            subcollectionNameToFetch = (mainDocFields.fullname?.stringValue || "").trim(); // DEFAULT: Using fullname
-            // Example: If subcollection name is always the 'id' field value from the parent document:
-            // subcollectionNameToFetch = (mainDocFields.id?.stringValue || "").trim();
-            console.log("home.js: Derived subcollection name to fetch (raw):", subcollectionNameToFetch);
+            // --- FETCH ASSOCIATED STUDENTS (Direct query on studentData) ---
+            if (teacherIdToQueryStudents && STUDENT_COLLECTION && FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER) {
+                modalStudentList.innerHTML = `<p class='loading-text'>Loading students for teacher ID: ${teacherIdToQueryStudents}...</p>`;
+                
+                const studentQueryUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents:runQuery?key=${API_KEY}`;
+                const studentQueryBody = {
+                    structuredQuery: {
+                        from: [{ collectionId: STUDENT_COLLECTION }],
+                        where: {
+                            fieldFilter: {
+                                field: { fieldPath: FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER }, // e.g., "id" field in studentData
+                                op: "EQUAL",
+                                value: { stringValue: teacherIdToQueryStudents }
+                            }
+                        },
+                        limit: 200
+                    }
+                };
+                
+                const studentResponse = await fetch(studentQueryUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(studentQueryBody)
+                });
 
-            if (!subcollectionNameToFetch) {
-                console.warn("home.js: Subcollection name derived as empty. Subcollection data will not be fetched.");
-                displayTeacherDataInModal(mainDocFields, [], "N/A (Subcollection name undetermined)");
-                return;
-            }
-            if (subcollectionNameToFetch.includes('/')) {
-                console.error("home.js: Derived subcollection name contains invalid character '/':", subcollectionNameToFetch);
-                displayTeacherDataInModal(mainDocFields, [], "N/A (Invalid subcollection name)");
-                return;
-            }
-
-            console.log(`home.js: Attempting to fetch from subcollection: "${subcollectionNameToFetch}" under ${teacherDocPath}`);
-
-            const subcollectionPath = `${teacherDocPath}/${subcollectionNameToFetch}`;
-            const subcollectionListUrl = `https://firestore.googleapis.com/v1/${subcollectionPath}/documents?key=${API_KEY}&pageSize=100`;
-            console.log("home.js: Fetching subcollection docs from:", subcollectionListUrl);
-
-            const subcollectionResponse = await fetch(subcollectionListUrl);
-            console.log("home.js: Subcollection response status:", subcollectionResponse.status);
-
-            if (subcollectionResponse.ok) {
-                const subcollectionData = await subcollectionResponse.json();
-                console.log("home.js: Subcollection data received:", JSON.stringify(subcollectionData).substring(0,500) + "...");
-                if (subcollectionData.documents && subcollectionData.documents.length > 0) {
-                    subcollectionDocs = subcollectionData.documents;
+                if (studentResponse.ok) {
+                    const studentResults = await studentResponse.json();
+                    if (studentResults && studentResults.length > 0) {
+                        // Each result in runQuery is an object { document: {...} } or { readTime: ... }
+                        // We only care about the ones that have a 'document'
+                        studentDocs = studentResults.map(result => result.document).filter(doc => doc);
+                    }
                 } else {
-                    console.log(`home.js: No documents found in subcollection: "${subcollectionNameToFetch}"`);
+                    let errorTextStudent = studentResponse.statusText;
+                    try { const ed = await studentResponse.json(); errorTextStudent = ed.error?.message || errorTextStudent; } catch (e) {}
+                    console.error(`home.js: Error fetching students (${studentResponse.status}):`, errorTextStudent);
+                    modalStudentList.innerHTML = `<p class="error-message">Error fetching students: ${errorTextStudent}</p>`;
                 }
-            } else if (subcollectionResponse.status === 404) {
-                console.log(`home.js: Subcollection "${subcollectionNameToFetch}" not found (404).`);
+            } else if (!teacherIdToQueryStudents) {
+                 modalStudentList.innerHTML = `<p>Cannot fetch students: Teacher ID is missing from teacher data.</p>`;
             } else {
-                let errorTextSub = subcollectionResponse.statusText;
-                try { const errorDataSub = await subcollectionResponse.json(); errorTextSub = errorDataSub.error?.message || errorTextSub; } catch (e) {}
-                console.error(`home.js: Error fetching subcollection "${subcollectionNameToFetch}" (${subcollectionResponse.status}):`, errorTextSub);
+                 modalStudentList.innerHTML = `<p>Student data configuration error.</p>`;
             }
-            displayTeacherDataInModal(mainDocFields, subcollectionDocs, subcollectionNameToFetch);
+
+            displayTeacherDataInModal(mainDocFields, subcollectionDocs, subcollectionNameToFetch || "N/A", studentDocs);
 
         } catch (error) {
             console.error("home.js: Error in handleTeacherItemClick:", error);
             if (modalTeacherName) modalTeacherName.textContent = 'Error Loading Details';
             if (modalTeacherInfo) modalTeacherInfo.innerHTML = `<p class='error-message'>${error.message}</p>`;
-            if (modalTeacherSubcollectionData) modalTeacherSubcollectionData.innerHTML = '<p class="error-message">Could not load subcollection data due to an error.</p>';
+            if (modalTeacherSubcollectionData) modalTeacherSubcollectionData.innerHTML = '<p class="error-message">Could not load subcollection data.</p>';
+            if (modalStudentList) modalStudentList.innerHTML = `<p class="error-message">Could not load student data: ${error.message}</p>`;
         }
     }
 
     // --- MAIN LIST FUNCTIONS ---
     function renderTeacherList(teachersToDisplay) {
-        if (!teacherListContainer) {
-            console.error("home.js: teacherListContainer not found in DOM");
-            return;
-        }
+        if (!teacherListContainer) { console.error("home.js: teacherListContainer not found"); return; }
         teacherListContainer.innerHTML = '';
-
         if (teachersToDisplay.length === 0) {
-            const noResultsMessage = document.createElement('p');
-            noResultsMessage.id = "loadingMessage";
-            noResultsMessage.classList.add("loading-text"); // Use class for styling
-            noResultsMessage.textContent = "No teachers found matching your search or criteria.";
-            teacherListContainer.appendChild(noResultsMessage);
-            return;
+            const p = document.createElement('p'); p.id = "loadingMessage"; p.classList.add("loading-text");
+            p.textContent = "No teachers found."; teacherListContainer.appendChild(p); return;
         }
-
         teachersToDisplay.forEach(teacherDoc => {
-            if (!teacherDoc || !teacherDoc.fields || !teacherDoc.name) {
-                console.warn("home.js: Skipping teacher document due to missing fields or name:", teacherDoc);
-                return;
-            }
-            const teacherData = teacherDoc.fields;
-            const teacherId = formatFirestoreValue(teacherData.id) || teacherDoc.name.split('/').pop();
-            const teacherFullname = formatFirestoreValue(teacherData.fullname) || 'N/A';
-            const teacherDocPath = teacherDoc.name;
-
-            const teacherItem = document.createElement('div');
-            teacherItem.classList.add('teacher-item-box');
-            teacherItem.setAttribute('data-teacher-id', teacherId);
-            teacherItem.setAttribute('data-teacher-doc-path', teacherDocPath);
-
-            teacherItem.innerHTML = `
-                <span class="teacher-name">${teacherFullname}</span>
-                <span class="teacher-detail">Email: ${formatFirestoreValue(teacherData.email)}</span>
-                <span class="teacher-detail">ID: ${teacherId}</span>
-                ${teacherData.username ? `<span class="teacher-detail">Username: ${formatFirestoreValue(teacherData.username)}</span>` : ''}
-            `;
-
-            teacherItem.addEventListener('click', () => {
-                const docPathForNavigation = teacherItem.getAttribute('data-teacher-doc-path');
-                if (docPathForNavigation) {
-                    // Instead of navigating, we now open the modal with this teacher's data
-                    handleTeacherItemClick(docPathForNavigation);
-                } else {
-                    console.error("home.js: Could not get document path for modal from teacher item.");
-                    alert("Error: Could not get teacher details path.");
-                }
-            });
-            teacherListContainer.appendChild(teacherItem);
+            if (!teacherDoc || !teacherDoc.fields || !teacherDoc.name) return;
+            const d = teacherDoc.fields; const id = formatFirestoreValue(d.id) || teacherDoc.name.split('/').pop();
+            const name = formatFirestoreValue(d.fullname) || 'N/A'; const path = teacherDoc.name;
+            const item = document.createElement('div'); item.classList.add('teacher-item-box');
+            item.setAttribute('data-teacher-id', id); item.setAttribute('data-teacher-doc-path', path);
+            item.innerHTML = `<span class="teacher-name">${name}</span><span class="teacher-detail">Email: ${formatFirestoreValue(d.email)}</span><span class="teacher-detail">ID: ${id}</span>${d.username ? `<span class="teacher-detail">Username: ${formatFirestoreValue(d.username)}</span>` : ''}`;
+            item.addEventListener('click', () => { const p = item.getAttribute('data-teacher-doc-path'); if (p) handleTeacherItemClick(p); else alert("Error: No path.");});
+            teacherListContainer.appendChild(item);
         });
     }
 
     function filterAndDisplayTeachers(searchTerm = "") {
-        if (allTeachersData.length === 0 && loadingMessage && loadingMessage.textContent.startsWith("Fetching")) {
-            // Still loading
-        } else if (allTeachersData.length === 0) {
-             renderTeacherList([]);
-             return;
-        }
-
-        const filteredTeachers = allTeachersData.filter(doc => {
-            if (!doc.fields) return false;
-            const teacher = doc.fields;
-            const id = formatFirestoreValue(teacher.id) || doc.name.split('/').pop();
-            const searchTermLower = searchTerm.toLowerCase();
-            return (
-                (formatFirestoreValue(teacher.fullname) || '').toLowerCase().includes(searchTermLower) ||
-                (formatFirestoreValue(teacher.email) || '').toLowerCase().includes(searchTermLower) ||
-                (id || '').toLowerCase().includes(searchTermLower) ||
-                (formatFirestoreValue(teacher.username) || '').toLowerCase().includes(searchTermLower)
-            );
+        if (allTeachersData.length === 0 && loadingMessage && loadingMessage.textContent.startsWith("Fetching")) {}
+        else if (allTeachersData.length === 0) { renderTeacherList([]); return; }
+        const filtered = allTeachersData.filter(doc => {
+            if (!doc.fields) return false; const t = doc.fields; const id = formatFirestoreValue(t.id) || doc.name.split('/').pop();
+            const st = searchTerm.toLowerCase();
+            return ((formatFirestoreValue(t.fullname) || '').toLowerCase().includes(st) ||
+                    (formatFirestoreValue(t.email) || '').toLowerCase().includes(st) ||
+                    (id || '').toLowerCase().includes(st) ||
+                    (formatFirestoreValue(t.username) || '').toLowerCase().includes(st));
         });
-        renderTeacherList(filteredTeachers);
+        renderTeacherList(filtered);
     }
 
     async function fetchAllTeachers() {
-        if (!teacherListContainer || !loadingMessage) {
-            console.error("home.js: Essential DOM elements for fetching teachers not found.");
-            return;
-        }
-        loadingMessage.textContent = `Fetching teachers from "${TEACHER_COLLECTION}" collection...`;
-        loadingMessage.style.display = 'block';
-        teacherListContainer.innerHTML = ''; // Clear before appending loading message
-        teacherListContainer.appendChild(loadingMessage);
-
+        if (!teacherListContainer || !loadingMessage) { return; }
+        loadingMessage.textContent = `Fetching teachers from "${TEACHER_COLLECTION}"...`;
+        loadingMessage.style.display = 'block'; teacherListContainer.innerHTML = ''; teacherListContainer.appendChild(loadingMessage);
         try {
-            if (!PROJECT_ID || !API_KEY) {
-                throw new Error("PROJECT_ID or API_KEY is undefined. Cannot fetch teachers.");
-            }
+            if (!PROJECT_ID || !API_KEY) throw new Error("PROJECT_ID or API_KEY undefined.");
             const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${TEACHER_COLLECTION}?key=${API_KEY}&pageSize=300`;
-            console.log("home.js: Fetching teachers list from URL:", url);
-
             const response = await fetch(url);
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ error: { message: "Failed to parse error response as JSON."} }));
-                throw new Error(`Failed to fetch teachers list (${response.status}): ${errorData.error?.message || response.statusText}`);
-            }
-
+            if (!response.ok) { const ed = await response.json().catch(()=>({})); throw new Error(`Failed (${response.status}): ${ed.error?.message || response.statusText}`);}
             const data = await response.json();
             if (data.documents && data.documents.length > 0) {
                 allTeachersData = data.documents.filter(doc => doc && doc.fields && doc.name);
-                filterAndDisplayTeachers(); // Initial display, will clear loading message via renderTeacherList
+                filterAndDisplayTeachers(); 
             } else {
-                allTeachersData = [];
-                loadingMessage.textContent = `No teachers found in the "${TEACHER_COLLECTION}" collection.`;
+                allTeachersData = []; loadingMessage.textContent = `No teachers found in "${TEACHER_COLLECTION}".`;
             }
         } catch (error) {
-            console.error("home.js: Exception while fetching teachers list:", error);
-            allTeachersData = [];
-            if (loadingMessage) {
-                loadingMessage.textContent = `Error loading teachers: ${error.message}`;
-                loadingMessage.style.color = 'red';
-            }
+            allTeachersData = []; if (loadingMessage) { loadingMessage.textContent = `Error: ${error.message}`; loadingMessage.style.color = 'red'; }
         }
     }
 

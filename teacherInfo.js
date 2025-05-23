@@ -1,208 +1,126 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- ADMIN LOGIN CHECK (Optional but good practice for protected pages) ---
     if (sessionStorage.getItem('isAdminLoggedIn') !== 'true') {
         alert("Admin access required. Please log in as admin first.");
-        window.location.href = 'index.html'; // Redirect to admin login page
+        window.location.href = 'index.html';
         return;
     }
 
-    // --- CONFIGURATION 
     const PROJECT_ID = "capstoneproject-2b428";
     const API_KEY = "AIzaSyAjCVBgzAoJTjfzj_1DbnrKmIBcfVTWop0";
-    // No need for TEACHER_COLLECTION here as we get the full path
+    const STUDENT_COLLECTION = "studentData";
+    const FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER = "id";
 
-    // --- DOM ELEMENTS ---
     const teacherNameHeading = document.getElementById('teacherNameHeading');
     const mainTeacherInfoContent = document.getElementById('mainTeacherInfoContent');
-    const subcollectionNameHeading = document.getElementById('subcollectionNameHeading');
-    const subcollectionInfoContent = document.getElementById('subcollectionInfoContent');
+    // REMOVED: subcollectionNameHeading and subcollectionInfoContent
+    const studentListNameHeading = document.getElementById('studentListNameHeading');
+    const studentListContent = document.getElementById('studentListContent');
     const backToHomeButton = document.getElementById('backToHomeButton');
 
-    // --- HELPER: Format Firestore Value (same as in home.js) ---
-    function formatFirestoreValue(fieldValue) {
-        if (!fieldValue) return "<span class='value-na'>N/A</span>";
-        if (fieldValue.stringValue !== undefined) return fieldValue.stringValue;
-        if (fieldValue.integerValue !== undefined) return fieldValue.integerValue;
-        if (fieldValue.doubleValue !== undefined) return fieldValue.doubleValue;
-        if (fieldValue.booleanValue !== undefined) return fieldValue.booleanValue.toString();
-        if (fieldValue.timestampValue !== undefined) return new Date(fieldValue.timestampValue).toLocaleString();
-        if (fieldValue.mapValue !== undefined) {
-            let mapHTML = "<div class='value-map'>";
-            const fields = fieldValue.mapValue.fields;
-            if (fields) {
-                for (const key in fields) {
-                    mapHTML += `<div><strong>${key}:</strong> ${formatFirestoreValue(fields[key])}</div>`;
-                }
-            } else {
-                mapHTML += "{ Empty Map }";
-            }
-            mapHTML += "</div>";
-            return mapHTML;
-        }
-        if (fieldValue.arrayValue !== undefined && fieldValue.arrayValue.values) {
-            if (fieldValue.arrayValue.values.length === 0) return "[ Empty Array ]";
-            let arrayHTML = "<ul class='value-array'>";
-            fieldValue.arrayValue.values.forEach(val => {
-                arrayHTML += `<li>${formatFirestoreValue(val)}</li>`;
-            });
-            arrayHTML += "</ul>";
-            return arrayHTML;
-        }
-        if (fieldValue.nullValue !== undefined) return "<span class='value-null'>null</span>";
-        return "<span class='value-unknown'>[Unknown Type]</span>";
-    }
+    function formatFirestoreValue(fieldValue) { /* ... (Keep this function as is) ... */ }
 
-
-    // --- MAIN FUNCTION TO FETCH AND DISPLAY ---
     async function loadTeacherInformation() {
         const params = new URLSearchParams(window.location.search);
-        const teacherDocPathFromURL = params.get('path'); // Expecting full path projects/.../teacherData/DOC_ID
-        const teacherIdFromURL = params.get('id'); // Fallback or primary identifier
-
-        if (!teacherDocPathFromURL && !teacherIdFromURL) {
-            teacherNameHeading.textContent = "Error";
-            mainTeacherInfoContent.innerHTML = "<p class='error-message'>No teacher document path or ID provided in the URL.</p>";
-            subcollectionInfoContent.innerHTML = "";
-            return;
+        let teacherDocPath = params.get('path');
+        const teacherIdFromParam = params.get('id');
+        if (!teacherDocPath && teacherIdFromParam) {
+            teacherDocPath = `projects/${PROJECT_ID}/databases/(default)/documents/teacherData/${teacherIdFromParam}`;
         }
-
-        // Construct the document path if only ID was provided (less ideal, but a fallback)
-        let teacherDocPath = teacherDocPathFromURL;
-        if (!teacherDocPath && teacherIdFromURL) {
-            // This assumes teacherIdFromURL is the direct document ID under 'teacherData'
-            teacherDocPath = `projects/${PROJECT_ID}/databases/(default)/documents/teacherData/${teacherIdFromURL}`;
-            console.warn("Using constructed teacherDocPath from ID:", teacherDocPath);
+        if (!teacherDocPath) {
+            teacherNameHeading.textContent = "Error"; mainTeacherInfoContent.innerHTML = "<p class='error-message'>No teacher path/ID.</p>"; return;
         }
-
 
         let mainDocFields = null;
-        let subcollectionNameToFetch = "";
+        let teacherIdToQueryStudents = "";
 
         try {
-            // 1. Fetch Main Teacher Document
-            mainTeacherInfoContent.innerHTML = "<p>Loading main teacher data...</p>";
+            mainTeacherInfoContent.innerHTML = "<p>Loading teacher data...</p>";
             const mainDocUrl = `https://firestore.googleapis.com/v1/${teacherDocPath}?key=${API_KEY}`;
             const mainDocResponse = await fetch(mainDocUrl);
-
-            if (!mainDocResponse.ok) {
-                const errorData = await mainDocResponse.json().catch(() => ({}));
-                throw new Error(`Failed to fetch main teacher document (${mainDocResponse.status}): ${errorData.error?.message || mainDocResponse.statusText}`);
-            }
+            if (!mainDocResponse.ok) { const ed=await mainDocResponse.json().catch(()=>({})); throw new Error(`Failed to fetch teacher (${mainDocResponse.status}): ${ed.error?.message||mainDocResponse.statusText}`);}
             const mainDocData = await mainDocResponse.json();
             mainDocFields = mainDocData.fields;
-
-            if (!mainDocFields) {
-                throw new Error("Main teacher document data is missing or malformed.");
-            }
+            if (!mainDocFields) throw new Error("Teacher data malformed.");
 
             teacherNameHeading.textContent = formatFirestoreValue(mainDocFields.fullname) || "Teacher Information";
+            teacherIdToQueryStudents = (mainDocFields.id?.stringValue || "").trim();
 
-            // Display all main fields, including password
-            mainTeacherInfoContent.innerHTML = ""; // Clear loading
-            const fieldsToShow = [
-                "fullname", "email", "id", "username", "password",
-                "totalStudents", "timestamp"
-                // Add any other top-level fields you want to display by default
-            ];
-
-            for (const fieldName of fieldsToShow) {
-                const p = document.createElement('p');
-                const strong = document.createElement('strong');
-                strong.textContent = `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}: `;
-                p.appendChild(strong);
-                p.innerHTML += formatFirestoreValue(mainDocFields[fieldName]); // Append formatted value
-                mainTeacherInfoContent.appendChild(p);
-            }
-
-            // Also display any other fields not in fieldsToShow (e.g. mapValue, arrayValue)
-            for (const fieldName in mainDocFields) {
-                if (!fieldsToShow.includes(fieldName)) {
-                    const p = document.createElement('p');
-                    const strong = document.createElement('strong');
-                    strong.textContent = `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}: `;
-                    p.appendChild(strong);
-                    p.innerHTML += formatFirestoreValue(mainDocFields[fieldName]);
-                    mainTeacherInfoContent.appendChild(p);
+            mainTeacherInfoContent.innerHTML = "";
+            const fieldsToShow = ["fullname", "email", "id", "username", "password", "totalStudents", "timestamp"];
+            fieldsToShow.forEach(fName => {
+                if (mainDocFields[fName]) {
+                    const p = document.createElement('p'); const s = document.createElement('strong');
+                    s.textContent = `${fName.charAt(0).toUpperCase() + fName.slice(1)}: `;
+                    p.appendChild(s); p.innerHTML += formatFirestoreValue(mainDocFields[fName]); mainTeacherInfoContent.appendChild(p);
                 }
-            }
+            });
+            for (const fName in mainDocFields) { if (!fieldsToShow.includes(fName)) { const p=document.createElement('p'); const s=document.createElement('strong'); s.textContent=`${fName.charAt(0).toUpperCase() + fName.slice(1)}: `; p.appendChild(s); p.innerHTML+=formatFirestoreValue(mainDocFields[fName]); mainTeacherInfoContent.appendChild(p);}}
 
+            // REMOVED: Logic to fetch and display teacher's own subcollection
 
-            // 2. Determine Subcollection Name and Fetch its Data
-            // Using 'fullname' as the subcollection name (adjust if different)
-            subcollectionNameToFetch = (mainDocFields.fullname?.stringValue || "").trim();
-            // OR use ID: subcollectionNameToFetch = (mainDocFields.id?.stringValue || "").trim();
-            // OR use Username: subcollectionNameToFetch = (mainDocFields.username?.stringValue || "").trim();
+            // Associated Students
+            if (studentListNameHeading) studentListNameHeading.textContent = "Associated Students";
+            if (studentListContent) studentListContent.innerHTML = "<p>Loading student data...</p>";
 
+            if (teacherIdToQueryStudents && STUDENT_COLLECTION && FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER) {
+                studentListContent.innerHTML = `<p>Loading students for teacher ID: ${teacherIdToQueryStudents}...</p>`;
+                const studentQueryUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents:runQuery?key=${API_KEY}`;
+                const studentQueryBody = {
+                    structuredQuery: {
+                        from: [{ collectionId: STUDENT_COLLECTION }],
+                        where: { fieldFilter: { field: { fieldPath: FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER }, op: "EQUAL", value: { stringValue: teacherIdToQueryStudents }}},
+                        limit: 200
+                    }
+                };
+                const studentResponse = await fetch(studentQueryUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(studentQueryBody) });
+                if (studentListContent) studentListContent.innerHTML = "";
 
-            if (!subcollectionNameToFetch || subcollectionNameToFetch.includes('/')) {
-                console.warn("Invalid or undetermined subcollection name:", subcollectionNameToFetch);
-                subcollectionNameHeading.textContent = "Subcollection Data (N/A)";
-                subcollectionInfoContent.innerHTML = "<p>Could not determine a valid subcollection to fetch.</p>";
-                return; // Stop if no valid subcollection name
-            }
-
-            subcollectionNameHeading.textContent = `Data from "${subcollectionNameToFetch}" Subcollection`;
-            subcollectionInfoContent.innerHTML = `<p>Loading data from "${subcollectionNameToFetch}"...</p>`;
-
-            const subcollectionPath = `${teacherDocPath}/${subcollectionNameToFetch}`;
-            const subcollectionListUrl = `https://firestore.googleapis.com/v1/${subcollectionPath}?key=${API_KEY}&pageSize=100`;
-
-            const subcollectionResponse = await fetch(subcollectionListUrl);
-            subcollectionInfoContent.innerHTML = ""; // Clear loading
-
-            if (subcollectionResponse.ok) {
-                const subcollectionData = await subcollectionResponse.json();
-                if (subcollectionData.documents && subcollectionData.documents.length > 0) {
-                    subcollectionData.documents.forEach(subDoc => {
-                        const subItemContainer = document.createElement('div');
-                        subItemContainer.classList.add('sub-document-item');
-
-                        const subDocNameEl = document.createElement('h4');
-                        subDocNameEl.textContent = `Document: ${subDoc.name.split('/').pop()}`;
-                        subItemContainer.appendChild(subDocNameEl);
-
-                        if (subDoc.fields) {
-                            for (const fieldName in subDoc.fields) {
-                                const p = document.createElement('p');
-                                const strong = document.createElement('strong');
-                                strong.textContent = `${fieldName}: `;
-                                p.appendChild(strong);
-                                p.innerHTML += formatFirestoreValue(subDoc.fields[fieldName]);
-                                subItemContainer.appendChild(p);
-                            }
-                        } else {
-                            subItemContainer.innerHTML += "<p>(No fields in this subdocument)</p>";
-                        }
-                        subcollectionInfoContent.appendChild(subItemContainer);
-                    });
-                } else {
-                    subcollectionInfoContent.innerHTML = `<p>No documents found in the "${subcollectionNameToFetch}" subcollection.</p>`;
-                }
-            } else if (subcollectionResponse.status === 404) {
-                subcollectionInfoContent.innerHTML = `<p>Subcollection "${subcollectionNameToFetch}" not found.</p>`;
-            } else {
-                const errorData = await subcollectionResponse.json().catch(() => ({}));
-                subcollectionInfoContent.innerHTML = `<p class='error-message'>Error fetching subcollection data (${subcollectionResponse.status}): ${errorData.error?.message || subcollectionResponse.statusText}</p>`;
-            }
+                if (studentResponse.ok) {
+                    const studentResults = await studentResponse.json();
+                    const fetchedStudents = studentResults.map(result => result.document).filter(doc => doc);
+                    if (studentListNameHeading) studentListNameHeading.textContent = `Associated Students (${fetchedStudents.length})`;
+                    if (fetchedStudents.length > 0) {
+                        fetchedStudents.forEach(sDoc => {
+                            const itemDiv = document.createElement('div'); itemDiv.classList.add('student-item');
+                            const sFullName = sDoc.fields?.fullname?.stringValue || 'Unknown Student';
+                            const sDocName = sDoc.name.split('/').pop();
+                            let html = `<h4>${sFullName} (Student Doc ID: ${sDocName})</h4>`;
+                            if(sDoc.fields){ for(const fn in sDoc.fields){
+                                if(fn === FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER) html+=`<p><strong>Teacher's ID (in record):</strong> ${formatFirestoreValue(sDoc.fields[fn])}</p>`;
+                                else html+=`<p><strong>${fn.charAt(0).toUpperCase()+fn.slice(1)}:</strong> ${formatFirestoreValue(sDoc.fields[fn])}</p>`;
+                            }} else html+='<p>(No fields)</p>';
+                            itemDiv.innerHTML = html; studentListContent.appendChild(itemDiv);
+                        });
+                    } else studentListContent.innerHTML = `<p>No students found for teacher ID: ${teacherIdToQueryStudents}.</p>`;
+                } else { const ed=await studentResponse.json().catch(()=>({})); studentListContent.innerHTML = `<p class='error-message'>Error fetching students (${studentResponse.status}): ${ed.error?.message||studentResponse.statusText}</p>`;}
+            } else if (!teacherIdToQueryStudents) studentListContent.innerHTML = "<p>Teacher ID missing.</p>";
+            else studentListContent.innerHTML = "<p>Student data config error.</p>";
 
         } catch (error) {
             console.error("Error loading teacher information:", error);
             teacherNameHeading.textContent = "Error Loading Data";
-            mainTeacherInfoContent.innerHTML = `<p class='error-message'>${error.message}</p>`;
-            subcollectionNameHeading.textContent = "Subcollection Data (Error)";
-            subcollectionInfoContent.innerHTML = `<p class='error-message'>Could not load subcollection data due to an error.</p>`;
+            if(mainTeacherInfoContent) mainTeacherInfoContent.innerHTML = `<p class='error-message'>${error.message}</p>`;
+            // REMOVED: if(subcollectionNameHeading) ...
+            // REMOVED: if(subcollectionInfoContent) ...
+            if(studentListNameHeading) studentListNameHeading.textContent = "Students (Error)";
+            if(studentListContent) studentListContent.innerHTML = `<p class='error-message'>Could not load: ${error.message}</p>`;
         }
     }
 
-    // --- INITIALIZATION ---
     loadTeacherInformation();
+    if(backToHomeButton) { backToHomeButton.addEventListener('click', (e) => { e.preventDefault(); window.location.href = 'home.html'; }); }
 
-    // --- Back Button ---
-    if(backToHomeButton) {
-        // Not strictly necessary if it's an <a> tag, but good for consistency or if it were a <button>
-        backToHomeButton.addEventListener('click', (e) => {
-            e.preventDefault(); // Prevent default if it were a button submitting a form
-            window.location.href = 'home.html';
-        });
+    function formatFirestoreValue(fieldValue) {
+        if (fieldValue === null || fieldValue === undefined) return "<span class='value-na'>N/A</span>";
+        if (typeof fieldValue !== 'object') return String(fieldValue);
+        if (fieldValue.stringValue !== undefined) return fieldValue.stringValue;
+        if (fieldValue.integerValue !== undefined) return String(fieldValue.integerValue);
+        if (fieldValue.doubleValue !== undefined) return String(fieldValue.doubleValue);
+        if (fieldValue.booleanValue !== undefined) return fieldValue.booleanValue.toString();
+        if (fieldValue.timestampValue !== undefined) { try { return new Date(fieldValue.timestampValue).toLocaleString(); } catch (e) { return fieldValue.timestampValue + " (Invalid Date)"; } }
+        if (fieldValue.mapValue !== undefined) { let m = "<div class='value-map'>"; const f = fieldValue.mapValue.fields; if (f && Object.keys(f).length > 0) { for (const k in f) m += `<div><strong>${k}:</strong> ${formatFirestoreValue(f[k])}</div>`; } else m += "{ Empty Map }"; m += "</div>"; return m; }
+        if (fieldValue.arrayValue !== undefined && fieldValue.arrayValue.values) { if (fieldValue.arrayValue.values.length === 0) return "[ Empty Array ]"; let a = "<ul class='value-array'>"; fieldValue.arrayValue.values.forEach(v => { a += `<li>${formatFirestoreValue(v)}</li>`; }); a += "</ul>"; return a; }
+        if (fieldValue.nullValue !== undefined) return "<span class='value-null'>null</span>";
+        return "<span class='value-unknown'>[Unknown Type]</span>";
     }
 });
