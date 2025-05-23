@@ -12,8 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const PROJECT_ID = "capstoneproject-2b428";
     const API_KEY = "AIzaSyAjCVBgzAoJTjfzj_1DbnrKmIBcfVTWop0";
     const TEACHER_COLLECTION = "teacherData";
-    const STUDENT_COLLECTION = "studentData"; // Collection for student data
-    const FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER = "id"; // Field in studentData docs that holds the teacher's ID
+    const STUDENT_COLLECTION = "studentData";
+    const FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER = "id";
 
     console.log("home.js: Config - PROJECT_ID:", PROJECT_ID, "API_KEY:", API_KEY ? "Loaded" : "MISSING!");
 
@@ -28,8 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModalButton = document.getElementById('closeModalButton');
     const modalTeacherName = document.getElementById('modalTeacherName');
     const modalTeacherInfo = document.getElementById('modalTeacherInfo');
-    const modalSubcollectionTitle = document.getElementById('modalSubcollectionTitle');
-    const modalTeacherSubcollectionData = document.getElementById('modalTeacherSubcollectionData');
+    // REMOVED: modalSubcollectionTitle and modalTeacherSubcollectionData references
     const modalStudentListTitle = document.getElementById('modalStudentListTitle');
     const modalStudentList = document.getElementById('modalStudentList');
 
@@ -69,7 +68,6 @@ document.addEventListener('DOMContentLoaded', () => {
             closeTeacherModal();
         }
     });
-
 
     // --- MODAL FUNCTIONS ---
     function openTeacherModal() {
@@ -121,9 +119,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return "<span class='value-unknown'>[Unknown Field Type]</span>";
     }
 
-    function displayTeacherDataInModal(mainDocFields, subcollectionDocs = [], dynamicSubcollectionName = "Details", studentDocs = []) {
-        if (!modalTeacherName || !modalTeacherInfo || !modalTeacherSubcollectionData || !modalSubcollectionTitle || !modalStudentListTitle || !modalStudentList) {
-            console.error("home.js: Modal DOM elements not found for display.");
+    // Updated displayTeacherDataInModal to remove "own subcollection" parameters and logic
+    function displayTeacherDataInModal(mainDocFields, studentDocs = []) {
+        // Removed checks for modalSubcollectionTitle and modalTeacherSubcollectionData
+        if (!modalTeacherName || !modalTeacherInfo || !modalStudentListTitle || !modalStudentList) {
+            console.error("home.js: Essential modal DOM elements not found for display.");
             return;
         }
 
@@ -138,42 +138,20 @@ document.addEventListener('DOMContentLoaded', () => {
             <p><strong>Timestamp:</strong> ${formatFirestoreValue(mainDocFields.timestamp)}</p>
         `;
 
-        modalSubcollectionTitle.textContent = `Data from "${dynamicSubcollectionName}" Subcollection:`;
-        modalTeacherSubcollectionData.innerHTML = '';
-        if (subcollectionDocs.length > 0) {
-            subcollectionDocs.forEach(subDoc => {
-                const subItemDiv = document.createElement('div');
-                subItemDiv.classList.add('sub-document-item');
-                let itemHTML = `<h4>Document: ${subDoc.name.split('/').pop()}</h4>`;
-                if (subDoc.fields) {
-                    for (const fieldName in subDoc.fields) {
-                        itemHTML += `<p><strong>${fieldName}:</strong> ${formatFirestoreValue(subDoc.fields[fieldName])}</p>`;
-                    }
-                } else { itemHTML += '<p>(No fields in this subdocument)</p>'; }
-                subItemDiv.innerHTML = itemHTML;
-                modalTeacherSubcollectionData.appendChild(subItemDiv);
-            });
-        } else {
-            modalTeacherSubcollectionData.innerHTML = `<p>No data found in the "${dynamicSubcollectionName}" subcollection for this teacher, or the subcollection doesn't exist.</p>`;
-        }
+        // REMOVED: Logic related to modalSubcollectionTitle and modalTeacherSubcollectionData
 
         // --- Display Students ---
         modalStudentListTitle.textContent = `Associated Students (${studentDocs.length})`;
         modalStudentList.innerHTML = '';
         if (studentDocs.length > 0) {
-            studentDocs.forEach(studentDoc => { // studentDoc is now a full document from studentData
+            studentDocs.forEach(studentDoc => {
                 const studentItemDiv = document.createElement('div');
                 studentItemDiv.classList.add('student-item');
-                
-                // Get student's own name/ID for display
                 const studentFullName = studentDoc.fields?.fullname?.stringValue || 'Unknown Student';
-                const studentOwnId = studentDoc.fields?.id?.stringValue; // This is the teacher's ID stored in student doc
-                const studentDocName = studentDoc.name.split('/').pop(); // This is the student's actual document ID
-
+                const studentDocName = studentDoc.name.split('/').pop();
                 let studentHTML = `<h4>${studentFullName} (Student Doc ID: ${studentDocName})</h4>`;
                 if (studentDoc.fields) {
                     for (const fieldName in studentDoc.fields) {
-                        // Don't repeat the linking teacher ID if it's the same as FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER
                         if (fieldName === FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER) {
                             studentHTML += `<p><strong>Teacher's ID (in student record):</strong> ${formatFirestoreValue(studentDoc.fields[fieldName])}</p>`;
                         } else {
@@ -193,19 +171,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function handleTeacherItemClick(teacherDocPath) {
         console.log("home.js: handleTeacherItemClick - Fetching details for teacher path:", teacherDocPath);
-        if (!modalTeacherInfo || !modalTeacherSubcollectionData || !modalTeacherName || !modalStudentList) {
-            openTeacherModal(); return;
+        // Adjusted checks for modal elements
+        if (!modalTeacherInfo || !modalTeacherName || !modalStudentList || !modalStudentListTitle) {
+            openTeacherModal(); // Open modal to show it's trying
+            console.error("home.js: One or more essential modal elements are missing.");
+            if(modalTeacherName) modalTeacherName.textContent = "Error: Modal structure incomplete.";
+            return;
         }
         modalTeacherName.textContent = "Loading Teacher...";
         modalTeacherInfo.innerHTML = "<p class='loading-text'>Loading main teacher data...</p>";
-        modalTeacherSubcollectionData.innerHTML = "<p class='loading-text'>Waiting for main data...</p>";
+        // REMOVED: modalTeacherSubcollectionData.innerHTML ...
         modalStudentList.innerHTML = "<p class='loading-text'>Waiting for teacher ID...</p>";
         openTeacherModal();
 
         let mainDocFields = null;
-        let subcollectionDocs = [];
-        let studentDocs = [];
-        let subcollectionNameToFetch = "";
+        let studentDocsAssociated = []; // Renamed for clarity
         let teacherIdToQueryStudents = "";
 
         try {
@@ -221,17 +201,18 @@ document.addEventListener('DOMContentLoaded', () => {
             
             teacherIdToQueryStudents = (mainDocFields.id?.stringValue || "").trim();
 
+            // REMOVED: All logic for fetching the "teacher's own subcollection" (derived from fullname)
+
             // --- FETCH ASSOCIATED STUDENTS (Direct query on studentData) ---
             if (teacherIdToQueryStudents && STUDENT_COLLECTION && FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER) {
                 modalStudentList.innerHTML = `<p class='loading-text'>Loading students for teacher ID: ${teacherIdToQueryStudents}...</p>`;
-                
                 const studentQueryUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents:runQuery?key=${API_KEY}`;
                 const studentQueryBody = {
                     structuredQuery: {
                         from: [{ collectionId: STUDENT_COLLECTION }],
                         where: {
                             fieldFilter: {
-                                field: { fieldPath: FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER }, // e.g., "id" field in studentData
+                                field: { fieldPath: FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER },
                                 op: "EQUAL",
                                 value: { stringValue: teacherIdToQueryStudents }
                             }
@@ -239,7 +220,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         limit: 200
                     }
                 };
-                
                 const studentResponse = await fetch(studentQueryUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -249,9 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (studentResponse.ok) {
                     const studentResults = await studentResponse.json();
                     if (studentResults && studentResults.length > 0) {
-                        // Each result in runQuery is an object { document: {...} } or { readTime: ... }
-                        // We only care about the ones that have a 'document'
-                        studentDocs = studentResults.map(result => result.document).filter(doc => doc);
+                        studentDocsAssociated = studentResults.map(result => result.document).filter(doc => doc);
                     }
                 } else {
                     let errorTextStudent = studentResponse.statusText;
@@ -262,17 +240,18 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (!teacherIdToQueryStudents) {
                  modalStudentList.innerHTML = `<p>Cannot fetch students: Teacher ID is missing from teacher data.</p>`;
             } else {
-                 modalStudentList.innerHTML = `<p>Student data configuration error.</p>`;
+                 modalStudentList.innerHTML = `<p>Student data configuration error (collection or field name missing).</p>`;
             }
 
-            displayTeacherDataInModal(mainDocFields, subcollectionDocs, subcollectionNameToFetch || "N/A", studentDocs);
+            // Updated call to displayTeacherDataInModal
+            displayTeacherDataInModal(mainDocFields, studentDocsAssociated);
 
         } catch (error) {
             console.error("home.js: Error in handleTeacherItemClick:", error);
             if (modalTeacherName) modalTeacherName.textContent = 'Error Loading Details';
             if (modalTeacherInfo) modalTeacherInfo.innerHTML = `<p class='error-message'>${error.message}</p>`;
-            if (modalTeacherSubcollectionData) modalTeacherSubcollectionData.innerHTML = '<p class="error-message">Could not load subcollection data.</p>';
-            if (modalStudentList) modalStudentList.innerHTML = `<p class="error-message">Could not load student data: ${error.message}</p>`;
+            // REMOVED: Error handling for modalTeacherSubcollectionData
+            if (modalStudentList) modalStudentList.innerHTML = `<p class="error-message">Could not load student data due to an error: ${error.message}</p>`;
         }
     }
 
@@ -322,7 +301,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             if (data.documents && data.documents.length > 0) {
                 allTeachersData = data.documents.filter(doc => doc && doc.fields && doc.name);
-                filterAndDisplayTeachers(); 
+                filterAndDisplayTeachers();
             } else {
                 allTeachersData = []; loadingMessage.textContent = `No teachers found in "${TEACHER_COLLECTION}".`;
             }
