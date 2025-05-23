@@ -378,3 +378,85 @@ button.secondary:hover, .nav-button.secondary:hover { background-color: var(--se
     .modal-content h2 { font-size: 1.3em; }
     .modal-content h3 { font-size: 1.1em; }
 }
+
+/* ... (all existing CSS) ... */
+
+/* === Student Item Expand/Collapse Styling === */
+.student-item { /* Existing class, ensure it has some bottom margin if not already */
+    background-color: var(--tertiary-bg);
+    padding: 10px 15px; /* Adjusted padding for a bit more space */
+    border-radius: var(--border-radius-xs);
+    margin-bottom: 10px;
+    border: 1px solid var(--accent-bg); /* Subtle border */
+}
+
+.student-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: default; /* Default cursor for the summary area */
+}
+
+.student-summary h4 { /* Existing h4 style from .student-item h4 can be reused */
+    margin-top: 0;
+    margin-bottom: 0; /* Remove bottom margin if button is next to it */
+    font-size: 1.1em;
+    color: var(--accent-text);
+    font-weight: 600;
+    flex-grow: 1; /* Allow heading to take available space */
+}
+
+.student-toggle-button {
+    background-color: var(--secondary-action);
+    color: var(--accent-text);
+    border: none;
+    padding: 6px 12px;
+    border-radius: var(--border-radius-xs);
+    cursor: pointer;
+    font-size: 0.85em;
+    font-weight: bold;
+    margin-left: 10px; /* Space between heading and button */
+    transition: background-color 0.2s ease;
+    flex-shrink: 0; /* Prevent button from shrinking */
+}
+
+.student-toggle-button:hover {
+    background-color: var(--secondary-action-hover);
+}
+
+.student-details {
+    margin-top: 10px; /* Space between summary and details */
+    padding-top: 10px;
+    border-top: 1px solid var(--accent-bg); /* Separator line */
+    animation: fadeInDetails 0.3s ease-out; /* Simple fade-in animation */
+}
+
+.student-details p { /* Existing styles from .student-item p can be reused */
+    color: var(--primary-text);
+    line-height: 1.6;
+    margin: 0 0 6px 0; /* Slightly tighter margin */
+    word-break: break-word;
+    font-size: 0.9em;
+}
+.student-details p strong { /* Existing styles from .student-item p strong */
+    color: var(--secondary-text);
+    min-width: auto; /* Allow strong tag to fit content */
+    display: inline-block;
+    margin-right: 5px;
+}
+
+
+@keyframes fadeInDetails {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Adjustments for modal specifically if needed, but general .student-item styles should work */
+.modal-student-list .student-item {
+    /* any modal specific overrides if the general one isn't perfect */
+}
+
+/* Adjustments for teacherInfo page specifically */
+.info-page-main .student-list-container .student-item {
+    /* any teacherInfo page specific overrides */
+}
