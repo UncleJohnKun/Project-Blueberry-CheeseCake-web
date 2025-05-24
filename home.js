@@ -31,8 +31,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // REMOVED: modalSubcollectionTitle and modalTeacherSubcollectionData references
     const modalStudentListTitle = document.getElementById('modalStudentListTitle');
     const modalStudentList = document.getElementById('modalStudentList');
+    const searchStudentInput = document.getElementById('searchStudentInput');
 
     let allTeachersData = [];
+    let allStudentsData = []; // Store all students for current teacher
 
     if (!PROJECT_ID || !API_KEY) {
         console.error("home.js: Firebase PROJECT_ID or API_KEY is not defined!");
@@ -55,6 +57,12 @@ document.addEventListener('DOMContentLoaded', () => {
         searchTeacherInput.addEventListener('input', (event) => {
             const searchTerm = event.target.value.toLowerCase();
             filterAndDisplayTeachers(searchTerm);
+        });
+    }
+    if (searchStudentInput) {
+        searchStudentInput.addEventListener('input', (event) => {
+            const searchTerm = event.target.value.toLowerCase();
+            filterAndDisplayStudents(searchTerm);
         });
     }
     if (closeModalButton) closeModalButton.addEventListener('click', closeTeacherModal);
@@ -119,10 +127,44 @@ document.addEventListener('DOMContentLoaded', () => {
         return "<span class='value-unknown'>[Unknown Field Type]</span>";
     }
 
+    function filterAndDisplayStudents(searchTerm = "") {
+        if (allStudentsData.length === 0) {
+            return; // No students to filter
+        }
+
+        const filtered = allStudentsData.filter(studentDoc => {
+            if (!studentDoc.fields) return false;
+            const fields = studentDoc.fields;
+            const st = searchTerm.toLowerCase();
+
+            const fullname = formatFirestoreValue(fields.fullname) || '';
+            const email = formatFirestoreValue(fields.email) || '';
+            const id = formatFirestoreValue(fields.id) || '';
+            const username = formatFirestoreValue(fields.username) || '';
+
+            return (
+                fullname.toLowerCase().includes(st) ||
+                email.toLowerCase().includes(st) ||
+                id.toLowerCase().includes(st) ||
+                username.toLowerCase().includes(st)
+            );
+        });
+
+        renderStudentList(filtered);
+    }
+
     function displayTeacherDataInModal(mainDocFields, studentDocs = []) {
         if (!modalTeacherName || !modalTeacherInfo || !modalStudentListTitle || !modalStudentList) {
             console.error("home.js: Essential modal DOM elements not found for display.");
             return;
+        }
+
+        // Store students data for filtering
+        allStudentsData = studentDocs;
+
+        // Clear search input
+        if (searchStudentInput) {
+            searchStudentInput.value = '';
         }
 
         modalTeacherName.textContent = formatFirestoreValue(mainDocFields.fullname) || 'Teacher Details';
@@ -204,10 +246,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         modalStudentListTitle.textContent = `Students (${studentDocs.length})`;
+
+        // Render all students initially
+        renderStudentList(studentDocs);
+    }
+
+    function renderStudentList(studentsToDisplay) {
+        if (!modalStudentList) return;
+
         modalStudentList.innerHTML = ''; // Clear previous students
 
-        if (studentDocs.length > 0) {
-            studentDocs.forEach(studentDoc => {
+        if (studentsToDisplay.length > 0) {
+            studentsToDisplay.forEach(studentDoc => {
                 const studentItemDiv = document.createElement('div');
                 studentItemDiv.classList.add('student-item');
 
