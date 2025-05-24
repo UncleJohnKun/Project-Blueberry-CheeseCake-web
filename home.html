@@ -35,16 +35,30 @@
         <div class="modal-content">
             <button id="closeModalButton" class="modal-close-btn">[close]</button>
             <h2 id="modalTeacherName">Teacher Details</h2>
-            <div id="modalTeacherInfo" class="modal-info-grid">
-                <!-- Basic info will be populated here -->
+
+            <!-- Mobile Navigation Buttons -->
+            <div class="mobile-modal-nav">
+                <button class="mobile-nav-btn active" data-tab="students">👥 Students</button>
+                <button class="mobile-nav-btn" data-tab="teacher-info">ℹ️ Teacher Info</button>
             </div>
-            <!-- REMOVED Teacher's Own Subcollection Section -->
-            <h3 id="modalStudentListTitle">Students</h3>
-            <div class="search-container">
-                <input type="text" id="searchStudentInput" placeholder="Search students by name, email, or ID...">
+
+            <!-- Teacher Info Section -->
+            <div id="teacherInfoTab" class="mobile-tab-content" data-content="teacher-info">
+                <div id="modalTeacherInfo" class="modal-info-grid">
+                    <!-- Basic info will be populated here -->
+                </div>
             </div>
-            <div id="modalStudentList" class="modal-student-list">
-                 <p class="loading-text">Loading student data...</p>
+
+            <!-- Students Section -->
+            <div id="studentsTab" class="mobile-tab-content active" data-content="students">
+                <!-- REMOVED Teacher's Own Subcollection Section -->
+                <h3 id="modalStudentListTitle">Students</h3>
+                <div class="search-container">
+                    <input type="text" id="searchStudentInput" placeholder="Search students by name, email, or ID...">
+                </div>
+                <div id="modalStudentList" class="modal-student-list">
+                     <p class="loading-text">Loading student data...</p>
+                </div>
             </div>
         </div>
     </div>

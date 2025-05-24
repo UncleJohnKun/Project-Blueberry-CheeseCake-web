@@ -99,6 +99,34 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- MOBILE TAB SWITCHING ---
+    function initializeMobileTabs() {
+        const mobileNavButtons = document.querySelectorAll('.mobile-nav-btn');
+        const tabContents = document.querySelectorAll('.mobile-tab-content');
+
+        mobileNavButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetTab = button.getAttribute('data-tab');
+
+                // Remove active class from all buttons and contents
+                mobileNavButtons.forEach(btn => btn.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+
+                // Add active class to clicked button
+                button.classList.add('active');
+
+                // Show corresponding content
+                const targetContent = document.querySelector(`[data-content="${targetTab}"]`);
+                if (targetContent) {
+                    targetContent.classList.add('active');
+                }
+            });
+        });
+    }
+
+    // Initialize mobile tabs when DOM is ready
+    initializeMobileTabs();
+
     // --- MODAL FUNCTIONS ---
     function openTeacherModal() {
         if (teacherInfoModal) {

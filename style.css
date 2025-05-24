@@ -23,6 +23,10 @@
 }
 
 /* === Global Styles === */
+* {
+    box-sizing: border-box; /* Ensure all elements use border-box */
+}
+
 body {
     background-color: var(--primary-bg);
     color: var(--primary-text);
@@ -36,6 +40,10 @@ body {
     padding: 0;
     box-sizing: border-box;
     overflow-x: hidden;
+    /* Improve text rendering on mobile */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 /* === General Container Styles === */
 .container, /* For login, createAccount */
@@ -107,6 +115,32 @@ button, .nav-button {
     font-weight: bold; cursor: pointer; transition: background-color 0.2s ease; font-size: 0.9em;
     text-align: center; text-decoration: none; display: inline-block; max-width: 100%;
     box-sizing: border-box; word-break: break-word; white-space: normal;
+}
+
+/* Override button styles specifically for modal close button */
+.modal-close-btn {
+    position: absolute !important; top: 25px; right: 15px;
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+    border: none !important; font-size: 1em !important; font-weight: bold; color: white !important; cursor: pointer;
+    padding: 10px 20px !important; line-height: 1; border-radius: var(--border-radius-sm);
+    transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+    min-height: 44px !important; min-width: 80px !important; /* Wider to fit text */
+    display: flex !important; align-items: center; justify-content: center;
+    z-index: 10; /* Ensure it's above other content */
+    width: auto !important; /* Override any inherited width */
+    flex: none !important; /* Prevent flex growth */
+    margin: 0 !important; /* Remove any inherited margins */
+    white-space: nowrap !important; /* Override white-space: normal */
+    word-break: normal !important; /* Override word-break: break-word */
+    text-align: center !important;
+}
+.modal-close-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+}
+.modal-close-btn:focus {
+    outline: 2px solid var(--primary-action);
+    outline-offset: 2px;
 }
 button.primary, .nav-button.primary { background-color: var(--primary-action); color: var(--accent-text); }
 button.primary:hover, .nav-button.primary:hover { background-color: var(--primary-action-hover); }
@@ -217,16 +251,17 @@ button.secondary:hover, .nav-button.secondary:hover { background-color: var(--se
 }
 
 .teacher-list.vertical-scroll {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 20px; max-height: 70vh; overflow-y: auto; padding: 15px;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 25px; max-height: 75vh; overflow-y: auto; padding: 20px;
     border-radius: var(--border-radius-md);
 }
 .teacher-item-box {
     background: linear-gradient(135deg, var(--secondary-bg) 0%, var(--tertiary-bg) 100%);
     border: 1px solid var(--border-color); border-radius: var(--border-radius-md);
-    padding: 25px; cursor: pointer; transition: all 0.3s ease;
+    padding: 30px; cursor: pointer; transition: all 0.3s ease;
     box-shadow: var(--shadow-light); position: relative; overflow: hidden;
-    display: flex; flex-direction: column; gap: 15px;
+    display: flex; flex-direction: column; gap: 18px;
+    min-height: 200px; /* Ensure minimum height for better visibility */
 }
 .teacher-item-box::before {
     content: '';
@@ -248,16 +283,17 @@ button.secondary:hover, .nav-button.secondary:hover { background-color: var(--se
     transform: scaleX(1);
 }
 .teacher-item-box .teacher-name {
-    font-size: 1.4em; font-weight: 600; color: var(--accent-text);
-    margin: 0; display: flex; align-items: center; gap: 10px;
+    font-size: 1.6em; font-weight: 600; color: var(--accent-text);
+    margin: 0; display: flex; align-items: center; gap: 12px;
+    line-height: 1.3; /* Better line height for readability */
 }
 .teacher-item-box .teacher-name::before {
     content: "👨‍🏫";
     font-size: 0.8em;
 }
 .teacher-item-box .teacher-detail {
-    font-size: 0.95em; color: var(--text-color); line-height: 1.5;
-    display: flex; align-items: center; gap: 8px; margin: 0; padding: 8px 0;
+    font-size: 1.05em; color: var(--primary-text); line-height: 1.6;
+    display: flex; align-items: center; gap: 10px; margin: 0; padding: 12px 0;
     border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 .teacher-item-box .teacher-detail:last-child {
@@ -315,28 +351,20 @@ button.secondary:hover, .nav-button.secondary:hover { background-color: var(--se
 }
 .modal-overlay.active .modal-content { transform: scale(1); }
 
-.modal-close-btn {
-    position: absolute; top: 20px; right: 20px;
-    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-    border: none; font-size: 0.9em; font-weight: bold; color: white; cursor: pointer;
-    padding: 8px 15px; line-height: 1; border-radius: var(--border-radius-sm);
-    transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
-}
-.modal-close-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
-}
-.modal-close-btn:focus { outline: 2px solid var(--primary-action); outline-offset: 2px; }
+
+
 
 .modal-content h2 { /* modalTeacherName */
     color: var(--accent-text); margin-top: 0; margin-bottom: 30px;
-    text-align: left; font-size: 2.4em; padding-bottom: 20px;
+    text-align: left; font-size: 2.4em; padding-bottom: 20px; padding-right: 100px;
     border-bottom: 2px solid var(--border-color); font-weight: 700;
     background: linear-gradient(135deg, var(--accent-text) 0%, #74b9ff 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     display: flex; align-items: center; gap: 15px;
+    line-height: 1.2; /* Better line height */
+    padding-top: 10px; /* Add top padding to avoid overlap with close button */
 }
 .modal-content h2::before {
     content: "👨‍🏫";
@@ -632,104 +660,450 @@ button.secondary:hover, .nav-button.secondary:hover { background-color: var(--se
     border: 1px solid #788895; margin-left: 5px;
 }
 
+/* === Mobile Modal Navigation (Hidden on Desktop) === */
+.mobile-modal-nav {
+    display: none; /* Hidden by default on desktop */
+}
+
+/* Desktop: Show all tab content, hide mobile navigation */
+@media (min-width: 769px) {
+    .mobile-modal-nav {
+        display: none !important;
+    }
+    .mobile-tab-content {
+        display: block !important;
+    }
+    .modal-content h3 {
+        display: flex !important; /* Show h3 titles on desktop */
+    }
+}
+
 /* === Media Queries === */
+
+/* Tablet and small desktop adjustments */
+@media (max-width: 1024px) {
+    .container { max-width: 100%; padding: 20px; }
+    .modal-content { width: 95%; max-width: 900px; }
+    .teacher-list.vertical-scroll {
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px; /* Slightly smaller gap for tablets */
+    }
+    .teacher-item-box {
+        padding: 25px; /* Slightly smaller padding for tablets */
+        min-height: 180px; /* Adjust minimum height for tablets */
+    }
+    .teacher-item-box .teacher-name {
+        font-size: 1.5em; /* Slightly smaller for tablets */
+    }
+    .teacher-item-box .teacher-detail {
+        font-size: 1em; /* Adjust for tablets */
+        padding: 10px 0;
+    }
+    .modal-info-grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+}
+
+/* Mobile landscape and tablet portrait */
 @media (max-width: 768px) {
-    .container, .home-container, .info-page-container { padding: 15px; gap: 15px; margin: 0; }
-    .container { flex-direction: column; align-items: stretch; }
-    .illustration { min-width: auto; max-width: 250px; margin-bottom: 20px; flex: initial; }
+    /* Container adjustments */
+    .container, .home-container, .info-page-container {
+        padding: 15px; gap: 15px; margin: 0;
+    }
+    .container {
+        flex-direction: column; align-items: stretch;
+        min-height: auto; /* Allow natural height on mobile */
+    }
+    .illustration {
+        min-width: auto; max-width: 250px; margin-bottom: 20px;
+        flex: initial; align-self: center;
+    }
     .form-container { flex: initial; }
 
+    /* Side-by-side layout adjustments */
     .side-by-side-container {
         flex-direction: column;
         height: auto;
+        gap: 15px;
     }
-
     .side-by-side-container .info-section {
         width: 100%;
         height: auto;
-        max-height: 50vh;
+        max-height: 60vh; /* Increased for better mobile viewing */
     }
 
+    /* Typography scaling */
     h1 { font-size: 1.8em; }
     .admin-login-container h1 { font-size: 2em; }
-    .home-header h1, .info-page-header h1 { font-size: 1.8em; text-align: center; }
+    .home-header h1, .info-page-header h1 {
+        font-size: 1.8em; text-align: center;
+        line-height: 1.2; /* Better line height for mobile */
+    }
     .home-main h2, .info-section h2 { font-size: 1.4em; }
     .info-content-grid, .info-content-list { grid-template-columns: 1fr; }
 
-    .input-row { flex-direction: column; }
-    .buttons { flex-direction: column; }
-    button, .nav-button { width: 100%; flex: initial; }
+    /* Form and input improvements */
+    .input-row { flex-direction: column; gap: 12px; }
+    .buttons { flex-direction: column; gap: 12px; }
+    button, .nav-button {
+        width: 100%; flex: initial;
+        min-height: 44px; /* Touch-friendly minimum height */
+        font-size: 1em; /* Larger text for mobile */
+    }
 
-    .home-header, .info-page-header { flex-direction: column; align-items: stretch; }
-    .home-header h1, .info-page-header h1 { margin-bottom: 10px; }
-    #logoutButton { width: 100%; }
-    .info-page-header .nav-button { width: 100%; text-align: center; }
+    /* Header improvements */
+    .home-header, .info-page-header {
+        flex-direction: column; align-items: stretch;
+        padding: 20px 15px; /* Better mobile padding */
+    }
+    .home-header h1, .info-page-header h1 { margin-bottom: 15px; }
+    #logoutButton {
+        width: 100%;
+        margin-top: 10px; /* Space from title */
+        min-height: 44px; /* Touch-friendly */
+    }
+    .info-page-header .nav-button {
+        width: 100%; text-align: center;
+        min-height: 44px; /* Touch-friendly */
+    }
 
-    .home-nav { margin-bottom: 20px; }
-    .nav-button { padding: 12px 15px; font-size: 0.9em; margin: 10px 0; }
+    /* Navigation improvements */
+    .home-nav {
+        margin-bottom: 20px;
+        flex-direction: column; /* Stack nav buttons on mobile */
+        gap: 10px;
+    }
+    .nav-button {
+        padding: 14px 20px; font-size: 1em; margin: 0;
+        min-height: 44px; /* Touch-friendly */
+        width: 100%; /* Full width on mobile */
+    }
 
+    /* Teacher list mobile optimization */
     .teacher-list.vertical-scroll {
-        max-height: 50vh;
+        max-height: 60vh; /* Better mobile height */
         grid-template-columns: 1fr;
         gap: 15px;
-        padding: 10px;
+        padding: 15px;
     }
-    .menu-button { bottom: 10px; right: 10px; padding: 6px 10px; font-size: 0.8em; }
+    .teacher-item-box {
+        padding: 20px;
+        margin-bottom: 10px; /* Extra spacing between items */
+    }
+    .teacher-item-box .teacher-name {
+        font-size: 1.3em;
+        line-height: 1.3; /* Better mobile readability */
+    }
+    .teacher-item-box .teacher-detail {
+        font-size: 0.95em;
+        padding: 10px 0; /* More touch-friendly spacing */
+    }
 
-    .modal-content {
-        padding: 20px; max-height: 100vh; width: 98%; height: 98%;
-        border-radius: var(--border-radius-sm);
+    /* Search improvements */
+    .search-container input {
+        padding: 16px 20px; /* Larger touch target */
+        font-size: 1em; /* Better mobile font size */
     }
-    .modal-content h2 { font-size: 2em; }
-    .modal-content h3 { font-size: 1.5em; }
+
+    /* Menu button adjustments */
+    .menu-button {
+        bottom: 15px; right: 15px;
+        padding: 10px 15px; font-size: 0.9em;
+        min-height: 44px; /* Touch-friendly */
+    }
+
+    /* Modal mobile optimization */
+    .modal-content {
+        padding: 20px; max-height: 95vh; width: 95%; height: auto;
+        border-radius: var(--border-radius-sm);
+        margin: 2.5vh auto; /* Center vertically with margin */
+    }
+    .modal-content h2 {
+        font-size: 1.9em;
+        margin-bottom: 15px; /* Reduced spacing for nav buttons */
+        line-height: 1.2;
+        padding-right: 80px; /* Adjust for mobile close button */
+        padding-top: 15px; /* More space on mobile */
+    }
+
+    /* Mobile navigation buttons */
+    .mobile-modal-nav {
+        display: flex !important; /* Show on mobile */
+        gap: 10px;
+        margin-bottom: 20px;
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 15px;
+    }
+    .mobile-nav-btn {
+        flex: 1;
+        padding: 12px 16px;
+        background: var(--tertiary-bg);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius-sm);
+        color: var(--primary-text);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .mobile-nav-btn.active {
+        background: var(--primary-action);
+        color: white;
+        border-color: var(--primary-action);
+    }
+    .mobile-nav-btn:hover {
+        background: var(--accent-bg);
+    }
+    .mobile-nav-btn.active:hover {
+        background: var(--primary-action-hover);
+    }
+    .modal-content h3 {
+        font-size: 1.5em;
+        margin-top: 25px; margin-bottom: 20px;
+    }
     .modal-info-grid {
         grid-template-columns: 1fr;
         padding: 15px;
         gap: 15px;
     }
+    .modal-info-grid p {
+        padding: 15px; /* Better mobile padding */
+        font-size: 0.95em;
+    }
     .modal-info-grid p strong,
     .modal-subcollection-list .sub-document-item p strong,
-    .modal-student-list .student-item p strong { min-width: 100px; }
+    .modal-student-list .student-item p strong {
+        min-width: 100px;
+        display: block; /* Stack labels on mobile */
+        margin-bottom: 5px;
+    }
+    /* Mobile tab content visibility */
+    .mobile-tab-content {
+        display: none;
+    }
+    .mobile-tab-content.active {
+        display: block;
+    }
+
+    /* Hide desktop h3 titles on mobile when using tabs */
+    .modal-content h3 {
+        display: none;
+    }
+
     .modal-subcollection-list,
     .modal-student-list {
-        max-height: calc(100vh - 300px);
+        max-height: calc(100vh - 400px); /* Adjusted for nav buttons */
         padding: 15px;
+    }
+    .modal-close-btn {
+        padding: 12px 20px !important; /* Larger touch target */
+        font-size: 1em !important;
+        top: 25px !important; right: 15px !important; /* Align with title */
+        min-height: 48px !important; min-width: 85px !important; /* Wider for mobile */
+    }
+
+    /* Student item mobile improvements */
+    .student-toggle-button {
+        width: 90px; /* Slightly larger for mobile */
+        height: 36px;
+        font-size: 0.9em;
+    }
+    .student-summary {
+        gap: 10px; /* Tighter gap on mobile */
+        min-height: 48px; /* Larger touch target */
     }
 }
 
+/* Mobile portrait - small screens */
 @media (max-width: 480px) {
-    h1 { font-size: 1.6em; }
+    /* Typography for very small screens */
+    h1 { font-size: 1.6em; line-height: 1.2; }
     .admin-login-container h1 { font-size: 1.8em; }
-    .home-header h1, .info-page-header h1 { font-size: 1.6em; }
+    .home-header h1, .info-page-header h1 {
+        font-size: 1.6em;
+        text-align: center;
+        word-break: break-word; /* Prevent overflow on small screens */
+    }
     .home-main h2, .info-section h2 { font-size: 1.2em; }
-    .info-page-header { padding: 20px 15px; }
-    .info-page-main { padding: 20px; gap: 20px; }
-    .info-section { padding: 20px; }
 
-    .container, .home-container, .info-page-container { padding: 10px; margin: 0; }
+    /* Container and layout adjustments */
+    .container, .home-container, .info-page-container {
+        padding: 10px; margin: 0;
+    }
+    .info-page-header { padding: 15px 10px; }
+    .info-page-main { padding: 15px; gap: 15px; }
+    .info-section { padding: 15px; }
+
+    /* Form elements - larger touch targets */
     input[type="email"], input[type="password"], input[type="text"],
-    #searchTeacherInput, button, .nav-button { font-size: 1em; padding: 10px 12px; }
+    #searchTeacherInput {
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: 14px 16px;
+        min-height: 44px; /* Touch-friendly */
+    }
+    button, .nav-button {
+        font-size: 1em;
+        padding: 14px 16px;
+        min-height: 48px; /* Larger touch target for small screens */
+    }
 
-    .teacher-item-box .teacher-name { font-size: 1.2em; }
-    .teacher-item-box .teacher-detail { font-size: 0.9em; }
-    .teacher-item-box { padding: 20px; gap: 12px; }
+    /* Teacher list optimizations */
+    .teacher-item-box {
+        padding: 15px;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+    .teacher-item-box .teacher-name {
+        font-size: 1.2em;
+        line-height: 1.3;
+    }
+    .teacher-item-box .teacher-detail {
+        font-size: 0.9em;
+        padding: 8px 0;
+    }
 
+    /* Search container improvements */
+    .search-container input {
+        padding: 18px 16px; /* Even larger for small screens */
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
+
+    /* Modal full-screen on very small devices */
     .modal-content {
         padding: 15px;
         width: 100%;
         height: 100%;
         border-radius: 0;
+        margin: 0; /* Full screen */
+        max-height: 100vh;
     }
-    .modal-content h2 { font-size: 1.8em; }
-    .modal-content h3 { font-size: 1.4em; }
+    .modal-content h2 {
+        font-size: 1.7em;
+        margin-bottom: 10px; /* Reduced for nav buttons */
+        padding-right: 70px; /* Space for close button */
+        padding-top: 20px; /* More space from top on small screens */
+    }
+
+    /* Mobile navigation for small screens */
+    .mobile-modal-nav {
+        gap: 8px;
+        margin-bottom: 15px;
+        padding-bottom: 12px;
+    }
+    .mobile-nav-btn {
+        padding: 10px 14px;
+        font-size: 0.9em;
+        min-height: 44px;
+    }
+
+    /* Hide h3 titles on small screens when using tabs */
+    .modal-content h3 {
+        display: none;
+    }
     .modal-info-grid {
         padding: 10px;
         gap: 10px;
     }
+    .modal-info-grid p {
+        padding: 12px;
+        font-size: 0.9em;
+    }
     .modal-subcollection-list,
     .modal-student-list {
-        max-height: calc(100vh - 250px);
+        max-height: calc(100vh - 250px); /* Adjusted for nav buttons */
         padding: 10px;
+    }
+    .modal-close-btn {
+        padding: 14px 18px !important; /* Larger touch target */
+        font-size: 1.1em !important;
+        top: 20px !important; right: 10px !important; /* Better alignment */
+        min-width: 90px !important; /* Wider for small screens */
+        min-height: 50px !important;
+    }
+
+    /* Student items for small screens */
+    .student-toggle-button {
+        width: 85px;
+        height: 40px; /* Larger for easier tapping */
+        font-size: 0.85em;
+    }
+    .student-summary {
+        gap: 8px;
+        min-height: 50px; /* Larger touch area */
+        padding: 5px 0;
+    }
+    .student-summary h4 {
+        font-size: 1.05em;
+        line-height: 1.2;
+    }
+
+    /* Menu button for small screens */
+    .menu-button {
+        bottom: 10px; right: 10px;
+        padding: 12px 14px;
+        font-size: 0.85em;
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    /* Level info container adjustments */
+    .level-info-container {
+        padding: 8px 12px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+    .level-info-container h4 {
+        font-size: 0.95em;
+        margin-bottom: 8px;
+    }
+    .level-list li {
+        font-size: 0.9em;
+        padding: 4px 0;
+    }
+}
+
+/* Extra small screens and landscape phones */
+@media (max-width: 360px) {
+    /* Even more compact for very small screens */
+    .container, .home-container, .info-page-container {
+        padding: 8px;
+    }
+    .home-header h1, .info-page-header h1 {
+        font-size: 1.4em;
+    }
+    .modal-content h2 {
+        font-size: 1.5em;
+        padding-right: 60px; /* Space for close button */
+        padding-top: 25px; /* Extra space from top */
+    }
+    .teacher-item-box {
+        padding: 12px;
+    }
+    .student-toggle-button {
+        width: 75px;
+        height: 38px;
+        font-size: 0.8em;
+    }
+}
+
+/* Landscape orientation optimizations */
+@media (max-height: 500px) and (orientation: landscape) {
+    .modal-content {
+        height: 100%;
+        max-height: 100vh;
+        overflow-y: auto;
+    }
+    .modal-subcollection-list,
+    .modal-student-list {
+        max-height: calc(100vh - 150px);
+    }
+    .teacher-list.vertical-scroll {
+        max-height: 70vh;
+    }
+    .side-by-side-container .info-section {
+        max-height: 80vh;
     }
 }
 
@@ -814,14 +1188,85 @@ button.secondary:hover, .nav-button.secondary:hover { background-color: var(--se
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Adjustments for modal specifically if needed, but general .student-item styles should work */
-.modal-student-list .student-item {
-    /* any modal specific overrides if the general one isn't perfect */
+/* === Additional Mobile-Friendly Enhancements === */
+
+/* Improve touch scrolling on mobile devices */
+.teacher-list.vertical-scroll,
+.modal-subcollection-list,
+.modal-student-list,
+.info-page-main .student-list-container {
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    scroll-behavior: smooth;
 }
 
-/* Adjustments for teacherInfo page specifically */
-.info-page-main .student-list-container .student-item {
-    /* any teacherInfo page specific overrides */
+/* Prevent text selection on interactive elements for better mobile UX */
+button, .nav-button, .teacher-item-box, .student-toggle-button, .modal-close-btn {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+}
+
+/* Improve focus states for keyboard navigation */
+button:focus, .nav-button:focus, input:focus, .student-toggle-button:focus {
+    outline: 2px solid var(--primary-action);
+    outline-offset: 2px;
+}
+
+/* Better mobile form styling */
+@media (max-width: 768px) {
+    /* Prevent zoom on input focus for iOS */
+    input[type="email"], input[type="password"], input[type="text"], #searchTeacherInput {
+        font-size: 16px !important; /* Force 16px to prevent zoom */
+    }
+
+    /* Improve button spacing on mobile */
+    .buttons button:not(:last-child) {
+        margin-bottom: 12px;
+    }
+
+    /* Better modal overlay on mobile */
+    .modal-overlay {
+        padding: 0; /* Remove padding for full-screen modals */
+    }
+
+    /* Improve password toggle positioning for mobile */
+    .password-container {
+        position: relative;
+    }
+    .password-toggle {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--secondary-text);
+        cursor: pointer;
+        padding: 8px;
+        min-height: 44px; /* Touch-friendly */
+        min-width: 44px;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    :root {
+        --border-color: #ffffff;
+        --input-border-color: #ffffff;
+        --primary-text: #ffffff;
+        --secondary-text: #cccccc;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }
 
 /* === Level Progress Styling === */
@@ -878,4 +1323,67 @@ button.secondary:hover, .nav-button.secondary:hover { background-color: var(--se
     width: 48%;
     height: 100%;
     overflow-y: auto;
+}
+
+/* === Mobile Utility Classes === */
+
+/* Hide elements on mobile */
+@media (max-width: 768px) {
+    .hide-mobile {
+        display: none !important;
+    }
+}
+
+/* Show elements only on mobile */
+.show-mobile {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    .show-mobile {
+        display: block !important;
+    }
+    .show-mobile.inline {
+        display: inline !important;
+    }
+    .show-mobile.flex {
+        display: flex !important;
+    }
+}
+
+/* Mobile-specific spacing utilities */
+@media (max-width: 768px) {
+    .mobile-mt-1 { margin-top: 0.25rem !important; }
+    .mobile-mt-2 { margin-top: 0.5rem !important; }
+    .mobile-mt-3 { margin-top: 1rem !important; }
+    .mobile-mb-1 { margin-bottom: 0.25rem !important; }
+    .mobile-mb-2 { margin-bottom: 0.5rem !important; }
+    .mobile-mb-3 { margin-bottom: 1rem !important; }
+    .mobile-p-1 { padding: 0.25rem !important; }
+    .mobile-p-2 { padding: 0.5rem !important; }
+    .mobile-p-3 { padding: 1rem !important; }
+}
+
+/* Touch-friendly sizing utilities */
+.touch-target {
+    min-height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Mobile text utilities */
+@media (max-width: 768px) {
+    .mobile-text-center { text-align: center !important; }
+    .mobile-text-left { text-align: left !important; }
+    .mobile-text-sm { font-size: 0.875rem !important; }
+    .mobile-text-lg { font-size: 1.125rem !important; }
+}
+
+/* Responsive grid utilities */
+@media (max-width: 768px) {
+    .mobile-grid-1 { grid-template-columns: 1fr !important; }
+    .mobile-flex-col { flex-direction: column !important; }
+    .mobile-w-full { width: 100% !important; }
 }
