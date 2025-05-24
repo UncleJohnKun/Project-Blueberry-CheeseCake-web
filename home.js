@@ -127,13 +127,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         modalTeacherName.textContent = formatFirestoreValue(mainDocFields.fullname) || 'Teacher Details';
         modalTeacherInfo.innerHTML = `
-            <p><strong>Email:</strong> ${formatFirestoreValue(mainDocFields.email)}</p>
-            <p><strong>ID (Teacher's):</strong> ${formatFirestoreValue(mainDocFields.id)}</p>
-            <p><strong>Username:</strong> ${formatFirestoreValue(mainDocFields.username)}</p>
             <p><strong>Full Name:</strong> ${formatFirestoreValue(mainDocFields.fullname)}</p>
-            <p><strong>Password:</strong> ${formatFirestoreValue(mainDocFields.password)}</p>
+            <p><strong>Email:</strong> ${formatFirestoreValue(mainDocFields.email)}</p>
+            <p><strong>Teacher ID:</strong> ${formatFirestoreValue(mainDocFields.id)}</p>
+            <p><strong>Username:</strong> ${formatFirestoreValue(mainDocFields.username)}</p>
             <p><strong>Total Students:</strong> ${formatFirestoreValue(mainDocFields.totalStudents)}</p>
-            <p><strong>Timestamp:</strong> ${formatFirestoreValue(mainDocFields.timestamp)}</p>
         `;
 
         modalStudentListTitle.textContent = `Associated Students (${studentDocs.length})`;
@@ -151,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const studentDocName = studentDoc.name.split('/').pop();
 
                 const summaryHeading = document.createElement('h4');
-                summaryHeading.textContent = `${studentFullName} (Student Doc ID: ${studentDocName})`;
+                summaryHeading.textContent = studentFullName;
 
                 const toggleButton = document.createElement('button');
                 toggleButton.classList.add('student-toggle-button');
