@@ -404,7 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const name = formatFirestoreValue(d.fullname) || 'N/A'; const path = teacherDoc.name;
             const item = document.createElement('div'); item.classList.add('teacher-item-box');
             item.setAttribute('data-teacher-id', id); item.setAttribute('data-teacher-doc-path', path);
-            item.innerHTML = `<span class="teacher-name">${name}</span><span class="teacher-detail">Email: ${formatFirestoreValue(d.email)}</span><span class="teacher-detail">ID: ${id}</span>${d.username ? `<span class="teacher-detail">Username: ${formatFirestoreValue(d.username)}</span>` : ''}`;
+            item.innerHTML = `<span class="teacher-name">${name}</span><span class="teacher-detail"><strong>Email:</strong> ${formatFirestoreValue(d.email)}</span><span class="teacher-detail"><strong>ID:</strong> ${id}</span>${d.username ? `<span class="teacher-detail"><strong>Username:</strong> ${formatFirestoreValue(d.username)}</span>` : ''}`;
             item.addEventListener('click', () => { const p = item.getAttribute('data-teacher-doc-path'); if (p) handleTeacherItemClick(p); else alert("Error: No path.");});
             teacherListContainer.appendChild(item);
         });
