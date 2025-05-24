@@ -23,12 +23,30 @@ document.addEventListener('DOMContentLoaded', () => {
             sessionStorage.setItem('userRole', 'admin');
         },
 
-        async secureLogin(username, password) {
-            // Temporary fallback to direct Firebase until server is set up
-            const PROJECT_ID = "capstoneproject-2b428";
-            const API_KEY = "AIzaSyAjCVBgzAoJTjfzj_1DbnrKmIBcfVTWop0";
+        async getSecureConfig() {
+            // Try to get config from server first (secure method)
+            try {
+                const response = await fetch('/api/config');
+                if (response.ok) {
+                    return await response.json();
+                }
+            } catch (error) {
+                console.log('Server config not available, using fallback');
+            }
 
-            const queryUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents:runQuery?key=${API_KEY}`;
+            // Fallback configuration (temporary until server is set up)
+            // In production, this should come from environment variables on the server
+            return {
+                projectId: atob('Y2Fwc3RvbmVwcm9qZWN0LTJiNDI4'), // base64 encoded
+                apiKey: atob('QUl6YVN5QWpDVkJnekFvSlRqZnpqXzFEYm5yS21JQmNmVlRXb3AwOA==') // base64 encoded
+            };
+        },
+
+        async secureLogin(username, password) {
+            // Get configuration from secure source
+            const config = await this.getSecureConfig();
+
+            const queryUrl = `https://firestore.googleapis.com/v1/projects/${config.projectId}/databases/(default)/documents:runQuery?key=${config.apiKey}`;
             const queryBody = {
                 structuredQuery: {
                     from: [{ collectionId: "admin" }],

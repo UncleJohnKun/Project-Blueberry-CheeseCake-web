@@ -8,14 +8,27 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // --- CONFIGURATION ---
-    const PROJECT_ID = "capstoneproject-2b428";
-    const API_KEY = "AIzaSyAjCVBgzAoJTjfzj_1DbnrKmIBcfVTWop0";
+    // --- SECURE CONFIGURATION ---
+    async function getSecureConfig() {
+        try {
+            const response = await fetch('/api/config');
+            if (response.ok) {
+                return await response.json();
+            }
+        } catch (error) {
+            console.log('Server config not available, using fallback');
+        }
+
+        // Fallback configuration (base64 encoded for basic obfuscation)
+        return {
+            projectId: atob('Y2Fwc3RvbmVwcm9qZWN0LTJiNDI4'),
+            apiKey: atob('QUl6YVN5QWpDVkJnekFvSlRqZnpqXzFEYm5yS21JQmNmVlRXb3AwOA==')
+        };
+    }
+
     const TEACHER_COLLECTION = "teacherData";
     const STUDENT_COLLECTION = "studentData";
     const FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER = "id";
-
-    console.log("home.js: Config - PROJECT_ID:", PROJECT_ID, "API_KEY:", API_KEY ? "Loaded" : "MISSING!");
 
     // --- DOM ELEMENTS (Home Page) ---
     const logoutButton = document.getElementById('logoutButton');
@@ -35,14 +48,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let allTeachersData = [];
     let allStudentsData = []; // Store all students for current teacher
+    let CONFIG = null; // Will store secure configuration
 
-    if (!PROJECT_ID || !API_KEY) {
-        console.error("home.js: Firebase PROJECT_ID or API_KEY is not defined!");
-        if(loadingMessage) {
-            loadingMessage.textContent = "Configuration Error: Firebase settings missing.";
-            loadingMessage.style.color = "red";
+    // Initialize secure configuration
+    async function initializeApp() {
+        try {
+            CONFIG = await getSecureConfig();
+            console.log("home.js: Secure config loaded successfully");
+
+            // Now that config is loaded, fetch teachers
+            await fetchAllTeachers();
+        } catch (error) {
+            console.error("home.js: Failed to load configuration:", error);
+            if(loadingMessage) {
+                loadingMessage.textContent = "Configuration Error: Failed to load settings.";
+                loadingMessage.style.color = "red";
+            }
         }
-        return;
     }
 
     // --- EVENT LISTENERS ---
@@ -378,7 +400,11 @@ document.addEventListener('DOMContentLoaded', () => {
         let teacherIdToQueryStudents = "";
 
         try {
-            const mainDocUrl = `https://firestore.googleapis.com/v1/${teacherDocPath}?key=${API_KEY}`;
+            if (!CONFIG) {
+                throw new Error("Configuration not loaded. Please refresh the page.");
+            }
+
+            const mainDocUrl = `https://firestore.googleapis.com/v1/${teacherDocPath}?key=${CONFIG.apiKey}`;
             const mainDocResponse = await fetch(mainDocUrl);
             if (!mainDocResponse.ok) {
                 let errorText = mainDocResponse.statusText; try { const ed = await mainDocResponse.json(); errorText = ed.error?.message || errorText; } catch(e){}
@@ -393,7 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // --- FETCH ASSOCIATED STUDENTS (Direct query on studentData) ---
             if (teacherIdToQueryStudents && STUDENT_COLLECTION && FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER) {
                 modalStudentList.innerHTML = `<p class='loading-text'>Loading students for teacher ID: ${teacherIdToQueryStudents}...</p>`;
-                const studentQueryUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents:runQuery?key=${API_KEY}`;
+                const studentQueryUrl = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents:runQuery?key=${CONFIG.apiKey}`;
                 const studentQueryBody = {
                     structuredQuery: {
                         from: [{ collectionId: STUDENT_COLLECTION }],
@@ -485,8 +511,8 @@ document.addEventListener('DOMContentLoaded', () => {
         teacherListContainer.appendChild(loadingMessage); // Add loading message to the container
 
         try {
-            if (!PROJECT_ID || !API_KEY) throw new Error("PROJECT_ID or API_KEY undefined.");
-            const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${TEACHER_COLLECTION}?key=${API_KEY}&pageSize=300`;
+            if (!CONFIG) throw new Error("Configuration not loaded. Please refresh the page.");
+            const url = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents/${TEACHER_COLLECTION}?key=${CONFIG.apiKey}&pageSize=300`;
             const response = await fetch(url);
             if (!response.ok) {
                 const errorData = await response.json().catch(()=>({ error: { message: "Failed to parse error JSON."} }));
@@ -512,5 +538,5 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- INITIALIZATION ---
-    fetchAllTeachers();
+    initializeApp();
 });

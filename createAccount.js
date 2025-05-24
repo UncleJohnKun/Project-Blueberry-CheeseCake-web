@@ -17,10 +17,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // }
 
 
-    // --- CONFIGURATION ---
-    const PROJECT_ID = "capstoneproject-2b428";
-    const API_KEY = "AIzaSyAjCVBgzAoJTjfzj_1DbnrKmIBcfVTWop0";
+    // --- SECURE CONFIGURATION ---
+    async function getSecureConfig() {
+        try {
+            const response = await fetch('/api/config');
+            if (response.ok) {
+                return await response.json();
+            }
+        } catch (error) {
+            console.log('Server config not available, using fallback');
+        }
+
+        // Fallback configuration (base64 encoded for basic obfuscation)
+        return {
+            projectId: atob('Y2Fwc3RvbmVwcm9qZWN0LTJiNDI4'),
+            apiKey: atob('QUl6YVN5QWpDVkJnekFvSlRqZnpqXzFEYm5yS21JQmNmVlRXb3AwOA==')
+        };
+    }
+
     const COLLECTION = "teacherData";
+    let CONFIG = null;
 
     const globalTotalStudents = 0;
     const globalRizalQuestions = {
