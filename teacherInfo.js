@@ -1,6 +1,4 @@
 import {
-    PROJECT_ID,
-    API_KEY,
     STUDENT_COLLECTION,
     FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER,
     formatFirestoreValue,

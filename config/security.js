@@ -7,7 +7,7 @@
 const config = {
     // Firebase Configuration (from environment variables)
     firebase: {
-        projectId: process.env.FIREBASE_PROJECT_ID || 'capstoneproject-2b428',
+        projectId: process.env.FIREBASE_PROJECT_ID || '',
         apiKey: process.env.FIREBASE_API_KEY || '',
         authDomain: process.env.FIREBASE_AUTH_DOMAIN || '',
         databaseURL: process.env.FIREBASE_DATABASE_URL || '',
@@ -112,13 +112,13 @@ const validateInput = {
     password: (password) => {
         if (!password || typeof password !== 'string') return false;
         const rules = config.validation.password;
-        
+
         if (password.length < rules.minLength || password.length > rules.maxLength) return false;
         if (rules.requireUppercase && !/[A-Z]/.test(password)) return false;
         if (rules.requireLowercase && !/[a-z]/.test(password)) return false;
         if (rules.requireNumbers && !/\d/.test(password)) return false;
         if (rules.requireSpecialChars && !/[!@#$%^&*(),.?":{}|<>]/.test(password)) return false;
-        
+
         return true;
     },
 

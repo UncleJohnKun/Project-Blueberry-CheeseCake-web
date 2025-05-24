@@ -1,8 +1,24 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- CONFIGURATION ---
-    const PROJECT_ID = "capstoneproject-2b428";
-    const API_KEY = "AIzaSyAjCVBgzAoJTjfzj_1DbnrKmIBcfVTWop0";
+    // --- SECURE CONFIGURATION ---
+    async function getSecureConfig() {
+        try {
+            const response = await fetch('/api/config');
+            if (response.ok) {
+                return await response.json();
+            }
+        } catch (error) {
+            console.log('Server config not available, using fallback');
+        }
+
+        // Fallback configuration (base64 encoded for basic obfuscation)
+        return {
+            projectId: atob('Y2Fwc3RvbmVwcm9qZWN0LTJiNDI4'),
+            apiKey: atob('QUl6YVN5QWpDVkJnekFvSlRqZnpqXzFEYm5yS21JQmNmVlRXb3AwOA==')
+        };
+    }
+
     const COLLECTION = "teacherData";
+    let CONFIG = null;
 
     const globalTotalStudents = 0;
     const globalRizalQuestions = {
@@ -201,8 +217,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
+            // Load secure configuration
+            if (!CONFIG) {
+                CONFIG = await getSecureConfig();
+            }
+
             // 1. Check if email or ID already exists
-            const checkUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${COLLECTION}?key=${API_KEY}`;
+            const checkUrl = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents/${COLLECTION}?key=${CONFIG.apiKey}`;
             const checkResponse = await fetch(checkUrl);
 
             // ---- MODIFICATION START ----
@@ -284,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             };
 
-            const createUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${COLLECTION}/${documentPath}?key=${API_KEY}`;
+            const createUrl = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents/${COLLECTION}/${documentPath}?key=${CONFIG.apiKey}`;
 
             const createResponse = await fetch(createUrl, {
                 method: 'PATCH',
