@@ -24,20 +24,53 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         async secureLogin(username, password) {
-            const response = await fetch(`${API_BASE_URL}/auth/admin/login`, {
+            // Temporary fallback to direct Firebase until server is set up
+            const PROJECT_ID = "capstoneproject-2b428";
+            const API_KEY = "AIzaSyAjCVBgzAoJTjfzj_1DbnrKmIBcfVTWop0";
+
+            const queryUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents:runQuery?key=${API_KEY}`;
+            const queryBody = {
+                structuredQuery: {
+                    from: [{ collectionId: "admin" }],
+                    where: {
+                        fieldFilter: {
+                            field: { fieldPath: "username" },
+                            op: "EQUAL",
+                            value: { stringValue: username }
+                        }
+                    },
+                    limit: 1
+                }
+            };
+
+            const response = await fetch(queryUrl, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ username, password })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(queryBody)
             });
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || `Login failed: ${response.statusText}`);
+                throw new Error('Network error occurred');
             }
 
-            return await response.json();
+            const results = await response.json();
+            if (!results || results.length === 0 || !results[0].document) {
+                throw new Error('Invalid credentials');
+            }
+
+            const adminDocFields = results[0].document.fields;
+            const storedPassword = adminDocFields.password?.stringValue;
+
+            if (storedPassword !== password) {
+                throw new Error('Invalid credentials');
+            }
+
+            // Return mock session data for compatibility
+            return {
+                accessToken: 'temp-token',
+                refreshToken: 'temp-refresh',
+                message: 'Login successful'
+            };
         }
     };
 
