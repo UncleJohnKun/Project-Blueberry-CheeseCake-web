@@ -1,14 +1,45 @@
 document.addEventListener('DOMContentLoaded', () => {
-
-
-    const PROJECT_ID = "capstoneproject-2b428";
-    const API_KEY = "AIzaSyAjCVBgzAoJTjfzj_1DbnrKmIBcfVTWop0"; 
-    const ADMIN_COLLECTION = "admin"; 
+    // Secure admin login implementation
+    const API_BASE_URL = window.location.origin + '/api';
 
     const adminLoginForm = document.getElementById('adminLoginForm');
     const adminUsernameInput = document.getElementById('adminUsername');
     const adminPasswordInput = document.getElementById('adminPassword');
     const subTitleElement = document.getElementById('subTitle');
+
+    // Security utilities
+    const SecurityUtils = {
+        clearAuthData() {
+            sessionStorage.removeItem('authToken');
+            sessionStorage.removeItem('refreshToken');
+            sessionStorage.removeItem('isAdminLoggedIn');
+            sessionStorage.removeItem('userRole');
+        },
+
+        setAuthData(sessionData) {
+            sessionStorage.setItem('authToken', sessionData.accessToken);
+            sessionStorage.setItem('refreshToken', sessionData.refreshToken);
+            sessionStorage.setItem('isAdminLoggedIn', 'true');
+            sessionStorage.setItem('userRole', 'admin');
+        },
+
+        async secureLogin(username, password) {
+            const response = await fetch(`${API_BASE_URL}/auth/admin/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `Login failed: ${response.statusText}`);
+            }
+
+            return await response.json();
+        }
+    };
 
     adminLoginForm.addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -25,62 +56,45 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const queryUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents:runQuery?key=${API_KEY}`;
-            const queryBody = {
-                structuredQuery: {
-                    from: [{ collectionId: ADMIN_COLLECTION }],
-                    where: {
-                        fieldFilter: {
-                            field: { fieldPath: "username" },
-                            op: "EQUAL",
-                            value: { stringValue: enteredUsername }
-                        }
-                    },
-                    limit: 1
-                }
-            };
+            // Clear any existing auth data
+            SecurityUtils.clearAuthData();
 
-            const response = await fetch(queryUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(queryBody)
-            });
+            // Attempt secure login
+            const sessionData = await SecurityUtils.secureLogin(enteredUsername, enteredPassword);
 
-            if (response.ok) {
-                const results = await response.json();
-                if (results && results.length > 0 && results[0].document) {
-                    const adminDocFields = results[0].document.fields;
-                    const storedPassword = adminDocFields.password?.stringValue;
+            // Store authentication data securely
+            SecurityUtils.setAuthData(sessionData);
 
-                    // WARNING: Comparing plaintext passwords! In a real app, use hashed passwords.
-                    if (storedPassword === enteredPassword) {
-                        subTitleElement.textContent = "Admin login successful! Redirecting...";
-                        subTitleElement.style.color = 'green';
-                        console.log("Admin logged in successfully.");
+            subTitleElement.textContent = "Admin login successful! Redirecting...";
+            subTitleElement.style.color = 'green';
+            console.log("Admin logged in successfully.");
 
-                        // Store a flag indicating admin is logged in
-                        sessionStorage.setItem('isAdminLoggedIn', 'true');
+            // Redirect to the admin dashboard
+            setTimeout(() => {
+                window.location.href = 'home.html';
+            }, 1000);
 
-                        // Redirect to the create account page
-                        window.location.href = 'home.html';
-                    } else {
-                        subTitleElement.textContent = "Invalid admin username or password.";
-                        subTitleElement.style.color = 'red';
-                    }
-                } else {
-                    subTitleElement.textContent = "Invalid admin username or password.";
-                    subTitleElement.style.color = 'red';
-                }
+        } catch (error) {
+            console.error("Admin login failed:", error);
+
+            // Handle specific error types
+            if (error.message.includes('Rate limit') || error.message.includes('Too many')) {
+                subTitleElement.textContent = "Too many login attempts. Please try again later.";
+            } else if (error.message.includes('Invalid credentials') || error.message.includes('Authentication failed')) {
+                subTitleElement.textContent = "Invalid admin username or password.";
+            } else if (error.message.includes('Network')) {
+                subTitleElement.textContent = "Network error. Please check your connection.";
             } else {
-                const errorData = await response.json();
-                console.error("Error checking admin credentials:", errorData.error?.message || response.statusText);
-                subTitleElement.textContent = "Error checking credentials. Please try again.";
-                subTitleElement.style.color = 'red';
+                subTitleElement.textContent = "Login failed. Please try again.";
             }
-        } catch (err) {
-            console.error("Exception during admin login:", err);
-            subTitleElement.textContent = "An error occurred. Please try again.";
+
             subTitleElement.style.color = 'red';
+
+            // Clear password field for security
+            adminPasswordInput.value = '';
         }
     });
+
+    // Clear any existing auth data when page loads
+    SecurityUtils.clearAuthData();
 });
