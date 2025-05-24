@@ -126,15 +126,85 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         modalTeacherName.textContent = formatFirestoreValue(mainDocFields.fullname) || 'Teacher Details';
-        modalTeacherInfo.innerHTML = `
-            <p><strong>Full Name:</strong> ${formatFirestoreValue(mainDocFields.fullname)}</p>
-            <p><strong>Email:</strong> ${formatFirestoreValue(mainDocFields.email)}</p>
-            <p><strong>Teacher ID:</strong> ${formatFirestoreValue(mainDocFields.id)}</p>
-            <p><strong>Username:</strong> ${formatFirestoreValue(mainDocFields.username)}</p>
-            <p><strong>Total Students:</strong> ${formatFirestoreValue(mainDocFields.totalStudents)}</p>
-        `;
 
-        modalStudentListTitle.textContent = `Associated Students (${studentDocs.length})`;
+        // Clear previous content
+        modalTeacherInfo.innerHTML = '';
+
+        // Create teacher info fields
+        const fields = [
+            { label: 'Full Name', value: formatFirestoreValue(mainDocFields.fullname) },
+            { label: 'Email', value: formatFirestoreValue(mainDocFields.email) },
+            { label: 'Teacher ID', value: formatFirestoreValue(mainDocFields.id) },
+            { label: 'Username', value: formatFirestoreValue(mainDocFields.username) },
+            { label: 'Password', value: formatFirestoreValue(mainDocFields.password), isPassword: true },
+            { label: 'Total Students', value: formatFirestoreValue(mainDocFields.totalStudents) }
+        ];
+
+        fields.forEach(field => {
+            if (field.value && field.value !== '<span class="value-na">N/A</span>') {
+                const p = document.createElement('p');
+                const strong = document.createElement('strong');
+                strong.textContent = `${field.label}:`;
+                p.appendChild(strong);
+
+                if (field.isPassword) {
+                    // Create password field with toggle visibility
+                    const passwordContainer = document.createElement('span');
+                    passwordContainer.style.display = 'inline-flex';
+                    passwordContainer.style.alignItems = 'center';
+                    passwordContainer.style.marginLeft = '8px';
+                    passwordContainer.style.gap = '8px';
+                    passwordContainer.style.whiteSpace = 'nowrap';
+
+                    const passwordSpan = document.createElement('span');
+                    passwordSpan.textContent = '••••••••';
+                    passwordSpan.style.fontFamily = 'monospace';
+                    passwordSpan.style.fontSize = '14px';
+                    passwordSpan.style.minWidth = '80px';
+                    passwordSpan.style.overflow = 'hidden';
+                    passwordSpan.style.textOverflow = 'ellipsis';
+                    passwordSpan.style.whiteSpace = 'nowrap';
+
+                    const toggleButton = document.createElement('button');
+                    toggleButton.textContent = 'Show';
+                    toggleButton.style.background = 'var(--secondary-action)';
+                    toggleButton.style.color = 'var(--accent-text)';
+                    toggleButton.style.border = '1px solid var(--border-color)';
+                    toggleButton.style.borderRadius = '3px';
+                    toggleButton.style.padding = '3px 8px';
+                    toggleButton.style.cursor = 'pointer';
+                    toggleButton.style.fontSize = '11px';
+                    toggleButton.style.fontWeight = 'bold';
+                    toggleButton.style.minWidth = '45px';
+                    toggleButton.style.height = '24px';
+                    toggleButton.style.flexShrink = '0';
+                    toggleButton.style.whiteSpace = 'nowrap';
+                    toggleButton.style.display = 'flex';
+                    toggleButton.style.alignItems = 'center';
+                    toggleButton.style.justifyContent = 'center';
+                    toggleButton.title = 'Toggle password visibility';
+
+                    let isPasswordVisible = false;
+                    const actualPassword = field.value;
+
+                    toggleButton.addEventListener('click', () => {
+                        isPasswordVisible = !isPasswordVisible;
+                        passwordSpan.textContent = isPasswordVisible ? actualPassword : '••••••••';
+                        toggleButton.textContent = isPasswordVisible ? 'Hide' : 'Show';
+                    });
+
+                    passwordContainer.appendChild(passwordSpan);
+                    passwordContainer.appendChild(toggleButton);
+                    p.appendChild(passwordContainer);
+                } else {
+                    p.innerHTML += ` ${field.value}`;
+                }
+
+                modalTeacherInfo.appendChild(p);
+            }
+        });
+
+        modalStudentListTitle.textContent = `Students (${studentDocs.length})`;
         modalStudentList.innerHTML = ''; // Clear previous students
 
         if (studentDocs.length > 0) {
@@ -163,17 +233,62 @@ document.addEventListener('DOMContentLoaded', () => {
                 studentDetailsDiv.style.display = 'none'; // Initially hidden
 
                 if (studentDoc.fields) {
+                    const levelInfoContainer = document.createElement('div');
+                    levelInfoContainer.classList.add('level-info-container');
+                    levelInfoContainer.innerHTML = '<h4>Level Progress:</h4>';
+                    studentDetailsDiv.appendChild(levelInfoContainer);
+
+                    const otherDetailsDiv = document.createElement('div');
+                    otherDetailsDiv.classList.add('other-details');
+                    studentDetailsDiv.appendChild(otherDetailsDiv);
+
+                    const levelData = {};
                     for (const fieldName in studentDoc.fields) {
-                        const p = document.createElement('p');
-                        const strong = document.createElement('strong');
-                        strong.textContent = (fieldName === FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER) ?
-                            "Teacher's ID (in student record):" :
-                            `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}:`;
-                        
-                        p.appendChild(strong);
-                        p.innerHTML += ` ${formatFirestoreValue(studentDoc.fields[fieldName])}`; // Add space
-                        studentDetailsDiv.appendChild(p);
+                        if (fieldName.startsWith('level') && (fieldName.endsWith('Finish') || fieldName.endsWith('Score'))) {
+                            const levelNumMatch = fieldName.match(/level(\d+)/);
+                            if (levelNumMatch) {
+                                const levelNum = parseInt(levelNumMatch[1]);
+                                if (!levelData[levelNum]) {
+                                    levelData[levelNum] = {};
+                                }
+                                if (fieldName.endsWith('Finish')) {
+                                    levelData[levelNum].finish = studentDoc.fields[fieldName].booleanValue;
+                                } else if (fieldName.endsWith('Score')) {
+                                    levelData[levelNum].score = formatFirestoreValue(studentDoc.fields[fieldName]);
+                                }
+                            }
+                        } else {
+                            const p = document.createElement('p');
+                            const strong = document.createElement('strong');
+                            strong.textContent = (fieldName === FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER) ?
+                                "Teacher's ID (in student record):" :
+                                `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}:`;
+
+                            p.appendChild(strong);
+                            p.innerHTML += ` ${formatFirestoreValue(studentDoc.fields[fieldName])}`; // Add space
+                            otherDetailsDiv.appendChild(p);
+                        }
                     }
+
+                    // Sort and display level data
+                    const sortedLevels = Object.keys(levelData).map(Number).sort((a, b) => a - b);
+                    if (sortedLevels.length > 0) {
+                        const ul = document.createElement('ul');
+                        ul.classList.add('level-list');
+                        sortedLevels.forEach(levelNum => {
+                            const score = levelData[levelNum].score !== undefined ? levelData[levelNum].score : 'N/A';
+                            const finish = levelData[levelNum].finish !== undefined ? (levelData[levelNum].finish ? '✅' : '❌') : '❓';
+                            const li = document.createElement('li');
+                            li.innerHTML = `<strong>Level ${levelNum}</strong> Score: ${score} ${finish}`;
+                            ul.appendChild(li);
+                        });
+                        levelInfoContainer.appendChild(ul);
+                    } else {
+                        const p = document.createElement('p');
+                        p.textContent = 'No level data available.';
+                        levelInfoContainer.appendChild(p);
+                    }
+
                 } else {
                     const p = document.createElement('p');
                     p.textContent = '(No fields in this student document)';
@@ -199,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function handleTeacherItemClick(teacherDocPath) {
         console.log("home.js: handleTeacherItemClick - Fetching details for teacher path:", teacherDocPath);
         if (!modalTeacherInfo || !modalTeacherName || !modalStudentList || !modalStudentListTitle) {
-            openTeacherModal(); 
+            openTeacherModal();
             console.error("home.js: One or more essential modal elements are missing.");
             if(modalTeacherName) modalTeacherName.textContent = "Error: Modal structure incomplete.";
             return;
@@ -210,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
         openTeacherModal();
 
         let mainDocFields = null;
-        let studentDocsAssociated = []; 
+        let studentDocsAssociated = [];
         let teacherIdToQueryStudents = "";
 
         try {
@@ -223,7 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const mainDocData = await mainDocResponse.json();
             mainDocFields = mainDocData.fields;
             if (!mainDocFields) throw new Error("Main teacher document has no fields or data is malformed.");
-            
+
             teacherIdToQueryStudents = (mainDocFields.id?.stringValue || "").trim();
 
             // --- FETCH ASSOCIATED STUDENTS (Direct query on studentData) ---
@@ -311,21 +426,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function fetchAllTeachers() {
-        if (!teacherListContainer || !loadingMessage) { 
+        if (!teacherListContainer || !loadingMessage) {
             console.error("home.js: Teacher list container or loading message not found for fetchAllTeachers.");
-            return; 
+            return;
         }
         loadingMessage.textContent = `Fetching teachers from "${TEACHER_COLLECTION}"...`;
-        loadingMessage.style.display = 'block'; 
+        loadingMessage.style.display = 'block';
         teacherListContainer.innerHTML = ''; // Clear existing list
         teacherListContainer.appendChild(loadingMessage); // Add loading message to the container
-        
+
         try {
             if (!PROJECT_ID || !API_KEY) throw new Error("PROJECT_ID or API_KEY undefined.");
             const url = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${TEACHER_COLLECTION}?key=${API_KEY}&pageSize=300`;
             const response = await fetch(url);
-            if (!response.ok) { 
-                const errorData = await response.json().catch(()=>({ error: { message: "Failed to parse error JSON."} })); 
+            if (!response.ok) {
+                const errorData = await response.json().catch(()=>({ error: { message: "Failed to parse error JSON."} }));
                 throw new Error(`Failed to fetch teachers (${response.status}): ${errorData.error?.message || response.statusText}`);
             }
             const data = await response.json();
@@ -333,16 +448,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 allTeachersData = data.documents.filter(doc => doc && doc.fields && doc.name);
                 filterAndDisplayTeachers(); // This will replace the loading message
             } else {
-                allTeachersData = []; 
+                allTeachersData = [];
                 loadingMessage.textContent = `No teachers found in the "${TEACHER_COLLECTION}" collection.`;
                 // Keep loading message if no teachers, or call renderTeacherList([]) which also handles empty.
             }
         } catch (error) {
             console.error("home.js: Exception in fetchAllTeachers:", error);
-            allTeachersData = []; 
-            if (loadingMessage) { 
-                loadingMessage.textContent = `Error loading teachers: ${error.message}`; 
-                loadingMessage.style.color = 'red'; 
+            allTeachersData = [];
+            if (loadingMessage) {
+                loadingMessage.textContent = `Error loading teachers: ${error.message}`;
+                loadingMessage.style.color = 'red';
             }
         }
     }

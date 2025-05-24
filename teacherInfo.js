@@ -1,7 +1,7 @@
-import { 
-    PROJECT_ID, 
-    API_KEY, 
-    STUDENT_COLLECTION, 
+import {
+    PROJECT_ID,
+    API_KEY,
+    STUDENT_COLLECTION,
     FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER,
     formatFirestoreValue,
     fetchTeacherData,
@@ -23,10 +23,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function loadTeacherInformation() {
         const params = new URLSearchParams(window.location.search);
         let teacherDocPath = params.get('path');
-        
+
         try {
             mainTeacherInfoContent.innerHTML = "<p>Loading teacher data...</p>";
-            
+
             const mainDocData = await fetchTeacherData(teacherDocPath);
             const mainDocFields = mainDocData.fields;
             if (!mainDocFields) throw new Error("Teacher data malformed.");
@@ -42,20 +42,74 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const strong = document.createElement('strong');
                     strong.textContent = `${fName.charAt(0).toUpperCase() + fName.slice(1)}:`;
                     p.appendChild(strong);
-                    p.innerHTML += ` ${formatFirestoreValue(mainDocFields[fName])}`;
+
+                    if (fName === 'password') {
+                        // Create password field with toggle visibility
+                        const passwordContainer = document.createElement('span');
+                        passwordContainer.style.display = 'inline-flex';
+                        passwordContainer.style.alignItems = 'center';
+                        passwordContainer.style.marginLeft = '8px';
+                        passwordContainer.style.gap = '8px';
+                        passwordContainer.style.whiteSpace = 'nowrap';
+
+                        const passwordSpan = document.createElement('span');
+                        passwordSpan.textContent = '••••••••';
+                        passwordSpan.id = 'passwordDisplay';
+                        passwordSpan.style.fontFamily = 'monospace';
+                        passwordSpan.style.fontSize = '14px';
+                        passwordSpan.style.minWidth = '80px';
+                        passwordSpan.style.overflow = 'hidden';
+                        passwordSpan.style.textOverflow = 'ellipsis';
+                        passwordSpan.style.whiteSpace = 'nowrap';
+
+                        const toggleButton = document.createElement('button');
+                        toggleButton.textContent = 'Show';
+                        toggleButton.style.background = 'var(--secondary-action)';
+                        toggleButton.style.color = 'var(--accent-text)';
+                        toggleButton.style.border = '1px solid var(--border-color)';
+                        toggleButton.style.borderRadius = '3px';
+                        toggleButton.style.padding = '3px 8px';
+                        toggleButton.style.cursor = 'pointer';
+                        toggleButton.style.fontSize = '11px';
+                        toggleButton.style.fontWeight = 'bold';
+                        toggleButton.style.minWidth = '45px';
+                        toggleButton.style.height = '24px';
+                        toggleButton.style.flexShrink = '0';
+                        toggleButton.style.whiteSpace = 'nowrap';
+                        toggleButton.style.display = 'flex';
+                        toggleButton.style.alignItems = 'center';
+                        toggleButton.style.justifyContent = 'center';
+                        toggleButton.title = 'Toggle password visibility';
+
+                        let isPasswordVisible = false;
+                        const actualPassword = formatFirestoreValue(mainDocFields[fName]);
+
+                        toggleButton.addEventListener('click', () => {
+                            isPasswordVisible = !isPasswordVisible;
+                            passwordSpan.textContent = isPasswordVisible ? actualPassword : '••••••••';
+                            toggleButton.textContent = isPasswordVisible ? 'Hide' : 'Show';
+                        });
+
+                        passwordContainer.appendChild(passwordSpan);
+                        passwordContainer.appendChild(toggleButton);
+                        p.appendChild(passwordContainer);
+                    } else {
+                        p.innerHTML += ` ${formatFirestoreValue(mainDocFields[fName])}`;
+                    }
+
                     mainTeacherInfoContent.appendChild(p);
                 }
             });
 
-            if (studentListNameHeading) studentListNameHeading.textContent = "Associated Students";
+            if (studentListNameHeading) studentListNameHeading.textContent = "Students";
             if (studentListContent) studentListContent.innerHTML = "<p class='loading-text'>Loading student data...</p>";
 
             if (teacherIdToQueryStudents) {
                 const studentResults = await fetchStudentsForTeacher(teacherIdToQueryStudents);
                 const fetchedStudents = studentResults.map(result => result.document).filter(doc => doc);
-                
+
                 if (studentListContent) studentListContent.innerHTML = "";
-                if (studentListNameHeading) studentListNameHeading.textContent = `Associated Students (${fetchedStudents.length})`;
+                if (studentListNameHeading) studentListNameHeading.textContent = `Students (${fetchedStudents.length})`;
 
                 if (fetchedStudents.length > 0) {
                     fetchedStudents.forEach(sDoc => {
@@ -67,7 +121,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                         const sFullName = sDoc.fields?.fullname?.stringValue || 'Unknown Student';
                         const sDocName = sDoc.name.split('/').pop();
-                        
+
                         const summaryHeading = document.createElement('h4');
                         summaryHeading.textContent = `${sFullName} (Student Doc ID: ${sDocName})`;
 
@@ -83,15 +137,59 @@ document.addEventListener('DOMContentLoaded', async () => {
                         studentDetailsDiv.style.display = 'none';
 
                         if (sDoc.fields) {
-                            for (const fn in sDoc.fields) {
+                            const levelInfoContainer = document.createElement('div');
+                            levelInfoContainer.classList.add('level-info-container');
+                            levelInfoContainer.innerHTML = '<h4>Level Progress:</h4>';
+                            studentDetailsDiv.appendChild(levelInfoContainer);
+
+                            const otherDetailsDiv = document.createElement('div');
+                            otherDetailsDiv.classList.add('other-details');
+                            studentDetailsDiv.appendChild(otherDetailsDiv);
+
+                            const levelData = {};
+                            for (const fieldName in sDoc.fields) {
+                                if (fieldName.startsWith('level') && (fieldName.endsWith('Finish') || fieldName.endsWith('Score'))) {
+                                    const levelNumMatch = fieldName.match(/level(\d+)/);
+                                    if (levelNumMatch) {
+                                        const levelNum = parseInt(levelNumMatch[1]);
+                                        if (!levelData[levelNum]) {
+                                            levelData[levelNum] = {};
+                                        }
+                                        if (fieldName.endsWith('Finish')) {
+                                            levelData[levelNum].finish = sDoc.fields[fieldName].booleanValue;
+                                        } else if (fieldName.endsWith('Score')) {
+                                            levelData[levelNum].score = formatFirestoreValue(sDoc.fields[fieldName]);
+                                        }
+                                    }
+                                } else {
+                                    const p = document.createElement('p');
+                                    const strong = document.createElement('strong');
+                                    strong.textContent = (fieldName === FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER) ?
+                                        "Teacher's ID (in record):" :
+                                        `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}:`;
+                                    p.appendChild(strong);
+                                    p.innerHTML += ` ${formatFirestoreValue(sDoc.fields[fieldName])}`;
+                                    otherDetailsDiv.appendChild(p);
+                                }
+                            }
+
+                            // Sort and display level data
+                            const sortedLevels = Object.keys(levelData).map(Number).sort((a, b) => a - b);
+                            if (sortedLevels.length > 0) {
+                                const ul = document.createElement('ul');
+                                ul.classList.add('level-list');
+                                sortedLevels.forEach(levelNum => {
+                                    const score = levelData[levelNum].score !== undefined ? levelData[levelNum].score : 'N/A';
+                                    const finish = levelData[levelNum].finish !== undefined ? (levelData[levelNum].finish ? '✅' : '❌') : '❓';
+                                    const li = document.createElement('li');
+                                    li.innerHTML = `<strong>Level ${levelNum}</strong> Score: ${score} ${finish}`;
+                                    ul.appendChild(li);
+                                });
+                                levelInfoContainer.appendChild(ul);
+                            } else {
                                 const p = document.createElement('p');
-                                const strong = document.createElement('strong');
-                                strong.textContent = (fn === FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER) ?
-                                    "Teacher's ID (in record):" :
-                                    `${fn.charAt(0).toUpperCase() + fn.slice(1)}:`;
-                                p.appendChild(strong);
-                                p.innerHTML += ` ${formatFirestoreValue(sDoc.fields[fn])}`;
-                                studentDetailsDiv.appendChild(p);
+                                p.textContent = 'No level data available.';
+                                levelInfoContainer.appendChild(p);
                             }
                         }
 
