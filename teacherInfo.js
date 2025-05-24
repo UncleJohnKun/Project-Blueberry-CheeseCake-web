@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const teacherIdToQueryStudents = (mainDocFields.id?.stringValue || "").trim();
 
             mainTeacherInfoContent.innerHTML = "";
-            const fieldsToShow = ["fullname", "email", "id", "username", "password", "totalStudents", "timestamp"];
+            const fieldsToShow = ["fullname", "email", "id", "username", "password", "timestamp"];
             fieldsToShow.forEach(fName => {
                 if (mainDocFields[fName]) {
                     const p = document.createElement('p');

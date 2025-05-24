@@ -136,8 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
             { label: 'Email', value: formatFirestoreValue(mainDocFields.email) },
             { label: 'Teacher ID', value: formatFirestoreValue(mainDocFields.id) },
             { label: 'Username', value: formatFirestoreValue(mainDocFields.username) },
-            { label: 'Password', value: formatFirestoreValue(mainDocFields.password), isPassword: true },
-            { label: 'Total Students', value: formatFirestoreValue(mainDocFields.totalStudents) }
+            { label: 'Password', value: formatFirestoreValue(mainDocFields.password), isPassword: true }
         ];
 
         fields.forEach(field => {
