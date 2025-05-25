@@ -805,14 +805,10 @@ button.secondary:hover,
     padding: 0 var(--space-4);
 }
 
-.modal-content .search-container::before {
-    margin-left: calc(-200px + var(--space-4) + var(--space-4));
-}
-
 .modal-content .search-container input {
     max-width: 400px;
     width: 100%;
-    padding: var(--space-3) var(--space-4) var(--space-3) calc(var(--space-4) + 24px);
+    padding: var(--space-3) var(--space-4);
     border-radius: var(--radius-md);
     border: 2px solid var(--border-light);
     background: var(--secondary-bg);
@@ -2226,13 +2222,8 @@ button.secondary:hover,
         padding: 0 var(--space-2);
     }
 
-    .search-container::before {
-        margin-left: calc(-50% + var(--space-4) + var(--space-2));
-        font-size: 1.1rem;
-    }
-
     .search-container input {
-        padding: var(--space-4) var(--space-5) var(--space-4) calc(var(--space-5) + 28px);
+        padding: var(--space-4) var(--space-5);
         font-size: 1rem;
         border-radius: var(--radius-xl);
         min-height: 48px;
@@ -2244,12 +2235,8 @@ button.secondary:hover,
         margin-bottom: var(--space-4);
     }
 
-    .detail-card .search-container::before {
-        margin-left: calc(-50% + var(--space-4));
-    }
-
     .detail-card .search-container input {
-        padding: var(--space-4) var(--space-4) var(--space-4) calc(var(--space-4) + 28px);
+        padding: var(--space-4) var(--space-4);
         min-height: 48px;
     }
 
@@ -2258,13 +2245,9 @@ button.secondary:hover,
         margin-bottom: var(--space-4);
     }
 
-    .modal-content .search-container::before {
-        margin-left: calc(-50% + var(--space-4) + var(--space-2));
-    }
-
     .modal-content .search-container input {
         max-width: 100%;
-        padding: var(--space-4) var(--space-4) var(--space-4) calc(var(--space-4) + 28px);
+        padding: var(--space-4) var(--space-4);
         min-height: 48px;
         font-size: 1rem;
     }
@@ -2518,13 +2501,8 @@ button.secondary:hover,
         padding: 0 var(--space-1);
     }
 
-    .search-container::before {
-        margin-left: calc(-50% + var(--space-4) + var(--space-1));
-        font-size: 1rem;
-    }
-
     .search-container input {
-        padding: var(--space-4) var(--space-4) var(--space-4) calc(var(--space-4) + 26px);
+        padding: var(--space-4) var(--space-4);
         font-size: 16px; /* Prevents zoom on iOS */
         border-radius: var(--radius-xl);
         min-height: 50px;
@@ -2536,12 +2514,8 @@ button.secondary:hover,
         margin-bottom: var(--space-3);
     }
 
-    .detail-card .search-container::before {
-        margin-left: calc(-50% + var(--space-3));
-    }
-
     .detail-card .search-container input {
-        padding: var(--space-4) var(--space-3) var(--space-4) calc(var(--space-3) + 26px);
+        padding: var(--space-4) var(--space-3);
         min-height: 50px;
         font-size: 16px;
     }
@@ -2551,13 +2525,9 @@ button.secondary:hover,
         margin-bottom: var(--space-3);
     }
 
-    .modal-content .search-container::before {
-        margin-left: calc(-50% + var(--space-3) + var(--space-1));
-    }
-
     .modal-content .search-container input {
         max-width: 100%;
-        padding: var(--space-4) var(--space-3) var(--space-4) calc(var(--space-3) + 26px);
+        padding: var(--space-4) var(--space-3);
         min-height: 50px;
         font-size: 16px;
     }
