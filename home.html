@@ -93,7 +93,7 @@
                 <!-- Header -->
                 <header class="admin-header">
                     <div class="header-content">
-                        <button id="backToTeachersButton" class="nav-button secondary">← Back to Teachers</button>
+                        <button id="backToTeachersButton" class="nav-button primary">← Back</button>
                         <h1 class="header-title" id="teacherDetailTitle">Teacher Details</h1>
                     </div>
                 </header>
@@ -108,9 +108,12 @@
 
                     <!-- Teacher Info Section -->
                     <div id="teacherInfoSection" class="detail-section desktop-visible" data-content="teacher-info">
-                        <div class="detail-card">
-                            <h2>Teacher Information</h2>
-                            <div id="teacherDetailInfo" class="detail-info-grid">
+                        <div class="detail-card teacher-info-compact">
+                            <h2>
+                                Teacher Information
+                                <button class="teacher-info-toggle" id="teacherInfoToggle">Expand</button>
+                            </h2>
+                            <div id="teacherDetailInfo" class="detail-info-grid teacher-info-content collapsed">
                                 <!-- Teacher info will be populated here -->
                             </div>
                         </div>
@@ -187,6 +190,19 @@
         </div>
     </div>
     <!-- End Modal Structure -->
+
+    <!-- Student Details Modal -->
+    <div id="studentDetailsModal" class="student-details-modal">
+        <div class="student-modal-content">
+            <div class="student-modal-header">
+                <h3 id="studentModalTitle">Student Details</h3>
+                <button id="studentModalClose" class="student-modal-close">Close</button>
+            </div>
+            <div id="studentModalBody" class="student-modal-body">
+                <!-- Student details will be populated here -->
+            </div>
+        </div>
+    </div>
 
     <script src="home.js"></script>
 </body>

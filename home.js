@@ -56,6 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const studentListTitle = document.getElementById('studentListTitle');
     const studentList = document.getElementById('studentList');
     const searchStudentInput = document.getElementById('searchStudentInput');
+    const teacherInfoToggle = document.getElementById('teacherInfoToggle');
 
     // --- LEGACY MODAL DOM ELEMENTS (for compatibility) ---
     const teacherInfoModal = document.getElementById('teacherInfoModal');
@@ -160,6 +161,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // Detail view event listeners
     if (backToTeachersButton) {
         backToTeachersButton.addEventListener('click', showTeacherList);
+    }
+
+    // Teacher info toggle functionality
+    if (teacherInfoToggle) {
+        teacherInfoToggle.addEventListener('click', () => {
+            const content = teacherDetailInfo;
+            const isCollapsed = content.classList.contains('collapsed');
+
+            if (isCollapsed) {
+                content.classList.remove('collapsed');
+                content.classList.add('expanded');
+                teacherInfoToggle.textContent = 'Collapse';
+            } else {
+                content.classList.remove('expanded');
+                content.classList.add('collapsed');
+                teacherInfoToggle.textContent = 'Expand';
+            }
+        });
     }
 
     // Sidebar Teachers link event listener
@@ -442,82 +461,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 studentSummaryDiv.appendChild(summaryHeading);
                 studentSummaryDiv.appendChild(toggleButton);
 
-                const studentDetailsDiv = document.createElement('div');
-                studentDetailsDiv.classList.add('student-details');
-                studentDetailsDiv.style.display = 'none'; // Initially hidden
-
-                if (studentDoc.fields) {
-                    const levelInfoContainer = document.createElement('div');
-                    levelInfoContainer.classList.add('level-info-container');
-                    levelInfoContainer.innerHTML = '<h4>Level Progress:</h4>';
-                    studentDetailsDiv.appendChild(levelInfoContainer);
-
-                    const otherDetailsDiv = document.createElement('div');
-                    otherDetailsDiv.classList.add('other-details');
-                    studentDetailsDiv.appendChild(otherDetailsDiv);
-
-                    const levelData = {};
-                    for (const fieldName in studentDoc.fields) {
-                        if (fieldName.startsWith('level') && (fieldName.endsWith('Finish') || fieldName.endsWith('Score'))) {
-                            const levelNumMatch = fieldName.match(/level(\d+)/);
-                            if (levelNumMatch) {
-                                const levelNum = parseInt(levelNumMatch[1]);
-                                if (!levelData[levelNum]) {
-                                    levelData[levelNum] = {};
-                                }
-                                if (fieldName.endsWith('Finish')) {
-                                    levelData[levelNum].finish = studentDoc.fields[fieldName].booleanValue;
-                                } else if (fieldName.endsWith('Score')) {
-                                    levelData[levelNum].score = formatFirestoreValue(studentDoc.fields[fieldName]);
-                                }
-                            }
-                        } else {
-                            const p = document.createElement('p');
-                            const strong = document.createElement('strong');
-                            strong.textContent = (fieldName === FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER) ?
-                                "Teacher's ID (in student record):" :
-                                `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}:`;
-
-                            p.appendChild(strong);
-                            p.innerHTML += ` ${formatFirestoreValue(studentDoc.fields[fieldName])}`; // Add space
-                            otherDetailsDiv.appendChild(p);
-                        }
-                    }
-
-                    // Sort and display level data
-                    const sortedLevels = Object.keys(levelData).map(Number).sort((a, b) => a - b);
-                    if (sortedLevels.length > 0) {
-                        const ul = document.createElement('ul');
-                        ul.classList.add('level-list');
-                        sortedLevels.forEach(levelNum => {
-                            const score = levelData[levelNum].score !== undefined ? levelData[levelNum].score : 'N/A';
-                            const finish = levelData[levelNum].finish !== undefined ? (levelData[levelNum].finish ? '✅' : '❌') : '❓';
-                            const li = document.createElement('li');
-                            li.innerHTML = `<strong>Level ${levelNum}</strong> Score: ${score} ${finish}`;
-                            ul.appendChild(li);
-                        });
-                        levelInfoContainer.appendChild(ul);
-                    } else {
-                        const p = document.createElement('p');
-                        p.textContent = 'No level data available.';
-                        levelInfoContainer.appendChild(p);
-                    }
-
-                } else {
-                    const p = document.createElement('p');
-                    p.textContent = '(No fields in this student document)';
-                    studentDetailsDiv.appendChild(p);
-                }
-
                 studentItemDiv.appendChild(studentSummaryDiv);
-                studentItemDiv.appendChild(studentDetailsDiv);
                 studentList.appendChild(studentItemDiv);
 
                 // Add event listener for the toggle button
                 toggleButton.addEventListener('click', () => {
-                    const isHidden = studentDetailsDiv.style.display === 'none';
-                    studentDetailsDiv.style.display = isHidden ? 'block' : 'none';
-                    toggleButton.textContent = isHidden ? 'See Less' : 'See More';
+                    showStudentDetailsModal(studentDoc);
                 });
             });
         } else {
@@ -723,9 +672,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Add event listener for the toggle button
                 toggleButton.addEventListener('click', () => {
-                    const isHidden = studentDetailsDiv.style.display === 'none';
-                    studentDetailsDiv.style.display = isHidden ? 'block' : 'none';
-                    toggleButton.textContent = isHidden ? 'See Less' : 'See More';
+                    showStudentDetailsModal(studentDoc);
                 });
             });
         } else {
@@ -1110,6 +1057,203 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error deleting teacher:', error);
             alert(`Error deleting teacher: ${error.message}`);
         }
+    }
+
+    // --- STUDENT DETAILS MODAL FUNCTIONS ---
+    function showStudentDetailsModal(studentDoc) {
+        const modal = document.getElementById('studentDetailsModal');
+        const modalTitle = document.getElementById('studentModalTitle');
+        const modalBody = document.getElementById('studentModalBody');
+
+        if (!modal || !modalTitle || !modalBody) {
+            console.error('Student modal elements not found');
+            return;
+        }
+
+        // Set modal title
+        const studentName = studentDoc.fields?.fullname?.stringValue || 'Unknown Student';
+        modalTitle.textContent = studentName;
+
+        // Clear previous content
+        modalBody.innerHTML = '';
+
+        if (studentDoc.fields) {
+            // Basic student information
+            const basicInfo = [
+                { key: 'email', label: 'Email' },
+                { key: 'username', label: 'Username' },
+                { key: 'password', label: 'Password', isPassword: true },
+                { key: 'id', label: 'Student ID' },
+                { key: 'timestamp', label: 'Registration Date' },
+                { key: 'teacherID', label: 'Teacher ID' }
+            ];
+
+            // Create student info grid container
+            const studentInfoGrid = document.createElement('div');
+            studentInfoGrid.className = 'student-info-grid';
+
+            basicInfo.forEach(field => {
+                if (studentDoc.fields[field.key]) {
+                    const infoItem = document.createElement('div');
+                    infoItem.className = 'info-item';
+                    const value = formatFirestoreValue(studentDoc.fields[field.key]);
+
+                    if (field.isPassword) {
+                        // Create password field with toggle
+                        infoItem.innerHTML = `
+                            <div class="info-label">${field.label}:</div>
+                            <div class="info-value">
+                                <span class="password-container">
+                                    <span class="password-dots">••••••••</span>
+                                    <span class="password-value" style="display: none;">${value}</span>
+                                    <button class="password-toggle-btn">Show</button>
+                                </span>
+                            </div>
+                        `;
+
+                        // Add toggle functionality
+                        const toggleBtn = infoItem.querySelector('.password-toggle-btn');
+                        const passwordValue = infoItem.querySelector('.password-value');
+                        const passwordDots = infoItem.querySelector('.password-dots');
+
+                        toggleBtn.addEventListener('click', () => {
+                            const isHidden = passwordValue.style.display === 'none';
+                            passwordValue.style.display = isHidden ? 'inline' : 'none';
+                            passwordDots.style.display = isHidden ? 'none' : 'inline';
+                            toggleBtn.textContent = isHidden ? 'Hide' : 'Show';
+                        });
+                    } else {
+                        infoItem.innerHTML = `
+                            <div class="info-label">${field.label}:</div>
+                            <div class="info-value">${value}</div>
+                        `;
+                    }
+
+                    studentInfoGrid.appendChild(infoItem);
+                }
+            });
+
+            modalBody.appendChild(studentInfoGrid);
+
+            // Level progress section
+            const levelData = {};
+            for (const fieldName in studentDoc.fields) {
+                if (fieldName.startsWith('level') && (fieldName.endsWith('Finish') || fieldName.endsWith('Score'))) {
+                    const levelNumMatch = fieldName.match(/level(\d+)/);
+                    if (levelNumMatch) {
+                        const levelNum = parseInt(levelNumMatch[1]);
+                        if (!levelData[levelNum]) {
+                            levelData[levelNum] = {};
+                        }
+                        if (fieldName.endsWith('Finish')) {
+                            levelData[levelNum].finish = studentDoc.fields[fieldName].booleanValue;
+                        } else if (fieldName.endsWith('Score')) {
+                            levelData[levelNum].score = formatFirestoreValue(studentDoc.fields[fieldName]);
+                        }
+                    }
+                }
+            }
+
+            // Calculate progress statistics
+            const sortedLevels = Object.keys(levelData).map(Number).sort((a, b) => a - b);
+            let totalScore = 0;
+            let levelsFinished = 0;
+            let totalLevels = sortedLevels.length;
+
+            sortedLevels.forEach(levelNum => {
+                const score = levelData[levelNum].score !== undefined ? levelData[levelNum].score : 0;
+                const finished = levelData[levelNum].finish !== undefined ? levelData[levelNum].finish : false;
+                totalScore += parseInt(score) || 0;
+                if (finished) levelsFinished++;
+            });
+
+            if (sortedLevels.length > 0) {
+                // Progress summary section
+                const progressSection = document.createElement('div');
+                progressSection.className = 'progress-section';
+                progressSection.innerHTML = `
+                    <div class="progress-header">
+                        <h4>Learning Progress</h4>
+                    </div>
+                    <div class="progress-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Total Score:</span>
+                            <span class="stat-value">${totalScore}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Levels Completed:</span>
+                            <span class="stat-value">${levelsFinished}/${totalLevels}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Progress:</span>
+                            <span class="stat-value">${Math.round((levelsFinished / totalLevels) * 100)}%</span>
+                        </div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${(levelsFinished / totalLevels) * 100}%"></div>
+                        </div>
+                        <span class="progress-text">${levelsFinished} of ${totalLevels} levels completed</span>
+                    </div>
+                `;
+                modalBody.appendChild(progressSection);
+
+                // Detailed level breakdown
+                const levelDetails = document.createElement('div');
+                levelDetails.className = 'level-details';
+                levelDetails.innerHTML = '<h4>Level Details</h4>';
+
+                const levelGrid = document.createElement('div');
+                levelGrid.className = 'level-grid';
+
+                sortedLevels.forEach(levelNum => {
+                    const score = levelData[levelNum].score !== undefined ? levelData[levelNum].score : 0;
+                    const finished = levelData[levelNum].finish !== undefined ? levelData[levelNum].finish : false;
+
+                    const levelCard = document.createElement('div');
+                    levelCard.className = `level-card ${finished ? 'completed' : 'incomplete'}`;
+                    levelCard.innerHTML = `
+                        <div class="level-number">Level ${levelNum}</div>
+                        <div class="level-score">Score: ${score}</div>
+                        <div class="level-status">${finished ? '✅ Completed' : '⏳ In Progress'}</div>
+                    `;
+                    levelGrid.appendChild(levelCard);
+                });
+
+                levelDetails.appendChild(levelGrid);
+                modalBody.appendChild(levelDetails);
+            }
+        } else {
+            const p = document.createElement('p');
+            p.textContent = 'No student data available.';
+            modalBody.appendChild(p);
+        }
+
+        // Show modal
+        modal.classList.add('active');
+    }
+
+    function hideStudentDetailsModal() {
+        const modal = document.getElementById('studentDetailsModal');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+    }
+
+    // Modal event listeners
+    const studentModal = document.getElementById('studentDetailsModal');
+    const studentModalClose = document.getElementById('studentModalClose');
+
+    if (studentModalClose) {
+        studentModalClose.addEventListener('click', hideStudentDetailsModal);
+    }
+
+    if (studentModal) {
+        studentModal.addEventListener('click', (e) => {
+            if (e.target === studentModal) {
+                hideStudentDetailsModal();
+            }
+        });
     }
 
     // --- INITIALIZATION ---

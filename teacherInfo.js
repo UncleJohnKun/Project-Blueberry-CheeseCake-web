@@ -196,9 +196,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         if (studentListContent) studentListContent.appendChild(studentItemContainer);
 
                         toggleButton.addEventListener('click', () => {
-                            const isHidden = studentDetailsDiv.style.display === 'none';
-                            studentDetailsDiv.style.display = isHidden ? 'block' : 'none';
-                            toggleButton.textContent = isHidden ? 'See Less' : 'See More';
+                            // For teacherInfo.js, we'll use a simple alert for now
+                            // since the modal is defined in home.html
+                            alert(`Student Details:\n\nName: ${sFullName}\nDocument ID: ${sDocName}\n\nFor full details, please use the main dashboard.`);
                         });
                     });
                 }

@@ -973,11 +973,11 @@ button.secondary:hover,
 
 /* === Teacher Detail View === */
 .teacher-detail-container {
-    background: var(--secondary-bg);
-    border-radius: var(--radius-xl);
-    padding: var(--space-8);
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-light);
+    background: transparent;
+    padding: var(--space-4);
+    height: calc(100vh - 200px);
+    display: flex;
+    flex-direction: column;
 }
 
 .mobile-detail-nav {
@@ -1004,6 +1004,25 @@ button.secondary:hover,
     display: block;
 }
 
+/* Students section should take remaining space */
+.detail-section[data-content="students"] {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.detail-section[data-content="students"].desktop-visible {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.detail-section[data-content="students"] .detail-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
 .detail-card {
     background: var(--secondary-bg);
     border-radius: var(--radius-lg);
@@ -1020,6 +1039,63 @@ button.secondary:hover,
     margin: 0 0 var(--space-4) 0;
     padding-bottom: var(--space-3);
     border-bottom: 1px solid var(--border-light);
+}
+
+/* Compact Teacher Information Section */
+.detail-card.teacher-info-compact {
+    padding: var(--space-3);
+    margin-bottom: var(--space-3);
+    max-width: 100%;
+    width: 100%;
+    position: relative;
+}
+
+.detail-card.teacher-info-compact h2 {
+    font-size: 0.9rem;
+    margin: 0 0 var(--space-2) 0;
+    padding-bottom: var(--space-2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+}
+
+.teacher-info-toggle {
+    background: var(--accent-yellow);
+    color: var(--text-primary);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: var(--space-1) var(--space-2);
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all var(--transition);
+    min-width: 60px;
+    text-align: center;
+}
+
+.teacher-info-toggle:hover {
+    background: var(--accent-yellow-dark);
+    transform: translateY(-1px);
+}
+
+.teacher-info-content {
+    transition: all var(--transition);
+    overflow: hidden;
+}
+
+.teacher-info-content.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.teacher-info-content.expanded {
+    max-height: 500px;
+    opacity: 1;
+    margin-top: var(--space-2);
 }
 
 .detail-info-grid {
@@ -1046,13 +1122,104 @@ button.secondary:hover,
     font-size: 0.8125rem;
 }
 
-.detail-student-list {
-    max-height: 500px;
-    overflow-y: auto;
+/* Compact Teacher Info Grid */
+.teacher-info-compact .detail-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+    width: 100%;
+}
+
+.teacher-info-compact .detail-info-grid p {
+    padding: var(--space-2) var(--space-3);
+    font-size: 0.8rem;
+    border-radius: var(--radius-sm);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.teacher-info-compact .detail-info-grid p strong {
+    min-width: 80px;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+/* Password field styling in compact view */
+.teacher-info-compact .password-container {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex: 1;
+    justify-content: flex-end;
+    min-width: 0;
+}
+
+.teacher-info-compact .password-value,
+.teacher-info-compact .password-dots {
+    font-family: monospace;
+    font-size: 0.75rem;
+    min-width: 60px;
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.teacher-info-compact .password-toggle-btn {
+    background: var(--btn-secondary);
     border: 1px solid var(--border-light);
-    border-radius: var(--radius-md);
-    background: var(--primary-bg);
-    padding: var(--space-3);
+    border-radius: var(--radius-sm);
+    padding: var(--space-1) var(--space-2);
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all var(--transition);
+    min-width: 45px;
+    flex-shrink: 0;
+}
+
+.teacher-info-compact .password-toggle-btn:hover {
+    background: var(--btn-secondary-hover);
+    border-color: var(--border-medium);
+}
+
+.detail-student-list {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: transparent;
+    padding: 0;
+    min-height: 400px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+    align-content: start;
+}
+
+/* Responsive grid layout for wider screens */
+@media (min-width: 900px) and (max-width: 1199px) {
+    .detail-student-list {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-3);
+    }
+}
+
+@media (min-width: 1200px) and (max-width: 1599px) {
+    .detail-student-list {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-4);
+    }
+}
+
+@media (min-width: 1600px) {
+    .detail-student-list {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: var(--space-4);
+    }
 }
 
 /* Enhanced No Results and Loading Messages */
@@ -1118,8 +1285,355 @@ button.secondary:hover,
     background: var(--secondary-bg);
     padding: var(--space-3);
     border-radius: var(--radius-md);
-    margin-bottom: var(--space-3);
     border: 1px solid var(--border-light);
+    overflow: hidden;
+    word-wrap: break-word;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-self: start;
+    height: fit-content;
+}
+
+/* Student Details Modal */
+.student-details-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition);
+    box-sizing: border-box;
+    padding: var(--space-4);
+}
+
+.student-details-modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.student-modal-content {
+    background: var(--secondary-bg);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-3);
+    width: 95%;
+    max-width: 900px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    transform: scale(0.95);
+    transition: transform var(--transition);
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-8);
+    box-sizing: border-box;
+    margin: auto;
+}
+
+.student-details-modal.active .student-modal-content {
+    transform: scale(1);
+}
+
+.student-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.student-modal-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    font-weight: var(--font-weight-semibold);
+    padding-right: 80px;
+    box-sizing: border-box;
+    word-wrap: break-word;
+}
+
+.student-modal-close {
+    position: absolute;
+    top: var(--space-4);
+    right: var(--space-4);
+    z-index: 20;
+    background: var(--btn-danger);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: var(--space-1) var(--space-3);
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all var(--transition);
+    min-height: 28px;
+    min-width: 50px;
+    max-width: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.student-modal-close:hover {
+    background: var(--btn-danger-hover);
+    transform: translateY(-1px);
+}
+
+.student-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.student-modal-body p {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--text-secondary);
+}
+
+.student-modal-body p strong {
+    color: var(--text-primary);
+    font-weight: var(--font-weight-medium);
+}
+
+/* Student Info Grid Layout - 2 columns horizontal */
+.student-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4) var(--space-6);
+    margin-bottom: var(--space-6);
+    padding: var(--space-4);
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(243, 156, 18, 0.2);
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 32px;
+}
+
+.info-label {
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    white-space: nowrap;
+    min-width: fit-content;
+}
+
+.info-value {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    word-break: break-word;
+    flex: 1;
+}
+
+.password-container {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.password-toggle-btn {
+    padding: 4px 8px;
+    background: rgba(243, 156, 18, 0.1);
+    border: 1px solid rgba(243, 156, 18, 0.3);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.75rem;
+    min-width: 45px;
+    color: #e67e22;
+    transition: all 0.2s ease;
+}
+
+.password-toggle-btn:hover {
+    background: rgba(243, 156, 18, 0.2);
+    border-color: rgba(243, 156, 18, 0.5);
+}
+
+/* Responsive adjustments for student info grid */
+@media (max-width: 600px) {
+    .student-info-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-3);
+    }
+
+    .info-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-1);
+    }
+}
+
+.student-modal-body .level-list {
+    padding-left: var(--space-4);
+    margin: var(--space-2) 0;
+}
+
+/* Progress Section Styling */
+.progress-section {
+    background: linear-gradient(135deg, rgba(243, 156, 18, 0.05), rgba(230, 126, 34, 0.05));
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    margin: var(--space-4) 0;
+    border: 1px solid rgba(243, 156, 18, 0.2);
+}
+
+.progress-header h4 {
+    margin: 0 0 var(--space-3) 0;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: var(--font-weight-semibold);
+}
+
+.progress-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--space-2);
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(243, 156, 18, 0.1);
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-1);
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 1.1rem;
+    font-weight: var(--font-weight-semibold);
+    color: #e67e22;
+}
+
+.progress-bar-container {
+    margin-top: var(--space-3);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(243, 156, 18, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: var(--space-2);
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #f39c12, #e67e22);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-align: center;
+    display: block;
+}
+
+/* Level Details Section */
+.level-details {
+    margin-top: var(--space-4);
+}
+
+.level-details h4 {
+    margin: 0 0 var(--space-3) 0;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: var(--font-weight-semibold);
+}
+
+.level-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: var(--space-3);
+}
+
+.level-card {
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: var(--radius-sm);
+    padding: var(--space-3);
+    border: 1px solid rgba(243, 156, 18, 0.2);
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.level-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(243, 156, 18, 0.2);
+}
+
+.level-card.completed {
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(39, 174, 96, 0.1));
+    border-color: rgba(46, 204, 113, 0.3);
+}
+
+.level-card.incomplete {
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.1), rgba(192, 57, 43, 0.1));
+    border-color: rgba(231, 76, 60, 0.3);
+}
+
+.level-number {
+    font-size: 0.9rem;
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+    margin-bottom: var(--space-1);
+}
+
+.level-score {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: var(--space-1);
+}
+
+.level-status {
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-medium);
+}
+
+.level-card.completed .level-status {
+    color: #27ae60;
+}
+
+.level-card.incomplete .level-status {
+    color: #e74c3c;
+}
+
+.detail-student-list .student-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+    flex-wrap: wrap;
 }
 
 .detail-student-list .student-summary h4 {
@@ -1127,6 +1641,10 @@ button.secondary:hover,
     margin: 0;
     color: var(--text-primary);
     font-weight: var(--font-weight-medium);
+    flex: 1;
+    min-width: 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .detail-student-list .student-toggle-button {
@@ -1136,18 +1654,87 @@ button.secondary:hover,
     border: 1px solid var(--border-light);
     border-radius: var(--radius-sm);
     cursor: pointer;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* Student details section */
+.detail-student-list .student-details {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    box-sizing: border-box;
+    margin-top: var(--space-2);
+    padding: var(--space-3);
+    background: var(--secondary-bg);
+    border-radius: var(--radius-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
 }
 
 .detail-student-list .student-details p {
     font-size: 0.75rem;
-    margin: var(--space-1) 0;
+    margin: 0;
     color: var(--text-secondary);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    line-height: 1.4;
+    hyphens: auto;
 }
 
 .detail-student-list .student-details p strong {
     color: var(--text-primary);
     font-weight: var(--font-weight-medium);
     font-size: 0.75rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Level list styling to prevent overflow */
+.detail-student-list .level-list {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    box-sizing: border-box;
+    padding-left: var(--space-3);
+    margin: 0;
+    list-style-position: inside;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.detail-student-list .level-list li {
+    font-size: 0.75rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    white-space: normal;
+    line-height: 1.3;
+    hyphens: auto;
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.detail-student-list .level-info-container {
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    box-sizing: border-box;
+    margin-top: var(--space-1);
 }
 
 /* === Settings Modal === */
@@ -2240,6 +2827,29 @@ button.secondary:hover,
         min-height: 48px;
     }
 
+    /* Mobile Teacher Info Compact */
+    .teacher-info-compact {
+        max-width: 100%;
+        margin-bottom: var(--space-4);
+    }
+
+    .teacher-info-compact .detail-info-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-3);
+    }
+
+    .teacher-info-compact h2 {
+        font-size: 0.95rem;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+    }
+
+    .teacher-info-toggle {
+        font-size: 0.8rem;
+        padding: var(--space-2) var(--space-3);
+        min-width: 70px;
+    }
+
     .modal-content .search-container {
         padding: 0 var(--space-2);
         margin-bottom: var(--space-4);
@@ -2281,6 +2891,19 @@ button.secondary:hover,
         border-bottom: 2px solid var(--border-light);
         padding-bottom: 15px;
     }
+
+    /* Ensure teacher info section is visible when active on mobile */
+    .detail-section[data-content="teacher-info"].active {
+        display: block !important;
+    }
+
+    /* Make sure teacher info toggle is visible and functional on mobile */
+    .detail-section[data-content="teacher-info"] .teacher-info-toggle {
+        display: inline-block !important;
+        font-size: 0.8rem;
+        padding: var(--space-2) var(--space-3);
+        min-width: 70px;
+    }
     .mobile-detail-nav .mobile-nav-btn {
         flex: 1;
         padding: 12px 16px;
@@ -2317,7 +2940,55 @@ button.secondary:hover,
         display: none;
     }
     .detail-section.active {
-        display: block;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    /* Mobile teacher detail container */
+    .teacher-detail-container {
+        height: calc(100vh - 120px);
+        padding: var(--space-3);
+        background: transparent;
+    }
+
+    /* Mobile student section full height */
+    .detail-section[data-content="students"].active .detail-card {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .detail-section[data-content="students"].active .detail-student-list {
+        flex: 1;
+        min-height: 300px;
+    }
+
+    /* Mobile student item overflow fix */
+    .detail-student-list {
+        overflow-x: hidden !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        grid-template-columns: 1fr !important;
+        gap: var(--space-3) !important;
+    }
+
+    .detail-student-list .student-item {
+        width: 100% !important;
+        min-width: 0 !important;
+        overflow: hidden !important;
+        flex-shrink: 0 !important;
+    }
+
+    .detail-student-list .student-summary {
+        flex-wrap: wrap !important;
+        gap: var(--space-1) !important;
+    }
+
+    .detail-student-list .student-details {
+        width: 100% !important;
+        min-width: 0 !important;
+        overflow: hidden !important;
     }
 
     /* Mobile navigation buttons for modal (legacy) */
@@ -2518,6 +3189,107 @@ button.secondary:hover,
         padding: var(--space-4) var(--space-3);
         min-height: 50px;
         font-size: 16px;
+    }
+
+    /* Small Screen Teacher Info Compact */
+    .teacher-info-compact .detail-info-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-2);
+    }
+
+    .teacher-info-compact h2 {
+        font-size: 0.9rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-2);
+    }
+
+    .teacher-info-toggle {
+        font-size: 0.75rem;
+        padding: var(--space-2);
+        min-width: 65px;
+        align-self: flex-end;
+    }
+
+    /* Ensure teacher info section works on small screens */
+    .detail-section[data-content="teacher-info"].active {
+        display: block !important;
+    }
+
+    .detail-section[data-content="teacher-info"] .teacher-info-toggle {
+        display: inline-block !important;
+        font-size: 0.75rem;
+        padding: var(--space-2);
+        min-width: 65px;
+    }
+
+    /* Small screen full height */
+    .teacher-detail-container {
+        height: calc(100vh - 100px);
+        padding: var(--space-2);
+        background: transparent;
+    }
+
+    .detail-section.active {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .detail-section[data-content="students"].active .detail-student-list {
+        flex: 1;
+        min-height: 250px;
+    }
+
+    /* Small screen student item overflow fix */
+    .detail-student-list {
+        overflow-x: hidden !important;
+        width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .detail-student-list .student-item {
+        width: 100% !important;
+        min-width: 0 !important;
+        overflow: hidden !important;
+        padding: var(--space-2);
+        flex-shrink: 0 !important;
+    }
+
+    .detail-student-list .student-summary {
+        flex-wrap: wrap !important;
+        gap: var(--space-1) !important;
+    }
+
+    .detail-student-list .student-details {
+        width: 100% !important;
+        min-width: 0 !important;
+        overflow: hidden !important;
+    }
+
+    .detail-student-list .level-list {
+        padding-left: var(--space-2);
+        width: 100% !important;
+        min-width: 0 !important;
+        overflow: hidden !important;
+    }
+
+    .teacher-info-compact .detail-info-grid p {
+        padding: var(--space-2);
+        font-size: 0.75rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-1);
+    }
+
+    .teacher-info-compact .detail-info-grid p strong {
+        min-width: auto;
+        font-size: 0.75rem;
+    }
+
+    .teacher-info-compact .password-container {
+        justify-content: flex-start;
+        margin-top: var(--space-1);
     }
 
     .modal-content .search-container {
