@@ -1484,6 +1484,35 @@ button.secondary:hover,
     transform: translateY(-1px);
 }
 
+/* Student Edit Button */
+.student-edit-btn {
+    position: absolute;
+    top: var(--space-4);
+    right: 80px;
+    z-index: 20;
+    background: var(--accent-yellow);
+    color: var(--text-primary);
+    border: none;
+    border-radius: var(--radius-md);
+    padding: var(--space-1) var(--space-3);
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all var(--transition);
+    min-height: 28px;
+    min-width: 50px;
+    max-width: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.student-edit-btn:hover {
+    background: var(--accent-yellow-dark);
+    transform: translateY(-1px);
+}
+
 .student-modal-body {
     display: flex;
     flex-direction: column;
@@ -1626,29 +1655,40 @@ button.secondary:hover,
 
 .progress-bar-container {
     margin-top: var(--space-3);
+    padding: var(--space-3);
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(243, 156, 18, 0.3);
+    box-shadow: 0 2px 4px rgba(243, 156, 18, 0.1);
 }
 
 .progress-bar {
     width: 100%;
-    height: 8px;
+    height: 10px;
     background: rgba(243, 156, 18, 0.2);
-    border-radius: 4px;
+    border-radius: 5px;
     overflow: hidden;
-    margin-bottom: var(--space-2);
+    margin-bottom: var(--space-3);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .progress-fill {
     height: 100%;
     background: linear-gradient(90deg, #f39c12, #e67e22);
-    border-radius: 4px;
+    border-radius: 5px;
     transition: width 0.3s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .progress-text {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
+    font-size: 0.85rem;
+    color: var(--text-primary);
     text-align: center;
     display: block;
+    margin: 0;
+    padding: 0;
+    font-weight: var(--font-weight-medium);
+    line-height: 1.2;
 }
 
 /* Level Details Section */
@@ -1835,6 +1875,106 @@ button.secondary:hover,
     max-height: 600px;
     position: relative;
     box-sizing: border-box;
+    margin: auto;
+    transform: scale(0.95);
+    transition: transform var(--transition);
+}
+
+/* Student Edit Modal Specific Styling */
+.student-edit-modal .modal-content {
+    width: 90%;
+    max-width: 480px;
+    max-height: 85vh;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: var(--space-8);
+    background: var(--secondary-bg);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    border: 1px solid var(--border-light);
+    transform: scale(0.95);
+    transition: transform var(--transition);
+}
+
+.student-edit-modal.active .modal-content {
+    transform: scale(1);
+}
+
+/* Student Edit Form Styling */
+.student-edit-modal .settings-content {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.student-edit-modal .create-account-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    width: 100%;
+}
+
+.student-edit-modal .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    width: 100%;
+}
+
+.student-edit-modal .form-group label {
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-medium);
+    color: var(--text-primary);
+    text-align: left;
+}
+
+.student-edit-modal .form-group input {
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    background: var(--secondary-bg);
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    transition: all var(--transition);
+    box-sizing: border-box;
+}
+
+.student-edit-modal .form-group input:focus {
+    outline: none;
+    border-color: var(--accent-yellow);
+    box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15);
+}
+
+.student-edit-modal .form-actions {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: center;
+    margin-top: var(--space-4);
+    width: 100%;
+}
+
+.student-edit-modal .form-actions button {
+    flex: 1;
+    max-width: 120px;
+    padding: var(--space-3) var(--space-4);
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-medium);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition);
+    min-height: 40px;
+}
+
+.student-edit-modal h2 {
+    text-align: center;
+    margin-bottom: var(--space-6);
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    font-weight: var(--font-weight-semibold);
 }
 
 .settings-content {

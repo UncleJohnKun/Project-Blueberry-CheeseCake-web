@@ -163,6 +163,14 @@ document.addEventListener('DOMContentLoaded', () => {
         backToTeachersButton.addEventListener('click', showTeacherList);
     }
 
+    // CSV Export button
+    const exportCsvButton = document.getElementById('exportCsvButton');
+    if (exportCsvButton) {
+        exportCsvButton.addEventListener('click', () => {
+            exportStudentDataToCSV();
+        });
+    }
+
     // Teacher info toggle functionality
     if (teacherInfoToggle) {
         teacherInfoToggle.addEventListener('click', () => {
@@ -1121,6 +1129,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const studentName = studentDoc.fields?.fullname?.stringValue || 'Unknown Student';
         modalTitle.textContent = studentName;
 
+        // Add edit button to modal header
+        const existingEditBtn = modal.querySelector('.student-edit-btn');
+        if (existingEditBtn) {
+            existingEditBtn.remove();
+        }
+
+        const editButton = document.createElement('button');
+        editButton.className = 'student-edit-btn';
+        editButton.textContent = 'Edit';
+        editButton.onclick = () => showEditStudentModal(studentDoc);
+        modal.querySelector('.student-modal-content').appendChild(editButton);
+
         // Clear previous content
         modalBody.innerHTML = '';
 
@@ -1287,6 +1307,126 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function showEditStudentModal(studentDoc) {
+        const studentName = studentDoc.fields?.fullname?.stringValue || 'Unknown Student';
+        const studentId = studentDoc.fields?.id?.stringValue || '';
+        const studentUsername = studentDoc.fields?.username?.stringValue || '';
+        const studentPassword = studentDoc.fields?.password?.stringValue || '';
+
+        // Create edit form modal
+        const editModal = document.createElement('div');
+        editModal.className = 'modal-overlay student-edit-modal';
+        editModal.style.display = 'flex';
+        editModal.innerHTML = `
+            <div class="modal-content settings-modal">
+                <button class="modal-close-btn" onclick="this.closest('.modal-overlay').remove()">Close</button>
+                <h2>Edit Student: ${studentName}</h2>
+                <div class="settings-content">
+                    <form id="editStudentForm" class="create-account-form">
+                        <div class="form-group">
+                            <label for="editStudentFullName">Full Name</label>
+                            <input type="text" id="editStudentFullName" value="${studentName}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editStudentUsername">Username</label>
+                            <input type="text" id="editStudentUsername" value="${studentUsername}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editStudentId">Student ID</label>
+                            <input type="text" id="editStudentId" value="${studentId}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editStudentPassword">Password</label>
+                            <input type="text" id="editStudentPassword" value="${studentPassword}" required>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(editModal);
+
+        // Add animation effect similar to student details modal
+        setTimeout(() => {
+            editModal.classList.add('active');
+        }, 10);
+
+        // Handle form submission
+        const form = editModal.querySelector('#editStudentForm');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await updateStudentData(studentDoc, editModal);
+        });
+    }
+
+    async function updateStudentData(studentDoc, editModal) {
+        try {
+            // Get the student document path
+            const studentPath = studentDoc.name;
+
+            // Get form values
+            const updatedData = {
+                fields: {
+                    fullname: { stringValue: document.getElementById('editStudentFullName').value },
+                    username: { stringValue: document.getElementById('editStudentUsername').value },
+                    id: { stringValue: document.getElementById('editStudentId').value },
+                    password: { stringValue: document.getElementById('editStudentPassword').value },
+                    // Preserve existing fields that shouldn't be edited
+                    email: studentDoc.fields.email || { stringValue: '' },
+                    teacherID: studentDoc.fields.teacherID || { stringValue: '' },
+                    timestamp: studentDoc.fields.timestamp || { timestampValue: new Date().toISOString() }
+                }
+            };
+
+            // Preserve all level data
+            for (const fieldName in studentDoc.fields) {
+                if (fieldName.startsWith('level') && (fieldName.endsWith('Finish') || fieldName.endsWith('Score'))) {
+                    updatedData.fields[fieldName] = studentDoc.fields[fieldName];
+                }
+            }
+
+            if (!CONFIG) {
+                throw new Error("Configuration not loaded");
+            }
+
+            const updateUrl = `https://firestore.googleapis.com/v1/${studentPath}?key=${CONFIG.apiKey}`;
+            const response = await fetch(updateUrl, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: { message: "Failed to parse error" } }));
+                throw new Error(`Failed to update student: ${errorData.error?.message || response.statusText}`);
+            }
+
+            alert('Student updated successfully!');
+            editModal.remove();
+
+            // Refresh the current view by re-fetching the teacher data
+            if (currentTeacherDoc) {
+                const teacherPath = currentTeacherDoc.name;
+                await handleTeacherItemClick(teacherPath);
+            }
+
+            // Close the student details modal and reopen it with updated data
+            hideStudentDetailsModal();
+            const updatedStudentDoc = await response.json();
+            setTimeout(() => showStudentDetailsModal(updatedStudentDoc), 300);
+
+        } catch (error) {
+            console.error('Error updating student:', error);
+            alert(`Error updating student: ${error.message}`);
+        }
+    }
+
     // Modal event listeners
     const studentModal = document.getElementById('studentDetailsModal');
     const studentModalClose = document.getElementById('studentModalClose');
@@ -1380,6 +1520,173 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize download functionality
     initializeDownloadGame();
+
+    // === CSV EXPORT FUNCTIONALITY ===
+    function exportStudentDataToCSV() {
+        if (!allStudentsData || allStudentsData.length === 0) {
+            alert('No student data available to export. Please select a teacher first.');
+            return;
+        }
+
+        try {
+            // Get current teacher name for filename
+            const teacherName = teacherDetailTitle?.textContent || 'Teacher';
+            const sanitizedTeacherName = teacherName.replace(/[^a-zA-Z0-9]/g, '_');
+
+            // Prepare CSV data with comprehensive headers
+            const csvHeaders = [
+                'Student Name',
+                'Username',
+                'Student ID',
+                'Email',
+                'Password',
+                'Teacher ID',
+                'Registration Date',
+                'Total Levels Completed',
+                'Total Score',
+                'Average Score',
+                'Progress Percentage',
+                'Level 1 Score',
+                'Level 1 Completed',
+                'Level 2 Score',
+                'Level 2 Completed',
+                'Level 3 Score',
+                'Level 3 Completed',
+                'Level 4 Score',
+                'Level 4 Completed',
+                'Level 5 Score',
+                'Level 5 Completed',
+                'Level 6 Score',
+                'Level 6 Completed',
+                'Level 7 Score',
+                'Level 7 Completed',
+                'Level 8 Score',
+                'Level 8 Completed',
+                'Level 9 Score',
+                'Level 9 Completed',
+                'Level 10 Score',
+                'Level 10 Completed',
+                'Highest Level Reached',
+                'Last Activity Date',
+                'Account Status'
+            ];
+
+            // Process each student's data
+            const csvRows = allStudentsData.map(studentDoc => {
+                const fields = studentDoc.fields || {};
+
+                // Basic student information
+                const studentName = fields.fullname?.stringValue || 'N/A';
+                const username = fields.username?.stringValue || 'N/A';
+                const studentId = fields.id?.stringValue || 'N/A';
+                const email = fields.email?.stringValue || 'N/A';
+                const password = fields.password?.stringValue || 'N/A';
+                const teacherId = fields.teacherID?.stringValue || 'N/A';
+
+                // Registration date
+                const timestamp = fields.timestamp?.timestampValue || fields.timestamp?.stringValue || 'N/A';
+                const registrationDate = timestamp !== 'N/A' ? new Date(timestamp).toLocaleDateString() : 'N/A';
+
+                // Calculate level progress and scores
+                let totalLevelsCompleted = 0;
+                let totalScore = 0;
+                let levelScores = [];
+                let levelCompletions = [];
+                let highestLevel = 0;
+
+                // Process levels 1-10
+                for (let i = 1; i <= 10; i++) {
+                    const scoreField = fields[`level${i}Score`]?.integerValue || fields[`level${i}Score`]?.stringValue || '0';
+                    const finishField = fields[`level${i}Finish`]?.booleanValue || fields[`level${i}Finish`]?.stringValue || false;
+
+                    const score = parseInt(scoreField) || 0;
+                    const isCompleted = finishField === true || finishField === 'true';
+
+                    levelScores.push(score);
+                    levelCompletions.push(isCompleted ? 'Yes' : 'No');
+
+                    if (isCompleted) {
+                        totalLevelsCompleted++;
+                        highestLevel = i;
+                    }
+
+                    totalScore += score;
+                }
+
+                // Calculate statistics
+                const averageScore = totalLevelsCompleted > 0 ? (totalScore / totalLevelsCompleted).toFixed(2) : '0.00';
+                const progressPercentage = ((totalLevelsCompleted / 10) * 100).toFixed(1) + '%';
+
+                // Determine account status
+                const accountStatus = totalLevelsCompleted === 0 ? 'Inactive' :
+                                   totalLevelsCompleted === 10 ? 'Completed' : 'Active';
+
+                // Last activity (use the highest completed level's timestamp if available)
+                const lastActivity = registrationDate; // Could be enhanced with actual last activity tracking
+
+                // Build the row data
+                const rowData = [
+                    studentName,
+                    username,
+                    studentId,
+                    email,
+                    password,
+                    teacherId,
+                    registrationDate,
+                    totalLevelsCompleted,
+                    totalScore,
+                    averageScore,
+                    progressPercentage,
+                    ...levelScores, // Level 1-10 scores
+                    ...levelCompletions, // Level 1-10 completion status
+                    highestLevel || 'None',
+                    lastActivity,
+                    accountStatus
+                ];
+
+                return rowData;
+            });
+
+            // Convert to CSV format
+            const csvContent = [
+                csvHeaders.join(','),
+                ...csvRows.map(row =>
+                    row.map(cell => {
+                        // Escape commas and quotes in cell content
+                        const cellStr = String(cell);
+                        if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+                            return `"${cellStr.replace(/"/g, '""')}"`;
+                        }
+                        return cellStr;
+                    }).join(',')
+                )
+            ].join('\n');
+
+            // Create and download the file
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', `${sanitizedTeacherName}_Students_Export_${new Date().toISOString().split('T')[0]}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                // Show success message
+                alert(`Student data exported successfully!\nFile: ${sanitizedTeacherName}_Students_Export_${new Date().toISOString().split('T')[0]}.csv\nTotal students: ${allStudentsData.length}`);
+            } else {
+                // Fallback for older browsers
+                alert('CSV export is not supported in this browser. Please use a modern browser.');
+            }
+
+        } catch (error) {
+            console.error('Error exporting CSV:', error);
+            alert('Error exporting student data. Please try again.');
+        }
+    }
 
     // --- INITIALIZATION ---
     initializeApp();
