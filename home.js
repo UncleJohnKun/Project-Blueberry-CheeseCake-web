@@ -209,30 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- MOBILE TAB SWITCHING ---
     function initializeMobileTabs() {
-        // Handle detail view mobile tabs
-        const detailNavButtons = document.querySelectorAll('.mobile-detail-nav .mobile-nav-btn');
-        const detailSections = document.querySelectorAll('.detail-section');
-
-        detailNavButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const targetTab = button.getAttribute('data-tab');
-
-                // Remove active class from all buttons and sections
-                detailNavButtons.forEach(btn => btn.classList.remove('active'));
-                detailSections.forEach(section => section.classList.remove('active'));
-
-                // Add active class to clicked button
-                button.classList.add('active');
-
-                // Show corresponding section
-                const targetSection = document.querySelector(`.detail-section[data-content="${targetTab}"]`);
-                if (targetSection) {
-                    targetSection.classList.add('active');
-                }
-            });
-        });
-
-        // Handle legacy modal mobile tabs
+        // Handle legacy modal mobile tabs only
         const mobileNavButtons = document.querySelectorAll('.mobile-modal-nav .mobile-nav-btn');
         const tabContents = document.querySelectorAll('.mobile-tab-content');
 
@@ -589,14 +566,84 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const studentFullName = studentDoc.fields?.fullname?.stringValue || 'Unknown Student';
 
+                // Calculate student progress for circular indicator
+                const levelData = {};
+                for (const fieldName in studentDoc.fields) {
+                    if (fieldName.startsWith('level') && (fieldName.endsWith('Finish') || fieldName.endsWith('Score'))) {
+                        const levelNumMatch = fieldName.match(/level(\d+)/);
+                        if (levelNumMatch) {
+                            const levelNum = parseInt(levelNumMatch[1]);
+                            if (!levelData[levelNum]) {
+                                levelData[levelNum] = {};
+                            }
+                            if (fieldName.endsWith('Finish')) {
+                                levelData[levelNum].finish = studentDoc.fields[fieldName].booleanValue;
+                            } else if (fieldName.endsWith('Score')) {
+                                levelData[levelNum].score = formatFirestoreValue(studentDoc.fields[fieldName]);
+                            }
+                        }
+                    }
+                }
+
+                // Calculate completion percentage and stats
+                const sortedLevels = Object.keys(levelData).map(Number).sort((a, b) => a - b);
+                let totalScore = 0;
+                let levelsFinished = 0;
+                let totalLevels = sortedLevels.length;
+
+                sortedLevels.forEach(levelNum => {
+                    const score = levelData[levelNum].score !== undefined ? levelData[levelNum].score : 0;
+                    const finished = levelData[levelNum].finish !== undefined ? levelData[levelNum].finish : false;
+                    totalScore += parseInt(score) || 0;
+                    if (finished) levelsFinished++;
+                });
+
+                const completionPercentage = totalLevels > 0 ? Math.round((levelsFinished / totalLevels) * 100) : 0;
+                const circumference = 2 * Math.PI * 26;
+                const strokeDashoffset = circumference * (1 - completionPercentage / 100);
+
+                // Create student info section
+                const studentInfoDiv = document.createElement('div');
+                studentInfoDiv.classList.add('student-info');
+
                 const summaryHeading = document.createElement('h4');
                 summaryHeading.textContent = studentFullName;
+
+                const studentStats = document.createElement('div');
+                studentStats.classList.add('student-stats');
+                studentStats.innerHTML = `
+                    <span class="total-score">Total Score: ${totalScore}</span>
+                    <span class="levels-completed">${levelsFinished}/${totalLevels} Levels</span>
+                `;
+
+                studentInfoDiv.appendChild(summaryHeading);
+                studentInfoDiv.appendChild(studentStats);
+
+                // Create circular progress indicator
+                const progressDiv = document.createElement('div');
+                progressDiv.classList.add('student-progress');
+                progressDiv.innerHTML = `
+                    <div class="circular-progress" data-percentage="${completionPercentage}">
+                        <svg class="progress-ring" width="60" height="60">
+                            <circle class="progress-ring-circle" stroke="#e0e0e0" stroke-width="4" fill="transparent" r="26" cx="30" cy="30"/>
+                            <circle class="progress-ring-progress" stroke="#f39c12" stroke-width="4" fill="transparent" r="26" cx="30" cy="30"
+                                    stroke-dasharray="${circumference}"
+                                    stroke-dashoffset="${strokeDashoffset}"
+                                    transform="rotate(-90 30 30)"/>
+                        </svg>
+                        <div class="progress-text">
+                            <span class="percentage">${completionPercentage}%</span>
+                            <span class="label">Complete</span>
+                        </div>
+                    </div>
+                `;
 
                 const toggleButton = document.createElement('button');
                 toggleButton.classList.add('student-toggle-button');
                 toggleButton.textContent = 'See More';
 
-                studentSummaryDiv.appendChild(summaryHeading);
+                studentSummaryDiv.appendChild(studentInfoDiv);
+                studentSummaryDiv.appendChild(progressDiv);
                 studentSummaryDiv.appendChild(toggleButton);
 
                 const studentDetailsDiv = document.createElement('div');
@@ -1255,6 +1302,84 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // --- DOWNLOAD GAME FUNCTIONALITY ---
+    function initializeDownloadGame() {
+        const downloadBtn = document.getElementById('downloadGameBtn');
+        const downloadDropdown = document.getElementById('downloadDropdown');
+        const downloadAndroid = document.getElementById('downloadAndroid');
+        const downloadWindows = document.getElementById('downloadWindows');
+
+        if (!downloadBtn || !downloadDropdown) return;
+
+        // Toggle dropdown
+        downloadBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            downloadDropdown.classList.toggle('show');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!downloadBtn.contains(e.target) && !downloadDropdown.contains(e.target)) {
+                downloadDropdown.classList.remove('show');
+            }
+        });
+
+        // Download handlers
+        if (downloadAndroid) {
+            downloadAndroid.addEventListener('click', (e) => {
+                e.preventDefault();
+                handleDownload('android');
+                downloadDropdown.classList.remove('show');
+            });
+        }
+
+        if (downloadWindows) {
+            downloadWindows.addEventListener('click', (e) => {
+                e.preventDefault();
+                handleDownload('windows');
+                downloadDropdown.classList.remove('show');
+            });
+        }
+    }
+
+    function handleDownload(platform) {
+        // Define download URLs - replace these with actual download links
+        const downloadUrls = {
+            android: 'https://example.com/game.apk', // Replace with actual APK download URL
+            windows: 'https://example.com/game.exe'  // Replace with actual EXE download URL
+        };
+
+        const url = downloadUrls[platform];
+        if (!url) {
+            alert(`Download for ${platform} is not available yet.`);
+            return;
+        }
+
+        // Show download confirmation
+        const platformName = platform === 'android' ? 'Android' : 'Windows';
+        const fileType = platform === 'android' ? 'APK' : 'EXE';
+
+        if (confirm(`Download ${platformName} version (${fileType} file)?`)) {
+            // Create temporary link and trigger download
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `game.${platform === 'android' ? 'apk' : 'exe'}`;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Show success message
+            setTimeout(() => {
+                alert(`${platformName} download started! Check your downloads folder.`);
+            }, 500);
+        }
+    }
+
+    // Initialize download functionality
+    initializeDownloadGame();
 
     // --- INITIALIZATION ---
     initializeApp();

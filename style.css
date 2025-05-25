@@ -151,6 +151,8 @@ textarea:focus {
     z-index: 100;
     top: 0;
     left: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .sidebar-header {
@@ -185,6 +187,14 @@ textarea:focus {
     list-style: none;
     padding: 0;
     margin: 0;
+    flex: 1;
+}
+
+/* Sidebar Bottom Section */
+.sidebar-bottom {
+    margin-top: auto;
+    padding-top: var(--space-4);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .sidebar-nav-item {
@@ -218,6 +228,96 @@ textarea:focus {
     font-size: 1.25rem;
     width: 24px;
     text-align: center;
+}
+
+/* Download Game Button */
+.download-game-item {
+    position: relative;
+}
+
+.download-game-btn {
+    justify-content: space-between;
+    position: relative;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+}
+
+.dropdown-arrow {
+    font-size: 0.8em;
+    transition: transform 0.2s ease;
+    margin-left: auto;
+}
+
+.download-game-btn:hover .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.download-dropdown {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    background: var(--sidebar-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.2s ease;
+    margin-bottom: var(--space-1);
+    overflow: hidden;
+}
+
+.download-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.download-option {
+    display: flex;
+    align-items: center;
+    padding: var(--space-3);
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.download-option:last-child {
+    border-bottom: none;
+}
+
+.download-option:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-white);
+}
+
+.platform-icon {
+    font-size: 1.5em;
+    margin-right: var(--space-3);
+}
+
+.platform-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.platform-name {
+    font-weight: var(--font-weight-semibold);
+    color: inherit;
+    font-size: 0.9em;
+}
+
+.platform-desc {
+    font-size: 0.75em;
+    color: var(--text-muted);
+    margin-top: 2px;
 }
 
 /* === Main Content Area === */
@@ -980,15 +1080,7 @@ button.secondary:hover,
     flex-direction: column;
 }
 
-.mobile-detail-nav {
-    display: none;
-    gap: var(--space-3);
-    margin-bottom: var(--space-6);
-    padding: var(--space-4);
-    background: var(--primary-bg);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--border-light);
-}
+
 
 /* Desktop: Show both sections */
 .detail-section.desktop-visible {
@@ -2883,66 +2975,15 @@ button.secondary:hover,
         padding-top: 15px; /* More space on mobile */
     }
 
-    /* Mobile navigation buttons for detail view */
-    .mobile-detail-nav {
-        display: flex !important; /* Show on mobile */
-        gap: 10px;
-        margin-bottom: 20px;
-        border-bottom: 2px solid var(--border-light);
-        padding-bottom: 15px;
-    }
 
-    /* Ensure teacher info section is visible when active on mobile */
-    .detail-section[data-content="teacher-info"].active {
-        display: block !important;
-    }
 
-    /* Make sure teacher info toggle is visible and functional on mobile */
-    .detail-section[data-content="teacher-info"] .teacher-info-toggle {
-        display: inline-block !important;
-        font-size: 0.8rem;
-        padding: var(--space-2) var(--space-3);
-        min-width: 70px;
-    }
-    .mobile-detail-nav .mobile-nav-btn {
-        flex: 1;
-        padding: 12px 16px;
-        background: var(--primary-bg);
-        border: 1px solid var(--border-light);
-        border-radius: var(--radius-md);
-        color: var(--text-primary);
-        font-weight: var(--font-weight-medium);
-        cursor: pointer;
-        transition: all var(--transition);
-        text-align: center;
-        min-height: 44px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .mobile-detail-nav .mobile-nav-btn.active {
-        background: var(--btn-primary);
-        color: var(--text-primary);
-        border-color: var(--btn-primary);
-    }
-    .mobile-detail-nav .mobile-nav-btn:hover {
-        background: var(--btn-secondary-hover);
-    }
-    .mobile-detail-nav .mobile-nav-btn.active:hover {
-        background: var(--btn-primary-hover);
-    }
-
-    /* Detail sections mobile visibility */
+    /* Detail sections mobile visibility - show both sections */
     .detail-section.desktop-visible {
-        display: none; /* Hide desktop-visible class on mobile */
+        display: block !important; /* Show both sections on mobile */
     }
+
     .detail-section {
-        display: none;
-    }
-    .detail-section.active {
-        display: flex;
-        flex-direction: column;
-        flex: 1;
+        display: block;
     }
 
     /* Mobile teacher detail container */
@@ -3382,10 +3423,53 @@ button.secondary:hover,
         gap: 8px;
         min-height: 50px; /* Larger touch area */
         padding: 5px 0;
+        grid-template-columns: 1fr auto;
     }
     .student-summary h4 {
         font-size: 1.05em;
         line-height: 1.2;
+    }
+
+    /* Show smaller progress indicator on small screens */
+    .student-progress {
+        display: flex;
+    }
+
+    .circular-progress {
+        width: 45px;
+        height: 45px;
+    }
+
+    .progress-ring {
+        width: 45px;
+        height: 45px;
+    }
+
+    .progress-ring circle {
+        r: 18;
+        cx: 22.5;
+        cy: 22.5;
+    }
+
+    .progress-text {
+        font-size: 0.6rem;
+    }
+
+    .progress-text .percentage {
+        font-size: 0.7rem;
+    }
+
+    .progress-text .label {
+        font-size: 0.5rem;
+    }
+
+    /* Adjust student info for mobile */
+    .student-stats {
+        gap: 2px;
+    }
+
+    .student-stats span {
+        font-size: 0.7rem;
     }
 
     /* Menu button for small screens */
@@ -3526,12 +3610,93 @@ button.secondary:hover,
 
 .student-summary {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr auto auto;
     align-items: center;
-    gap: 15px;
+    gap: var(--space-3);
     cursor: default;
-    min-height: 44px; /* Fixed height for all rows */
-    padding: 2px 0; /* Small padding for visual breathing room */
+    min-height: 60px;
+    padding: var(--space-2) 0;
+}
+
+/* Student Info Section */
+.student-info h4 {
+    margin: 0 0 var(--space-1) 0;
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: var(--font-weight-semibold);
+}
+
+.student-stats {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.student-stats span {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.total-score {
+    font-weight: var(--font-weight-medium);
+    color: #e67e22 !important;
+}
+
+.levels-completed {
+    color: var(--text-muted) !important;
+}
+
+/* Circular Progress Indicator */
+.student-progress {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.circular-progress {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress-ring {
+    transform: rotate(-90deg);
+}
+
+.progress-ring-circle {
+    transition: stroke-dashoffset 0.5s ease-in-out;
+}
+
+.progress-ring-progress {
+    transition: stroke-dashoffset 0.8s ease-in-out;
+    stroke-linecap: round;
+}
+
+.progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    font-size: 0.7rem;
+    line-height: 1.1;
+}
+
+.progress-text .percentage {
+    display: block;
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+    font-size: 0.8rem;
+}
+
+.progress-text .label {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 0.6rem;
+    margin-top: -2px;
 }
 
 .student-summary h4 {

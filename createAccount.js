@@ -423,6 +423,84 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // --- DOWNLOAD GAME FUNCTIONALITY ---
+    function initializeDownloadGame() {
+        const downloadBtn = document.getElementById('downloadGameBtn');
+        const downloadDropdown = document.getElementById('downloadDropdown');
+        const downloadAndroid = document.getElementById('downloadAndroid');
+        const downloadWindows = document.getElementById('downloadWindows');
+
+        if (!downloadBtn || !downloadDropdown) return;
+
+        // Toggle dropdown
+        downloadBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            downloadDropdown.classList.toggle('show');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!downloadBtn.contains(e.target) && !downloadDropdown.contains(e.target)) {
+                downloadDropdown.classList.remove('show');
+            }
+        });
+
+        // Download handlers
+        if (downloadAndroid) {
+            downloadAndroid.addEventListener('click', (e) => {
+                e.preventDefault();
+                handleDownload('android');
+                downloadDropdown.classList.remove('show');
+            });
+        }
+
+        if (downloadWindows) {
+            downloadWindows.addEventListener('click', (e) => {
+                e.preventDefault();
+                handleDownload('windows');
+                downloadDropdown.classList.remove('show');
+            });
+        }
+    }
+
+    function handleDownload(platform) {
+        // Define download URLs - replace these with actual download links
+        const downloadUrls = {
+            android: 'https://example.com/game.apk', // Replace with actual APK download URL
+            windows: 'https://example.com/game.exe'  // Replace with actual EXE download URL
+        };
+
+        const url = downloadUrls[platform];
+        if (!url) {
+            alert(`Download for ${platform} is not available yet.`);
+            return;
+        }
+
+        // Show download confirmation
+        const platformName = platform === 'android' ? 'Android' : 'Windows';
+        const fileType = platform === 'android' ? 'APK' : 'EXE';
+
+        if (confirm(`Download ${platformName} version (${fileType} file)?`)) {
+            // Create temporary link and trigger download
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `game.${platform === 'android' ? 'apk' : 'exe'}`;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Show success message
+            setTimeout(() => {
+                alert(`${platformName} download started! Check your downloads folder.`);
+            }, 500);
+        }
+    }
+
+    // Initialize download functionality
+    initializeDownloadGame();
+
     // Initialize the app
     initializeApp();
 });
