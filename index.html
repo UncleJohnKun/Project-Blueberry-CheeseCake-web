@@ -4,26 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login - Kamusta Po Guro</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=3.0">
 </head>
 <body>
-    <div class="container admin-login-container">
-        <div class="form-container">
-            <h1>ADMIN LOGIN</h1>
-            <p id="subTitle" class="subtitle">Please enter admin credentials</p>
+    <div class="login-page">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="login-logo">📚</div>
+                <h1>COMPANY</h1>
+                <p class="login-subtitle">Admin Dashboard</p>
+            </div>
 
-            <form id="adminLoginForm">
-                <div class="input-row single-input">
-                    <input type="text" id="adminUsername" placeholder="Admin Username" required>
-                </div>
-                <div class="input-row single-input">
-                    <input type="password" id="adminPassword" placeholder="Admin Password" required>
-                </div>
+            <div class="login-form-container">
+                <h2>Sign In</h2>
+                <p id="subTitle" class="login-description">Please enter your admin credentials to continue</p>
 
-                <div class="buttons">
-                    <button type="submit" id="adminLoginButton" class="primary">LOGIN</button>
-                </div>
-            </form>
+                <form id="adminLoginForm" class="login-form">
+                    <div class="form-group">
+                        <label for="adminUsername">Username</label>
+                        <input type="text" id="adminUsername" placeholder="Enter your username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="adminPassword">Password</label>
+                        <input type="password" id="adminPassword" placeholder="Enter your password" required>
+                    </div>
+
+                    <button type="submit" id="adminLoginButton" class="btn-primary btn-lg login-button">
+                        Sign In
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
     <script src="adminChecker.js"></script>
