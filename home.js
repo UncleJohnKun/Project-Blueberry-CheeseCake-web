@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Mobile sidebar elements
     const mobileSidebarToggle = document.getElementById('mobileSidebarToggle');
+    const mobileSidebarClose = document.getElementById('mobileSidebarClose');
     const sidebar = document.getElementById('sidebar');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
 
@@ -96,14 +97,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Mobile sidebar toggle functionality
     if (mobileSidebarToggle && sidebar && sidebarOverlay) {
+        console.log("Mobile sidebar elements found, adding event listeners");
         mobileSidebarToggle.addEventListener('click', () => {
+            console.log("Mobile sidebar toggle clicked");
             sidebar.classList.add('mobile-open');
             sidebarOverlay.classList.add('active');
+            console.log("Classes added - sidebar:", sidebar.classList.contains('mobile-open'), "overlay:", sidebarOverlay.classList.contains('active'));
         });
 
         sidebarOverlay.addEventListener('click', () => {
+            console.log("Sidebar overlay clicked");
             sidebar.classList.remove('mobile-open');
             sidebarOverlay.classList.remove('active');
+        });
+
+        // Mobile sidebar close button
+        if (mobileSidebarClose) {
+            mobileSidebarClose.addEventListener('click', () => {
+                console.log("Mobile sidebar close button clicked");
+                sidebar.classList.remove('mobile-open');
+                sidebarOverlay.classList.remove('active');
+            });
+        }
+    } else {
+        console.log("Mobile sidebar elements not found:", {
+            mobileSidebarToggle: !!mobileSidebarToggle,
+            sidebar: !!sidebar,
+            sidebarOverlay: !!sidebarOverlay
         });
     }
 
