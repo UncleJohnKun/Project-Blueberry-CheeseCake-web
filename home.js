@@ -973,6 +973,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentEmail = formatFirestoreValue(fields.email) || '';
         const currentUsername = formatFirestoreValue(fields.username) || '';
         const currentId = formatFirestoreValue(fields.id) || '';
+        const currentPassword = formatFirestoreValue(fields.password) || '';
 
         // Create edit form modal
         const editModal = document.createElement('div');
@@ -1000,6 +1001,13 @@ document.addEventListener('DOMContentLoaded', () => {
                             <label for="editId">Teacher ID</label>
                             <input type="text" id="editId" value="${currentId}" required>
                         </div>
+                        <div class="form-group">
+                            <label for="editPassword">Password</label>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <input type="password" id="editPassword" value="${currentPassword}" required style="flex: 1;">
+                                <button type="button" id="editPasswordToggle" style="padding: 8px 12px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 12px; min-width: 50px;">Show</button>
+                            </div>
+                        </div>
                         <div class="form-actions">
                             <button type="button" class="btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
                             <button type="submit" class="btn-primary">Update Teacher</button>
@@ -1010,6 +1018,16 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
 
         document.body.appendChild(editModal);
+
+        // Add password toggle functionality
+        const passwordInput = document.getElementById('editPassword');
+        const passwordToggle = document.getElementById('editPasswordToggle');
+
+        passwordToggle.addEventListener('click', () => {
+            const isPassword = passwordInput.type === 'password';
+            passwordInput.type = isPassword ? 'text' : 'password';
+            passwordToggle.textContent = isPassword ? 'Hide' : 'Show';
+        });
 
         // Handle form submission
         const editForm = document.getElementById('editTeacherForm');
@@ -1022,8 +1040,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     email: { stringValue: document.getElementById('editEmail').value },
                     username: { stringValue: document.getElementById('editUsername').value },
                     id: { stringValue: document.getElementById('editId').value },
-                    // Preserve existing password
-                    password: fields.password || { stringValue: '' }
+                    password: { stringValue: document.getElementById('editPassword').value },
+                    // Preserve existing fields
+                    timestamp: fields.timestamp || { timestampValue: new Date().toISOString() },
+                    totalStudents: fields.totalStudents || { integerValue: "0" },
+                    rizal_questions: fields.rizal_questions || { mapValue: { fields: {} } },
+                    levelUnlocks: fields.levelUnlocks || { mapValue: { fields: {} } }
                 }
             };
 
