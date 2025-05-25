@@ -133,6 +133,9 @@ textarea:focus {
     display: flex;
     min-height: 100vh;
     background: var(--primary-bg);
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* === Sidebar === */
@@ -146,6 +149,8 @@ textarea:focus {
     height: 100vh;
     overflow-y: auto;
     z-index: 100;
+    top: 0;
+    left: 0;
 }
 
 .sidebar-header {
@@ -222,6 +227,9 @@ textarea:focus {
     padding: var(--space-6);
     background: var(--primary-bg);
     min-height: 100vh;
+    width: calc(100% - 280px);
+    box-sizing: border-box;
+    position: relative;
 }
 
 /* === Header === */
@@ -1093,6 +1101,8 @@ button.secondary:hover,
 .settings-modal {
     max-width: 500px;
     max-height: 600px;
+    position: relative;
+    box-sizing: border-box;
 }
 
 .settings-content {
@@ -1133,7 +1143,8 @@ button.secondary:hover,
 }
 
 .settings-item-info {
-    flex: 1;
+    flex: 0 0 70%;
+    width: 70%;
 }
 
 .settings-item-title {
@@ -1147,6 +1158,66 @@ button.secondary:hover,
     font-size: 0.75rem;
     color: var(--text-secondary);
     line-height: 1.4;
+}
+
+/* Settings Modal Close Button Specific Positioning */
+.settings-modal .modal-close-btn {
+    position: absolute;
+    top: var(--space-4);
+    right: var(--space-4);
+    z-index: 20;
+    background: var(--btn-danger);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    padding: var(--space-1) var(--space-3);
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all var(--transition);
+    min-height: 28px;
+    min-width: 50px;
+    max-width: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.settings-modal .modal-close-btn:hover {
+    background: var(--btn-danger-hover);
+    transform: translateY(-1px);
+}
+
+/* Settings Modal Header Spacing */
+.settings-modal h2 {
+    padding-right: 80px;
+    box-sizing: border-box;
+    word-wrap: break-word;
+}
+
+/* Settings Modal Logout Button */
+.settings-modal #logoutButton {
+    flex: 0 0 30%;
+    width: 30%;
+    padding: var(--space-3) var(--space-4);
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-semibold);
+    border-radius: var(--radius-md);
+    background: var(--btn-danger);
+    color: white;
+    border: 1px solid var(--btn-danger);
+    cursor: pointer;
+    transition: all var(--transition);
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.settings-modal #logoutButton:hover {
+    background: var(--btn-danger-hover);
+    border-color: var(--btn-danger-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
 }
 
 /* === Create Account Form === */
@@ -1306,6 +1377,8 @@ button.secondary:hover,
     opacity: 0;
     visibility: hidden;
     transition: all var(--transition);
+    box-sizing: border-box;
+    padding: var(--space-4);
 }
 
 .modal-overlay.active {
@@ -1328,6 +1401,8 @@ button.secondary:hover,
     display: flex;
     flex-direction: column;
     padding: var(--space-8);
+    box-sizing: border-box;
+    margin: auto;
 }
 
 .modal-overlay.active .modal-content {
@@ -1336,25 +1411,29 @@ button.secondary:hover,
 
 /* Modal Close Button */
 .modal-close-btn {
-    position: absolute !important;
-    top: var(--space-6) !important;
-    right: var(--space-6) !important;
-    background: var(--btn-danger) !important;
-    color: white !important;
-    border: none !important;
-    border-radius: var(--radius-lg) !important;
-    padding: var(--space-2) var(--space-4) !important;
-    font-size: 0.875rem !important;
-    font-weight: var(--font-weight-medium) !important;
+    position: absolute;
+    top: var(--space-6);
+    right: var(--space-6);
+    background: var(--btn-danger);
+    color: white;
+    border: none;
+    border-radius: var(--radius-lg);
+    padding: var(--space-2) var(--space-4);
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-medium);
     cursor: pointer;
     transition: all var(--transition);
-    min-height: 36px !important;
-    min-width: 60px !important;
+    min-height: 36px;
+    min-width: 60px;
     z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
 }
 
 .modal-close-btn:hover {
-    background: var(--btn-danger-hover) !important;
+    background: var(--btn-danger-hover);
     transform: translateY(-1px);
 }
 
@@ -1368,9 +1447,11 @@ button.secondary:hover,
     font-size: 1.375rem;
     font-weight: var(--font-weight-medium);
     padding-bottom: var(--space-6);
-    padding-right: 80px;
+    padding-right: 100px;
     border-bottom: 1px solid var(--border-light);
     line-height: 1.3;
+    box-sizing: border-box;
+    word-wrap: break-word;
 }
 
 .modal-content h3 {
@@ -1809,14 +1890,54 @@ button.secondary:hover,
     position: fixed;
     top: var(--space-4);
     left: var(--space-4);
-    z-index: 200;
+    z-index: 300;
     background: var(--sidebar-bg);
     color: var(--text-white);
     border: none;
     border-radius: var(--radius-md);
-    padding: var(--space-3);
+    padding: 0;
     cursor: pointer;
     box-shadow: var(--shadow-lg);
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    box-sizing: border-box;
+    transition: all var(--transition);
+}
+
+.mobile-sidebar-toggle:hover {
+    background: var(--accent-yellow);
+    color: var(--text-primary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-xl);
+}
+
+/* Mobile Sidebar Close Button */
+.mobile-sidebar-close {
+    display: none;
+    position: absolute;
+    top: var(--space-4);
+    right: var(--space-4);
+    background: var(--btn-danger);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all var(--transition);
+    z-index: 10;
+    align-items: center;
+    justify-content: center;
+}
+
+.mobile-sidebar-close:hover {
+    background: var(--btn-danger-hover);
+    transform: scale(1.1);
 }
 
 .sidebar-overlay {
@@ -1828,6 +1949,7 @@ button.secondary:hover,
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
     z-index: 150;
+    backdrop-filter: blur(2px);
 }
 
 /* === Media Queries === */
@@ -1861,19 +1983,35 @@ button.secondary:hover,
 @media (max-width: 768px) {
     /* Show mobile sidebar toggle */
     .mobile-sidebar-toggle {
-        display: block;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        background: var(--sidebar-bg) !important;
+        color: var(--text-white) !important;
+    }
+
+    /* Show mobile sidebar close button */
+    .mobile-sidebar-close {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
     }
 
     /* Hide sidebar by default on mobile */
     .sidebar {
         transform: translateX(-100%);
         transition: transform var(--transition);
-        width: 280px;
+        width: 100%;
+        height: 100vh;
         z-index: 160;
+        top: 0;
+        left: 0;
+        padding: var(--space-6);
     }
 
     .sidebar.mobile-open {
         transform: translateX(0);
+        z-index: 200;
     }
 
     .sidebar-overlay.active {
@@ -1884,6 +2022,8 @@ button.secondary:hover,
     .main-content {
         margin-left: 0;
         padding: var(--space-4);
+        width: 100%;
+        box-sizing: border-box;
     }
 
     /* Stack header elements on mobile */
@@ -2171,10 +2311,26 @@ button.secondary:hover,
         padding: 15px;
     }
     .modal-close-btn {
-        padding: 12px 20px !important; /* Larger touch target */
-        font-size: 1em !important;
-        top: 25px !important; right: 15px !important; /* Align with title */
-        min-height: 48px !important; min-width: 85px !important; /* Wider for mobile */
+        padding: 12px 20px;
+        font-size: 1em;
+        top: var(--space-6);
+        right: var(--space-4);
+        min-height: 48px;
+        min-width: 85px;
+        position: absolute;
+        z-index: 20;
+    }
+
+    .settings-modal .modal-close-btn {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+        top: var(--space-3);
+        right: var(--space-3);
+        min-height: 36px;
+        min-width: 55px;
+        max-width: 65px;
+        position: absolute;
+        z-index: 20;
     }
 
     /* Student item mobile improvements */
@@ -2308,11 +2464,26 @@ button.secondary:hover,
         padding: 10px;
     }
     .modal-close-btn {
-        padding: 14px 18px !important; /* Larger touch target */
-        font-size: 1.1em !important;
-        top: 20px !important; right: 10px !important; /* Better alignment */
-        min-width: 90px !important; /* Wider for small screens */
-        min-height: 50px !important;
+        padding: 14px 18px;
+        font-size: 1.1em;
+        top: var(--space-4);
+        right: var(--space-3);
+        min-width: 90px;
+        min-height: 50px;
+        position: absolute;
+        z-index: 20;
+    }
+
+    .settings-modal .modal-close-btn {
+        padding: 6px 10px;
+        font-size: 0.75rem;
+        top: var(--space-2);
+        right: var(--space-2);
+        min-height: 32px;
+        min-width: 50px;
+        max-width: 60px;
+        position: absolute;
+        z-index: 20;
     }
 
     /* Student items for small screens */
@@ -2378,6 +2549,15 @@ button.secondary:hover,
         height: 38px;
         font-size: 0.8em;
     }
+
+    /* Adjust mobile toggle for very small screens */
+    .mobile-sidebar-toggle {
+        top: var(--space-3);
+        left: var(--space-3);
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+    }
 }
 
 /* Landscape orientation optimizations */
@@ -2396,6 +2576,54 @@ button.secondary:hover,
     }
     .side-by-side-container .info-section {
         max-height: 80vh;
+    }
+
+
+}
+
+/* === Responsive Alignment Fixes === */
+/* Ensure consistent alignment across all screen sizes */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .main-content {
+        width: calc(100% - 260px);
+        margin-left: 260px;
+    }
+
+    .modal-close-btn {
+        top: var(--space-6);
+        right: var(--space-6);
+        position: absolute;
+        z-index: 20;
+    }
+
+    .settings-modal .modal-close-btn {
+        top: var(--space-4);
+        right: var(--space-4);
+        position: absolute;
+        z-index: 20;
+    }
+}
+
+@media (min-width: 1025px) {
+    .modal-close-btn {
+        top: var(--space-6);
+        right: var(--space-6);
+        position: absolute;
+        z-index: 20;
+    }
+
+    .settings-modal .modal-close-btn {
+        top: var(--space-4);
+        right: var(--space-4);
+        position: absolute;
+        z-index: 20;
+    }
+}
+
+/* Fix for very wide screens */
+@media (min-width: 1400px) {
+    .modal-content {
+        max-width: 1200px;
     }
 }
 
@@ -2521,6 +2749,14 @@ button:focus, .nav-button:focus, input:focus, .student-toggle-button:focus {
     /* Better modal overlay on mobile */
     .modal-overlay {
         padding: 0; /* Remove padding for full-screen modals */
+    }
+
+    /* Ensure mobile toggle is properly positioned */
+    .mobile-sidebar-toggle {
+        position: fixed !important;
+        top: var(--space-4) !important;
+        left: var(--space-4) !important;
+        z-index: 200 !important;
     }
 
     /* Improve password toggle positioning for mobile */

@@ -194,6 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Mobile sidebar elements
     const mobileSidebarToggle = document.getElementById('mobileSidebarToggle');
+    const mobileSidebarClose = document.getElementById('mobileSidebarClose');
     const sidebar = document.getElementById('sidebar');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
 
@@ -236,6 +237,14 @@ document.addEventListener('DOMContentLoaded', () => {
             sidebar.classList.remove('mobile-open');
             sidebarOverlay.classList.remove('active');
         });
+
+        // Mobile sidebar close button
+        if (mobileSidebarClose) {
+            mobileSidebarClose.addEventListener('click', () => {
+                sidebar.classList.remove('mobile-open');
+                sidebarOverlay.classList.remove('active');
+            });
+        }
     }
 
     // Settings modal functionality
