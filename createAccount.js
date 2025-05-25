@@ -186,6 +186,84 @@ document.addEventListener('DOMContentLoaded', () => {
     const idInput = document.getElementById('id'); // Teacher ID
     const subTitleElement = document.getElementById('subTitle');
 
+    // Settings modal elements
+    const settingsLink = document.getElementById('settingsLink');
+    const settingsModal = document.getElementById('settingsModal');
+    const closeSettingsButton = document.getElementById('closeSettingsButton');
+    const logoutButton = document.getElementById('logoutButton');
+
+    // Mobile sidebar elements
+    const mobileSidebarToggle = document.getElementById('mobileSidebarToggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+
+    // --- SETTINGS MODAL FUNCTIONS ---
+    function openSettingsModal() {
+        if (settingsModal) {
+            settingsModal.style.display = 'flex';
+            setTimeout(() => settingsModal.classList.add('active'), 10);
+        } else {
+            console.error("createAccount.js: settingsModal element not found.");
+        }
+    }
+
+    function closeSettingsModal() {
+        if (settingsModal) {
+            settingsModal.classList.remove('active');
+            setTimeout(() => settingsModal.style.display = 'none', 300);
+        }
+    }
+
+    // --- EVENT LISTENERS ---
+    // Logout functionality
+    if (logoutButton) {
+        logoutButton.addEventListener('click', () => {
+            sessionStorage.removeItem('isAdminLoggedIn');
+            alert('Admin logged out.');
+            window.location.href = 'index.html';
+        });
+    }
+
+    // Mobile sidebar toggle functionality
+    if (mobileSidebarToggle && sidebar && sidebarOverlay) {
+        mobileSidebarToggle.addEventListener('click', () => {
+            sidebar.classList.add('mobile-open');
+            sidebarOverlay.classList.add('active');
+        });
+
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('mobile-open');
+            sidebarOverlay.classList.remove('active');
+        });
+    }
+
+    // Settings modal functionality
+    if (settingsLink && settingsModal) {
+        settingsLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            openSettingsModal();
+        });
+    }
+
+    if (closeSettingsButton) {
+        closeSettingsButton.addEventListener('click', closeSettingsModal);
+    }
+
+    if (settingsModal) {
+        settingsModal.addEventListener('click', (event) => {
+            if (event.target === settingsModal) closeSettingsModal();
+        });
+    }
+
+    // Escape key functionality
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            if (settingsModal && settingsModal.classList.contains('active')) {
+                closeSettingsModal();
+            }
+        }
+    });
 
     // --- HELPER FUNCTION TO CONVERT JS VALUES TO FIRESTORE REST API FORMAT ---
     function toFirestoreValue(value) {
@@ -213,11 +291,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // --- EVENT LISTENERS ---
+    // Initialize secure configuration and setup form submission
+    async function initializeApp() {
+        try {
+            CONFIG = await getSecureConfig();
+            console.log("createAccount.js: Secure config loaded successfully");
+        } catch (error) {
+            console.error("createAccount.js: Failed to load configuration:", error);
+        }
+    }
+
+    // --- FORM SUBMISSION EVENT LISTENER ---
     signUpForm.addEventListener('submit', async (event) => {
         event.preventDefault();
-        subTitleElement.textContent = "Processing teacher account...";
-        subTitleElement.style.color = '#bdc3c7';
+
+        // Ensure config is loaded
+        if (!CONFIG) {
+            CONFIG = await getSecureConfig();
+        }
 
         const email = emailInput.value.trim();
         const fullName = fullNameInput.value.trim();
@@ -228,32 +319,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Validations
         if (password !== rePassword) {
-            subTitleElement.textContent = "Passwords do not match!";
-            subTitleElement.style.color = 'red';
+            alert("Passwords do not match!");
             return;
         }
         if (!email || !fullName || !username || !password || !teacherId) {
-            subTitleElement.textContent = "Please fill in all teacher account fields!";
-            subTitleElement.style.color = 'red';
+            alert("Please fill in all teacher account fields!");
             return;
         }
         // Prevent "admin" username for teachers if desired
         if (username.toLowerCase() === "admin") {
-             subTitleElement.textContent = "The username 'admin' is reserved.";
-             subTitleElement.style.color = 'red';
-             return;
+            alert("The username 'admin' is reserved.");
+            return;
         }
 
         try {
             // 1. Check if email or Teacher ID already exists in COLLECTION
-            const checkUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${COLLECTION}?key=${API_KEY}`;
+            const checkUrl = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents/${COLLECTION}?key=${CONFIG.apiKey}`;
             const checkResponse = await fetch(checkUrl);
 
             if (!checkResponse.ok) {
                 let errorMsg = 'Failed to fetch existing teacher data.';
-                 try { const errorData = await checkResponse.json(); errorMsg = errorData.error?.message || `HTTP error ${checkResponse.status}`; } catch(e){}
-                subTitleElement.textContent = "Error: " + errorMsg;
-                subTitleElement.style.color = 'red';
+                try { const errorData = await checkResponse.json(); errorMsg = errorData.error?.message || `HTTP error ${checkResponse.status}`; } catch(e){}
+                alert("Error: " + errorMsg);
                 return;
             }
 
@@ -276,13 +363,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (emailExists) {
-                subTitleElement.textContent = "This Email already exists for a teacher!";
-                subTitleElement.style.color = 'red';
+                alert("This Email already exists for a teacher!");
                 return;
             }
             if (idExists) {
-                subTitleElement.textContent = "This Teacher ID is already taken!";
-                subTitleElement.style.color = 'red';
+                alert("This Teacher ID is already taken!");
                 return;
             }
 
@@ -304,7 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             };
 
-            const createUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/${COLLECTION}/${documentPath}?key=${API_KEY}`;
+            const createUrl = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents/${COLLECTION}/${documentPath}?key=${CONFIG.apiKey}`;
 
             const createResponse = await fetch(createUrl, {
                 method: 'PATCH',
@@ -315,20 +400,20 @@ document.addEventListener('DOMContentLoaded', () => {
             if (createResponse.ok) {
                 // const responseData = await createResponse.json(); // Can inspect if needed
                 console.log("Teacher data successfully stored in Firestore!");
-                subTitleElement.textContent = "Teacher Account Created Successfully!";
-                subTitleElement.style.color = 'green';
+                alert("Teacher Account Created Successfully!");
                 signUpForm.reset();
             } else {
                 const errorData = await createResponse.json();
                 console.error("Error storing teacher data:", errorData);
-                subTitleElement.textContent = "Error creating teacher account: " + (errorData.error?.message || 'Unknown error');
-                subTitleElement.style.color = 'red';
+                alert("Error creating teacher account: " + (errorData.error?.message || 'Unknown error'));
             }
 
         } catch (error) {
             console.error("Request failed (teacher account creation):", error);
-            subTitleElement.textContent = "An error occurred. Please try again.";
-            subTitleElement.style.color = 'red';
+            alert("An error occurred. Please try again.");
         }
     });
+
+    // Initialize the app
+    initializeApp();
 });
