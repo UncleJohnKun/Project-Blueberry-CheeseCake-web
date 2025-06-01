@@ -18,17 +18,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Header elements
     const studentName = document.getElementById('studentName');
     const studentIdHeader = document.getElementById('studentId');
-    const studentEmailHeader = document.getElementById('studentEmail');
 
     // Detail elements
     const detailFullName = document.getElementById('detailFullName');
     const detailUsername = document.getElementById('detailUsername');
     const detailStudentId = document.getElementById('detailStudentId');
-    const detailEmail = document.getElementById('detailEmail');
     const detailTeacherId = document.getElementById('detailTeacherId');
     const detailProgress = document.getElementById('detailProgress');
     const detailLevelsCompleted = document.getElementById('detailLevelsCompleted');
-    const detailLastActive = document.getElementById('detailLastActive');
     const progressLevels = document.getElementById('progressLevels');
 
     // Initialize the page
@@ -76,24 +73,17 @@ document.addEventListener('DOMContentLoaded', function() {
             // Populate header
             studentName.textContent = studentData.fullname || 'Unknown Student';
             studentIdHeader.textContent = `Student ID: ${studentData.id || 'N/A'}`;
-            studentEmailHeader.textContent = `Email: ${studentData.email || 'N/A'}`;
 
             // Populate basic information
             detailFullName.textContent = studentData.fullname || 'N/A';
             detailUsername.textContent = studentData.username || 'N/A';
             detailStudentId.textContent = studentData.id || 'N/A';
-            detailEmail.textContent = studentData.email || 'N/A';
             detailTeacherId.textContent = studentData.teacherID || 'N/A';
 
             // Calculate and display progress
             const progressData = calculateProgress(studentData);
             detailProgress.textContent = `${progressData.percentage}%`;
             detailLevelsCompleted.textContent = `${progressData.completed} / ${progressData.total}`;
-
-            // Display last active
-            const lastActive = studentData.lastActive ?
-                new Date(studentData.lastActive).toLocaleDateString() : 'Never';
-            detailLastActive.textContent = lastActive;
 
             // Display level progress
             displayLevelProgress(studentData, progressData);

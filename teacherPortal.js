@@ -383,7 +383,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 row.innerHTML = `
                     <td><a href="#" class="student-name-link" data-id="${student.id || ''}" data-student='${JSON.stringify(student).replace(/'/g, "&apos;")}'>${student.fullname || 'Unknown'}</a></td>
-                    <td>${student.id || 'N/A'}</td>
+                    <td>${student.username || 'N/A'}</td>
                     <td>
                         <div class="progress-bar">
                             <div class="progress-fill" style="width: ${progressPercent}%"></div>
