@@ -92,6 +92,10 @@ app.get('/teacherInfo.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'teacherInfo.html'));
 });
 
+app.get('/teacherPortal.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'teacherPortal.html'));
+});
+
 // 404 handler for API routes
 app.use('/api/*', (req, res) => {
     res.status(404).json({

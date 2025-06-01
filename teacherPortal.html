@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Portal - Kamusta Po Guro</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Mobile Sidebar Toggle -->
+    <button class="mobile-sidebar-toggle" id="mobileSidebarToggle">☰</button>
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="admin-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">📚</div>
+                <div class="sidebar-title">Teacher Portal</div>
+                <button class="mobile-sidebar-close" id="mobileSidebarClose">✕</button>
+            </div>
+            <nav>
+                <ul class="sidebar-nav">
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link active" id="studentsLink">
+                            <span class="sidebar-nav-icon">👥</span>
+                            My Students
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item" id="createStudentItem">
+                        <a href="#" class="sidebar-nav-link" id="createStudentLink">
+                            <span class="sidebar-nav-icon">➕</span>
+                            Add Student
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link" id="questionsLink">
+                            <span class="sidebar-nav-icon">❓</span>
+                            Questions
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link" id="levelsLink">
+                            <span class="sidebar-nav-icon">🏆</span>
+                            Levels
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Student List View -->
+            <div id="studentListView" class="content-view active">
+                <header class="admin-header">
+                    <div class="header-content">
+                        <h1 class="header-title">My Students</h1>
+                        <div class="header-search-wide">
+                            <input type="text" id="searchStudentInput" placeholder="Search by Name or ID...">
+                        </div>
+                        <div class="header-actions">
+                            <button id="logoutButton" class="button danger">Logout</button>
+                        </div>
+                    </div>
+                </header>
+                
+                <div class="content-container">
+                    <div id="loadingMessage" class="loading-message">Loading students...</div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Student Name</th>
+                                    <th>Student ID</th>
+                                    <th>Progress</th>
+                                    <th>Last Active</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentTableBody">
+                                <!-- Student rows will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Questions View -->
+            <div id="questionsView" class="content-view">
+                <!-- Questions content will go here -->
+                <header class="admin-header">
+                    <div class="header-content">
+                        <h1 class="header-title">Questions</h1>
+                        <div class="header-actions">
+                            <button id="addQuestionButton" class="button primary">Add Question</button>
+                        </div>
+                    </div>
+                </header>
+                
+                <div class="content-container">
+                    <div class="level-tabs" id="levelTabs">
+                        <!-- Level tabs will be generated here -->
+                    </div>
+                    <div class="questions-container" id="questionsContainer">
+                        <!-- Questions will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Levels View -->
+            <div id="levelsView" class="content-view">
+                <header class="admin-header">
+                    <div class="header-content">
+                        <h1 class="header-title">Level Management</h1>
+                    </div>
+                </header>
+                
+                <div class="content-container">
+                    <div class="level-unlock-grid" id="levelUnlockGrid">
+                        <!-- Level toggles will be generated here -->
+                    </div>
+                    <div class="action-buttons">
+                        <button id="saveLevelChanges" class="button primary">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="teacherPortal.js"></script>
+</body>
+</html>

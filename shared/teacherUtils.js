@@ -2,7 +2,7 @@
 // API keys and sensitive data are now handled server-side
 export const API_BASE_URL = window.location.origin + '/api';
 export const STUDENT_COLLECTION = "studentData";
-export const FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER = "id";
+export const FIELD_IN_STUDENT_DOC_LINKING_TO_TEACHER = "teacherID";
 
 // Security utilities for client-side
 export const SecurityUtils = {

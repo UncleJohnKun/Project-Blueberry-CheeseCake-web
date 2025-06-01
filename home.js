@@ -412,6 +412,35 @@ document.addEventListener('DOMContentLoaded', () => {
             teacherDetailInfo.appendChild(p);
         });
 
+        // Add "View Teacher Portal" button
+        const teacherId = formatFirestoreValue(mainDocFields.id);
+        if (teacherId) {
+            const portalButtonContainer = document.createElement('div');
+            portalButtonContainer.style.marginTop = '20px';
+            portalButtonContainer.style.paddingTop = '15px';
+            portalButtonContainer.style.borderTop = '1px solid var(--border-light)';
+
+            const portalButton = document.createElement('button');
+            portalButton.textContent = '🏫 View Teacher Portal';
+            portalButton.style.padding = '10px 20px';
+            portalButton.style.backgroundColor = '#007bff';
+            portalButton.style.color = 'white';
+            portalButton.style.border = 'none';
+            portalButton.style.borderRadius = '5px';
+            portalButton.style.cursor = 'pointer';
+            portalButton.style.fontSize = '14px';
+            portalButton.style.fontWeight = 'bold';
+            portalButton.title = `Open teacher portal for ${teacherId}`;
+
+            portalButton.addEventListener('click', () => {
+                const portalUrl = `teacherPortal.html?teacherId=${encodeURIComponent(teacherId)}`;
+                window.open(portalUrl, '_blank');
+            });
+
+            portalButtonContainer.appendChild(portalButton);
+            teacherDetailInfo.appendChild(portalButtonContainer);
+        }
+
         // Update student list title with count
         if (studentListTitle) {
             studentListTitle.textContent = `Students (${studentDocs.length})`;

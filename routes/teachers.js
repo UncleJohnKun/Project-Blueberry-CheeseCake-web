@@ -18,6 +18,26 @@ const router = express.Router();
 const db = admin.firestore();
 
 /**
+ * Calculate student progress based on completed levels
+ */
+function calculateStudentProgress(studentData) {
+    if (!studentData) return 0;
+
+    let completedLevels = 0;
+    let totalLevels = 10; // Assuming 10 levels total
+
+    // Count completed levels
+    for (let i = 1; i <= totalLevels; i++) {
+        const levelFinishField = `level${i}Finish`;
+        if (studentData[levelFinishField] === true) {
+            completedLevels++;
+        }
+    }
+
+    return completedLevels / totalLevels;
+}
+
+/**
  * Get all teachers (Admin only)
  * GET /api/teachers
  */
@@ -84,21 +104,40 @@ router.get('/:id',
                 });
             }
 
-            const teacherDoc = await db.collection('teacherData').doc(id).get();
+            // First try to find by document ID, then by id field
+            let teacherDoc = await db.collection('teacherData').doc(id).get();
+            let teacherData = null;
+            let docId = id;
 
-            if (!teacherDoc.exists) {
+            if (teacherDoc.exists) {
+                teacherData = teacherDoc.data();
+                docId = teacherDoc.id;
+            } else {
+                // If not found by document ID, search by id field
+                const teacherQuery = await db.collection('teacherData')
+                    .where('id', '==', id)
+                    .limit(1)
+                    .get();
+
+                if (!teacherQuery.empty) {
+                    teacherDoc = teacherQuery.docs[0];
+                    teacherData = teacherDoc.data();
+                    docId = teacherDoc.id;
+                }
+            }
+
+            if (!teacherData) {
                 return res.status(404).json({
                     error: 'Teacher not found',
                     message: 'The requested teacher does not exist'
                 });
             }
 
-            const teacherData = teacherDoc.data();
             // Remove password from response
             delete teacherData.password;
 
             res.json({
-                id: teacherDoc.id,
+                id: docId,
                 ...teacherData
             });
 
@@ -139,15 +178,21 @@ router.get('/:id/students',
                 });
             }
 
+            // Query students by teacherID field (which links students to teachers)
             const studentsSnapshot = await db.collection('studentData')
-                .where('id', '==', id)
+                .where('teacherID', '==', id)
                 .get();
 
             const students = [];
             studentsSnapshot.forEach(doc => {
+                const studentData = doc.data();
                 students.push({
                     id: doc.id,
-                    ...doc.data()
+                    ...studentData,
+                    // Calculate progress if level data exists
+                    progress: calculateStudentProgress(studentData),
+                    // Format last active date
+                    lastActive: studentData.timestamp || null
                 });
             });
 
