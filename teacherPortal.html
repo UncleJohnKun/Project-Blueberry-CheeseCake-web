@@ -47,6 +47,12 @@
                             Levels
                         </a>
                     </li>
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link" id="settingsLink">
+                            <span class="sidebar-nav-icon">⚙️</span>
+                            Settings
+                        </a>
+                    </li>
                 </ul>
             </nav>
         </aside>
@@ -127,6 +133,61 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Settings Modal - Completely Isolated -->
+    <div id="settingsModal" class="settings-overlay" style="display: none;">
+        <div class="settings-container">
+            <button id="closeSettingsButton" class="settings-close-btn">Close</button>
+            <h2>Settings</h2>
+
+            <div class="settings-content">
+                <div class="settings-section">
+                    <h3>Account</h3>
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-title">Logout</div>
+                            <div class="settings-item-description">Sign out of your teacher account</div>
+                        </div>
+                        <button id="settingsLogoutButton" class="btn-danger">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Student Modal - Completely Isolated -->
+    <div id="addStudentModal" class="add-student-overlay" style="display: none;">
+        <div class="add-student-container">
+            <button id="closeAddStudentButton" class="add-student-close-btn">Close</button>
+            <h2>How many Accounts you will Create?</h2>
+
+            <div class="add-student-form">
+                <div class="input-wrapper">
+                    <input type="number" id="studentCountInput" placeholder="Input Number" min="1" max="50" />
+                </div>
+                <button id="createAccountsButton" class="create-btn">Create</button>
+                <div id="addStudentError" class="add-student-error" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Creating Accounts Progress Modal - Completely Isolated -->
+    <div id="creatingAccountsModal" class="progress-overlay" style="display: none;">
+        <div class="progress-container">
+            <h2>Now Creating the Accounts</h2>
+            <p>Please Do not close the Web</p>
+
+            <div class="progress-wrapper">
+                <div class="progress-status">
+                    <span id="progressText">Created: 0 / 0 (Checking: 0)</span>
+                </div>
+                <div class="progress-track">
+                    <div id="progressFill" class="progress-bar-fill"></div>
+                </div>
+                <button id="cancelCreationButton" class="cancel-btn">Cancel the Remaining Account</button>
+            </div>
+        </div>
     </div>
 
     <script src="teacherPortal.js"></script>

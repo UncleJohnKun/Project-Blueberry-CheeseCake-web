@@ -108,6 +108,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const questionsLink = document.getElementById('questionsLink');
     const levelsLink = document.getElementById('levelsLink');
     const createStudentLink = document.getElementById('createStudentLink');
+    const settingsLink = document.getElementById('settingsLink');
     
     // View containers
     const studentListView = document.getElementById('studentListView');
@@ -119,6 +120,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     const mobileSidebarClose = document.getElementById('mobileSidebarClose');
     const sidebar = document.getElementById('sidebar');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    // Settings modal elements
+    const settingsModal = document.getElementById('settingsModal');
+    const closeSettingsButton = document.getElementById('closeSettingsButton');
+    const settingsLogoutButton = document.getElementById('settingsLogoutButton');
+
+    // Add Student modal elements
+    const addStudentModal = document.getElementById('addStudentModal');
+    const closeAddStudentButton = document.getElementById('closeAddStudentButton');
+    const studentCountInput = document.getElementById('studentCountInput');
+    const createAccountsButton = document.getElementById('createAccountsButton');
+    const addStudentError = document.getElementById('addStudentError');
+
+    // Creating Accounts modal elements
+    const creatingAccountsModal = document.getElementById('creatingAccountsModal');
+    const progressText = document.getElementById('progressText');
+    const progressFill = document.getElementById('progressFill');
+    const cancelCreationButton = document.getElementById('cancelCreationButton');
 
     // --- TEACHER DATA ---
     let currentTeacherId = null;
@@ -357,26 +376,43 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    // --- PAGINATION VARIABLES ---
+    let currentPage = 1;
+    const studentsPerPage = 10;
+    let filteredStudents = [];
+
     // --- RENDER FUNCTIONS ---
     function renderStudentList(students) {
         if (!studentTableBody) {
             console.error("Student table body element not found");
             return;
         }
-        
+
         if (!students || students.length === 0) {
             loadingMessage.textContent = "No students found.";
             studentTableBody.innerHTML = '';
+            updatePaginationControls(0);
             return;
         }
-        
+
         loadingMessage.style.display = 'none';
+        filteredStudents = students;
+
+        // Calculate pagination
+        const totalPages = Math.ceil(students.length / studentsPerPage);
+        const startIndex = (currentPage - 1) * studentsPerPage;
+        const endIndex = startIndex + studentsPerPage;
+        const studentsToShow = students.slice(startIndex, endIndex);
+
+        console.log(`Pagination: ${students.length} total students, ${totalPages} pages, showing ${studentsToShow.length} students on page ${currentPage}`);
+
+        // Clear table
         studentTableBody.innerHTML = '';
-        
-        students.forEach(student => {
+
+        studentsToShow.forEach(student => {
             try {
                 const row = document.createElement('tr');
-                
+
                 // Calculate progress percentage (handle missing data gracefully)
                 const progress = student.progress || 0;
                 const progressPercent = Math.round(progress * 100);
@@ -396,12 +432,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <button class="button small edit-student" data-id="${student.id || ''}" data-student='${JSON.stringify(student).replace(/'/g, "&apos;")}'>Edit</button>
                     </td>
                 `;
-                
+
                 studentTableBody.appendChild(row);
             } catch (err) {
                 console.error("Error rendering student row:", err, student);
             }
         });
+
+        // Update pagination controls
+        updatePaginationControls(totalPages);
         
         // Add event listeners to student name links
         document.querySelectorAll('.student-name-link').forEach(link => {
@@ -426,21 +465,75 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
 
-        // Add entrance animations to student rows
+        // Add entrance animations to student rows (fixed)
         const studentRows = studentTableBody.querySelectorAll('tr');
-        studentRows.forEach((row, index) => {
-            row.style.opacity = '0';
-            row.style.transform = 'translateY(20px)';
-            setTimeout(() => {
-                row.style.transition = 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-                row.style.opacity = '1';
-                row.style.transform = 'translateY(0)';
-            }, index * 100);
-        });
+        animateElements(studentRows, 80);
 
-        // Add hover animations after rendering
-        addHoverAnimations();
+        // Add hover animations after rendering (with delay to avoid conflicts)
+        setTimeout(() => {
+            addHoverAnimations();
+        }, studentRows.length * 80 + 100);
     }
+
+    function updatePaginationControls(totalPages) {
+        console.log(`updatePaginationControls called with totalPages: ${totalPages}`);
+        let paginationContainer = document.getElementById('paginationContainer');
+
+        if (!paginationContainer) {
+            // Create pagination container if it doesn't exist
+            paginationContainer = document.createElement('div');
+            paginationContainer.id = 'paginationContainer';
+            paginationContainer.className = 'pagination-container';
+
+            // Insert after the student table
+            const studentTable = document.querySelector('.table-container');
+            if (studentTable) {
+                studentTable.parentNode.insertBefore(paginationContainer, studentTable.nextSibling);
+                console.log('Pagination container created and inserted');
+            } else {
+                console.log('Student table container not found - trying alternative selectors');
+                // Try alternative locations
+                const contentContainer = document.querySelector('.content-container');
+                if (contentContainer) {
+                    contentContainer.appendChild(paginationContainer);
+                    console.log('Pagination container added to content container');
+                }
+            }
+        }
+
+        if (totalPages <= 1) {
+            paginationContainer.innerHTML = '';
+            console.log('Hiding pagination - only 1 page or less');
+            return;
+        }
+
+        let paginationHTML = '<div class="pagination">';
+
+        // Previous button
+        if (currentPage > 1) {
+            paginationHTML += `<button class="pagination-btn" onclick="changePage(${currentPage - 1})">Previous</button>`;
+        }
+
+        // Page numbers
+        for (let i = 1; i <= totalPages; i++) {
+            const activeClass = i === currentPage ? 'active' : '';
+            paginationHTML += `<button class="pagination-btn ${activeClass}" onclick="changePage(${i})">${i}</button>`;
+        }
+
+        // Next button
+        if (currentPage < totalPages) {
+            paginationHTML += `<button class="pagination-btn" onclick="changePage(${currentPage + 1})">Next</button>`;
+        }
+
+        paginationHTML += '</div>';
+        paginationContainer.innerHTML = paginationHTML;
+    }
+
+    // Make changePage function global so it can be called from onclick
+    window.changePage = function(page) {
+        currentPage = page;
+        renderStudentList(filteredStudents);
+    };
 
     function renderQuestionsView() {
         const levelTabs = document.getElementById('levelTabs');
@@ -795,11 +888,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (searchStudentInput) {
             searchStudentInput.addEventListener('input', () => {
                 const searchTerm = searchStudentInput.value.toLowerCase();
-                const filteredStudents = allStudentsData.filter(student => {
+                const searchResults = allStudentsData.filter(student => {
                     return (student.fullname || '').toLowerCase().includes(searchTerm) ||
                            (student.id || '').toLowerCase().includes(searchTerm);
                 });
-                renderStudentList(filteredStudents);
+                currentPage = 1; // Reset to first page when searching
+                renderStudentList(searchResults);
             });
         }
 
@@ -833,9 +927,55 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (createStudentLink) {
             createStudentLink.addEventListener('click', (e) => {
                 e.preventDefault();
-                alert("Create student functionality");
-                // In a real implementation, you would navigate to a create student page
+                showAddStudentModal();
             });
+        }
+
+        // Initialize settings functionality
+        if (settingsLink) {
+            settingsLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                openSettingsModal();
+            });
+        }
+
+        if (closeSettingsButton) {
+            closeSettingsButton.addEventListener('click', closeSettingsModal);
+        }
+
+        if (settingsModal) {
+            settingsModal.addEventListener('click', (event) => {
+                if (event.target === settingsModal) closeSettingsModal();
+            });
+        }
+
+        if (settingsLogoutButton) {
+            settingsLogoutButton.addEventListener('click', () => {
+                sessionStorage.removeItem('isAdminLoggedIn');
+                sessionStorage.removeItem('isTeacherLoggedIn');
+                sessionStorage.removeItem('teacherId');
+                alert('Logged out.');
+                window.location.href = 'index.html';
+            });
+        }
+
+        // Initialize Add Student functionality
+        if (closeAddStudentButton) {
+            closeAddStudentButton.addEventListener('click', closeAddStudentModal);
+        }
+
+        if (addStudentModal) {
+            addStudentModal.addEventListener('click', (event) => {
+                if (event.target === addStudentModal) closeAddStudentModal();
+            });
+        }
+
+        if (createAccountsButton) {
+            createAccountsButton.addEventListener('click', startAccountCreation);
+        }
+
+        if (cancelCreationButton) {
+            cancelCreationButton.addEventListener('click', cancelAccountCreation);
         }
 
         // Initialize logout functionality
@@ -850,13 +990,378 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Animation utility functions
+    // --- SETTINGS MODAL FUNCTIONS ---
+    function openSettingsModal() {
+        if (settingsModal) {
+            // Show modal immediately
+            settingsModal.style.display = 'flex';
+
+            // Use requestAnimationFrame for smooth animation
+            requestAnimationFrame(() => {
+                settingsModal.classList.add('active');
+            });
+        } else {
+            console.error("teacherPortal.js: settingsModal element not found.");
+        }
+    }
+
+    function closeSettingsModal() {
+        if (settingsModal) {
+            settingsModal.classList.remove('active');
+            setTimeout(() => settingsModal.style.display = 'none', 300);
+        }
+    }
+
+    // Add keyboard support for closing settings modal
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            if (settingsModal && settingsModal.style.display === 'flex') {
+                closeSettingsModal();
+            }
+            if (addStudentModal && addStudentModal.classList.contains('active')) {
+                closeAddStudentModal();
+            }
+        }
+    });
+
+    // --- ADD STUDENT FUNCTIONS ---
+    let accountCreationState = {
+        studentNumber: 0,
+        targetNumber: 0,
+        createdCount: 0,
+        isCreating: false,
+        isCancelled: false
+    };
+
+    function showAddStudentModal() {
+        if (addStudentModal) {
+            // Reset form
+            studentCountInput.value = '';
+            addStudentError.style.display = 'none';
+
+            // Show modal with smooth animation
+            addStudentModal.style.display = 'flex';
+            requestAnimationFrame(() => {
+                addStudentModal.classList.add('active');
+            });
+        }
+    }
+
+    function closeAddStudentModal() {
+        if (addStudentModal) {
+            addStudentModal.classList.remove('active');
+            setTimeout(() => {
+                addStudentModal.style.display = 'none';
+            }, 300);
+        }
+    }
+
+    function startAccountCreation() {
+        const inputValue = studentCountInput.value.trim();
+
+        if (!inputValue || isNaN(inputValue)) {
+            showAddStudentError('Error: Please enter a valid number.');
+            return;
+        }
+
+        const accountCount = parseInt(inputValue);
+
+        if (accountCount < 1 || accountCount > 50) {
+            showAddStudentError('Number must be between 1 and 50!');
+            return;
+        }
+
+        // Initialize creation state - start from next available number
+        const nextAvailableNumber = findNextAvailableStudentNumber();
+        accountCreationState = {
+            studentNumber: nextAvailableNumber,
+            targetNumber: accountCount,
+            createdCount: 0,
+            isCreating: true,
+            isCancelled: false
+        };
+
+        // Close add student modal and show progress modal
+        closeAddStudentModal();
+        showCreatingAccountsModal();
+
+        // Start the account creation process
+        setTimeout(() => {
+            checkNextStudentAccount();
+        }, 500);
+    }
+
+    function showAddStudentError(message) {
+        addStudentError.textContent = message;
+        addStudentError.style.display = 'block';
+    }
+
+    function findNextAvailableStudentNumber() {
+        // Get existing student numbers from the loaded student data
+        const teacherId = currentTeacherId || 'admin';
+        const existingNumbers = new Set();
+
+        // Extract numbers from existing student usernames
+        if (allStudentsData && Array.isArray(allStudentsData)) {
+            allStudentsData.forEach(student => {
+                if (student.id === teacherId && student.username) {
+                    // Username format: admin{studentNumber}{3-digit-random}
+                    // Example: admin785123 = admin + 785 + 123
+                    if (student.username.startsWith(teacherId)) {
+                        const numberPart = student.username.substring(teacherId.length);
+                        // Remove the last 3 digits (random part) to get student number
+                        if (numberPart.length > 3) {
+                            const studentNumber = parseInt(numberPart.substring(0, numberPart.length - 3));
+                            if (!isNaN(studentNumber)) {
+                                existingNumbers.add(studentNumber);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Find the next available batch starting number
+        // Students are created in batches of 10: 1-10, 11-20, 21-30, etc.
+        let batchStart = 1;
+        while (true) {
+            let batchEnd = batchStart + 9; // 10 students per batch
+            let batchHasSpace = false;
+
+            // Check if this batch has any available slots
+            for (let i = batchStart; i <= batchEnd; i++) {
+                if (!existingNumbers.has(i)) {
+                    batchHasSpace = true;
+                    break;
+                }
+            }
+
+            if (batchHasSpace) {
+                // Find the first available number in this batch
+                for (let i = batchStart; i <= batchEnd; i++) {
+                    if (!existingNumbers.has(i)) {
+                        console.log(`Next available student number: ${i} in batch ${batchStart}-${batchEnd} (existing: ${Array.from(existingNumbers).sort((a,b) => a-b)})`);
+                        return i;
+                    }
+                }
+            }
+
+            // Move to next batch
+            batchStart += 10;
+
+            // Safety check to prevent infinite loop
+            if (batchStart > 1000) {
+                console.log(`Fallback: Using number ${batchStart}`);
+                return batchStart;
+            }
+        }
+    }
+
+    function showCreatingAccountsModal() {
+        if (creatingAccountsModal) {
+            // Show modal with smooth animation
+            creatingAccountsModal.style.display = 'flex';
+            updateProgressDisplay();
+            requestAnimationFrame(() => {
+                creatingAccountsModal.classList.add('active');
+            });
+        }
+    }
+
+    function closeCreatingAccountsModal() {
+        if (creatingAccountsModal) {
+            creatingAccountsModal.classList.remove('active');
+            setTimeout(() => {
+                creatingAccountsModal.style.display = 'none';
+            }, 300);
+        }
+    }
+
+    function updateProgressDisplay() {
+        if (progressText) {
+            let status = "Preparing...";
+            if (accountCreationState.isCreating) {
+                if (accountCreationState.createdCount < accountCreationState.targetNumber) {
+                    status = `Creating student ${accountCreationState.studentNumber}...`;
+                } else {
+                    status = "Finishing...";
+                }
+            }
+            progressText.textContent = `Created: ${accountCreationState.createdCount} / ${accountCreationState.targetNumber} (${status})`;
+        }
+
+        if (progressFill) {
+            const percentage = accountCreationState.targetNumber > 0 ?
+                (accountCreationState.createdCount / accountCreationState.targetNumber) * 100 : 0;
+            progressFill.style.width = `${percentage}%`;
+        }
+    }
+
+    async function checkNextStudentAccount() {
+        if (accountCreationState.isCancelled || !accountCreationState.isCreating) {
+            return;
+        }
+
+        if (accountCreationState.createdCount >= accountCreationState.targetNumber) {
+            finishAccountCreation();
+            return;
+        }
+
+        const teacherId = currentTeacherId || 'admin';
+        const studentDocId = `${teacherId}${accountCreationState.studentNumber}`;
+
+        updateProgressDisplay();
+
+        try {
+            // Check if student account already exists
+            const exists = await checkStudentExists(studentDocId);
+
+            if (exists) {
+                console.log(`Student ${studentDocId} already exists, skipping...`);
+                accountCreationState.studentNumber++;
+                setTimeout(() => checkNextStudentAccount(), 100);
+            } else {
+                console.log(`Creating student ${studentDocId}...`);
+                await createStudentAccount(studentDocId);
+                accountCreationState.createdCount++;
+                accountCreationState.studentNumber++;
+                updateProgressDisplay();
+                setTimeout(() => checkNextStudentAccount(), 200);
+            }
+        } catch (error) {
+            console.error('Error in account creation process:', error);
+            accountCreationState.studentNumber++;
+            setTimeout(() => checkNextStudentAccount(), 500);
+        }
+    }
+
+    async function checkStudentExists(studentId) {
+        try {
+            const url = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents/studentData/${studentId}?key=${CONFIG.apiKey}`;
+            const response = await fetch(url);
+
+            if (response.status === 404) {
+                return false; // Document doesn't exist
+            }
+
+            if (response.ok) {
+                return true; // Document exists
+            }
+
+            throw new Error(`Unexpected response: ${response.status}`);
+        } catch (error) {
+            console.error('Error checking student existence:', error);
+            return false;
+        }
+    }
+
+    async function createStudentAccount(studentId) {
+        const teacherId = currentTeacherId || 'admin';
+        const randomPassword = Math.floor(Math.random() * 900) + 100;
+        const randomUsername = Math.floor(Math.random() * 900) + 100;
+        const timestamp = new Date().toISOString();
+
+        // Firestore document format
+        const firestoreDocument = {
+            fields: {
+                fullname: { stringValue: "" },
+                id: { stringValue: teacherId },
+                password: { stringValue: `${teacherId}${accountCreationState.studentNumber}${randomPassword}` },
+                username: { stringValue: `${teacherId}${accountCreationState.studentNumber}${randomUsername}` },
+                timestamp: { timestampValue: timestamp },
+                level1Score: { integerValue: 0 },
+                level2Score: { integerValue: 0 },
+                level3Score: { integerValue: 0 },
+                level4Score: { integerValue: 0 },
+                level5Score: { integerValue: 0 },
+                level6Score: { integerValue: 0 },
+                level7Score: { integerValue: 0 },
+                level8Score: { integerValue: 0 },
+                level9Score: { integerValue: 0 },
+                level10Score: { integerValue: 0 },
+                level1Finish: { booleanValue: false },
+                level2Finish: { booleanValue: false },
+                level3Finish: { booleanValue: false },
+                level4Finish: { booleanValue: false },
+                level5Finish: { booleanValue: false },
+                level6Finish: { booleanValue: false },
+                level7Finish: { booleanValue: false },
+                level8Finish: { booleanValue: false },
+                level9Finish: { booleanValue: false },
+                level10Finish: { booleanValue: false }
+            }
+        };
+
+        try {
+            const url = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents/studentData/${studentId}?key=${CONFIG.apiKey}`;
+            const response = await fetch(url, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(firestoreDocument)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Failed to create student account: ${response.status} - ${errorText}`);
+            }
+
+            console.log(`✅ Student account created: ${studentId}`);
+            return true;
+        } catch (error) {
+            console.error('Error creating student account:', error);
+            throw error;
+        }
+    }
+
+    function cancelAccountCreation() {
+        accountCreationState.isCancelled = true;
+        accountCreationState.isCreating = false;
+
+        setTimeout(() => {
+            closeCreatingAccountsModal();
+            alert(`Account creation cancelled. Created ${accountCreationState.createdCount} out of ${accountCreationState.targetNumber} accounts.`);
+            // Refresh the student list to show newly created accounts
+            if (currentView === 'students') {
+                renderStudentList();
+            }
+        }, 500);
+    }
+
+    function finishAccountCreation() {
+        accountCreationState.isCreating = false;
+
+        setTimeout(() => {
+            closeCreatingAccountsModal();
+            alert(`✅ Successfully created ${accountCreationState.createdCount} student accounts!`);
+            // Refresh the student list to show newly created accounts
+            if (currentView === 'students') {
+                renderStudentList();
+            }
+        }, 1000);
+    }
+
+    // Animation utility functions - Fixed to prevent glitching
     function animateElements(elements, stagger = 100) {
+        if (!elements || elements.length === 0) return;
+
         elements.forEach((element, index) => {
+            // Clear any existing animations and transitions
+            element.style.transition = 'none';
+            element.style.transform = '';
+            element.classList.remove('animate-fade-in-up', 'animate-fade-in', 'animate-slide-in-up');
+
+            // Force reflow to ensure styles are applied
+            element.offsetHeight;
+
+            // Set initial state
             element.style.opacity = '0';
             element.style.transform = 'translateY(20px)';
+
+            // Apply animation with delay
             setTimeout(() => {
-                element.style.transition = 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                element.style.transition = 'opacity 0.4s ease-out, transform 0.4s ease-out';
                 element.style.opacity = '1';
                 element.style.transform = 'translateY(0)';
             }, index * stagger);
@@ -864,29 +1369,50 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function addHoverAnimations() {
-        // Add hover animations to student cards
-        const studentCards = document.querySelectorAll('.student-item');
-        studentCards.forEach(card => {
-            card.addEventListener('mouseenter', () => {
-                card.style.transform = 'translateY(-3px)';
-                card.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.1)';
+        // Remove existing hover listeners to prevent duplicates
+        const existingHoverElements = document.querySelectorAll('[data-hover-animated]');
+        existingHoverElements.forEach(el => {
+            el.removeAttribute('data-hover-animated');
+            // Clone and replace to remove all event listeners
+            const newEl = el.cloneNode(true);
+            el.parentNode.replaceChild(newEl, el);
+        });
+
+        // Add hover animations to student table rows
+        const studentRows = document.querySelectorAll('#studentTableBody tr');
+        studentRows.forEach(row => {
+            if (row.getAttribute('data-hover-animated')) return; // Skip if already animated
+
+            row.setAttribute('data-hover-animated', 'true');
+            row.style.transition = 'transform 0.2s ease-out, box-shadow 0.2s ease-out';
+
+            row.addEventListener('mouseenter', () => {
+                if (!row.style.transform.includes('translateY')) {
+                    row.style.transform = 'translateY(-2px)';
+                    row.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+                }
             });
 
-            card.addEventListener('mouseleave', () => {
-                card.style.transform = 'translateY(0)';
-                card.style.boxShadow = '';
+            row.addEventListener('mouseleave', () => {
+                row.style.transform = 'translateY(0)';
+                row.style.boxShadow = '';
             });
         });
 
-        // Add hover animations to buttons
-        const buttons = document.querySelectorAll('.btn-primary, .btn-secondary, .btn-danger');
+        // Add hover animations to buttons (simplified)
+        const buttons = document.querySelectorAll('.button, .btn-primary, .btn-secondary, .btn-danger');
         buttons.forEach(button => {
+            if (button.getAttribute('data-hover-animated')) return; // Skip if already animated
+
+            button.setAttribute('data-hover-animated', 'true');
+            button.style.transition = 'transform 0.15s ease-out';
+
             button.addEventListener('mouseenter', () => {
-                button.style.transform = 'translateY(-2px) scale(1.02)';
+                button.style.transform = 'translateY(-1px)';
             });
 
             button.addEventListener('mouseleave', () => {
-                button.style.transform = 'translateY(0) scale(1)';
+                button.style.transform = 'translateY(0)';
             });
         });
     }

@@ -244,44 +244,98 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize mobile tabs when DOM is ready
     initializeMobileTabs();
 
-    // Animation utility functions
+    // Animation utility functions - Fixed to prevent glitching
     function animateElements(elements, animationClass = 'animate-fade-in-up', stagger = 100) {
+        if (!elements || elements.length === 0) return;
+
         elements.forEach((element, index) => {
+            // Clear any existing animations and transitions
+            element.style.transition = 'none';
+            element.style.transform = '';
+            element.classList.remove('animate-fade-in-up', 'animate-fade-in', 'animate-slide-in-up');
+
+            // Force reflow to ensure styles are applied
+            element.offsetHeight;
+
+            // Set initial state
             element.style.opacity = '0';
             element.style.transform = 'translateY(20px)';
+
+            // Apply animation with delay
             setTimeout(() => {
-                element.style.transition = 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                element.style.transition = 'opacity 0.4s ease-out, transform 0.4s ease-out';
                 element.style.opacity = '1';
                 element.style.transform = 'translateY(0)';
-                element.classList.add(animationClass);
             }, index * stagger);
         });
     }
 
     function addHoverAnimations() {
+        // Remove existing hover listeners to prevent duplicates
+        const existingHoverElements = document.querySelectorAll('[data-hover-animated]');
+        existingHoverElements.forEach(el => {
+            el.removeAttribute('data-hover-animated');
+            // Clone and replace to remove all event listeners
+            const newEl = el.cloneNode(true);
+            el.parentNode.replaceChild(newEl, el);
+        });
+
         // Add hover animations to teacher cards
         const teacherCards = document.querySelectorAll('.teacher-item-box');
         teacherCards.forEach(card => {
+            if (card.getAttribute('data-hover-animated')) return; // Skip if already animated
+
+            card.setAttribute('data-hover-animated', 'true');
+            card.style.transition = 'transform 0.2s ease-out, box-shadow 0.2s ease-out';
+
             card.addEventListener('mouseenter', () => {
-                card.style.transform = 'translateY(-4px) scale(1.02)';
-                card.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+                if (!card.style.transform.includes('translateY')) {
+                    card.style.transform = 'translateY(-3px)';
+                    card.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.12)';
+                }
             });
 
             card.addEventListener('mouseleave', () => {
-                card.style.transform = 'translateY(0) scale(1)';
+                card.style.transform = 'translateY(0)';
                 card.style.boxShadow = '';
             });
         });
 
-        // Add hover animations to buttons
-        const buttons = document.querySelectorAll('.btn-primary, .btn-secondary, .btn-danger');
+        // Add hover animations to teacher table rows
+        const teacherRows = document.querySelectorAll('#teacherTableBody tr');
+        teacherRows.forEach(row => {
+            if (row.getAttribute('data-hover-animated')) return; // Skip if already animated
+
+            row.setAttribute('data-hover-animated', 'true');
+            row.style.transition = 'transform 0.2s ease-out, box-shadow 0.2s ease-out';
+
+            row.addEventListener('mouseenter', () => {
+                if (!row.style.transform.includes('translateY')) {
+                    row.style.transform = 'translateY(-2px)';
+                    row.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+                }
+            });
+
+            row.addEventListener('mouseleave', () => {
+                row.style.transform = 'translateY(0)';
+                row.style.boxShadow = '';
+            });
+        });
+
+        // Add hover animations to buttons (simplified)
+        const buttons = document.querySelectorAll('.button, .btn-primary, .btn-secondary, .btn-danger');
         buttons.forEach(button => {
+            if (button.getAttribute('data-hover-animated')) return; // Skip if already animated
+
+            button.setAttribute('data-hover-animated', 'true');
+            button.style.transition = 'transform 0.15s ease-out';
+
             button.addEventListener('mouseenter', () => {
-                button.style.transform = 'translateY(-2px) scale(1.02)';
+                button.style.transform = 'translateY(-1px)';
             });
 
             button.addEventListener('mouseleave', () => {
-                button.style.transform = 'translateY(0) scale(1)';
+                button.style.transform = 'translateY(0)';
             });
         });
     }
@@ -805,17 +859,9 @@ document.addEventListener('DOMContentLoaded', () => {
             targetList.innerHTML = `<p>No students found associated with this teacher.</p>`;
         }
 
-        // Add entrance animations to student items
+        // Add entrance animations to student items (fixed)
         const studentItems = targetList.querySelectorAll('.student-item');
-        studentItems.forEach((item, index) => {
-            item.style.opacity = '0';
-            item.style.transform = 'translateY(20px)';
-            setTimeout(() => {
-                item.style.transition = 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-                item.style.opacity = '1';
-                item.style.transform = 'translateY(0)';
-            }, index * 100);
-        });
+        animateElements(studentItems, 'animate-fade-in-up', 80);
     }
 
     async function handleTeacherItemClick(teacherDocPath) {
@@ -987,20 +1033,14 @@ document.addEventListener('DOMContentLoaded', () => {
             teacherTableBody.appendChild(row);
         });
 
-        // Add entrance animations to teacher rows
+        // Add entrance animations to teacher rows (fixed)
         const teacherRows = teacherTableBody.querySelectorAll('tr');
-        teacherRows.forEach((row, index) => {
-            row.style.opacity = '0';
-            row.style.transform = 'translateY(20px)';
-            setTimeout(() => {
-                row.style.transition = 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-                row.style.opacity = '1';
-                row.style.transform = 'translateY(0)';
-            }, index * 50);
-        });
+        animateElements(teacherRows, 'animate-fade-in-up', 60);
 
-        // Add hover animations after rendering
-        addHoverAnimations();
+        // Add hover animations after rendering (with delay to avoid conflicts)
+        setTimeout(() => {
+            addHoverAnimations();
+        }, teacherRows.length * 60 + 100);
     }
 
     function filterAndDisplayTeachers(searchTerm = "") {
