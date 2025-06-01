@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Details - Teacher Portal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Mobile Sidebar Toggle -->
+    <button class="mobile-sidebar-toggle" id="mobileSidebarToggle">☰</button>
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="admin-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">📚</div>
+                <div class="sidebar-title">Teacher Portal</div>
+                <button class="mobile-sidebar-close" id="mobileSidebarClose">✕</button>
+            </div>
+            <nav>
+                <ul class="sidebar-nav">
+                    <li class="sidebar-nav-item">
+                        <a href="teacherPortal.html" class="sidebar-nav-link active">
+                            <span class="sidebar-nav-icon">👥</span>
+                            My Students
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="teacherPortal.html" class="sidebar-nav-link">
+                            <span class="sidebar-nav-icon">➕</span>
+                            Add Student
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="teacherPortal.html" class="sidebar-nav-link">
+                            <span class="sidebar-nav-icon">❓</span>
+                            Questions
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="teacherPortal.html" class="sidebar-nav-link">
+                            <span class="sidebar-nav-icon">🏆</span>
+                            Levels
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Student Details View -->
+            <div id="studentDetailsView" class="content-view active">
+                <header class="admin-header">
+                    <div class="header-content">
+                        <h1 class="header-title">Student Details</h1>
+                        <div class="header-actions">
+                            <a href="teacherPortal.html" class="button secondary">← Back to Students</a>
+                            <button id="logoutButton" class="button danger">Logout</button>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="content-container">
+                    <div id="loadingMessage" class="loading-message">Loading student details...</div>
+
+                    <div id="studentDetailsContent" class="student-details-content" style="display: none;">
+                        <!-- Student Header Card -->
+                        <div class="student-header-card">
+                            <div class="student-avatar">
+                                <span class="avatar-icon">👤</span>
+                            </div>
+                            <div class="student-info">
+                                <h2 id="studentName" class="student-name">Student Name</h2>
+                                <p id="studentId" class="student-id">Student ID: </p>
+                                <p id="studentEmail" class="student-email">Email: </p>
+                            </div>
+                        </div>
+
+                    <!-- Details Grid -->
+                    <div class="details-grid">
+                        <div class="info-card">
+                            <h3 class="card-title">Basic Information</h3>
+                            <div class="info-list">
+                                <div class="info-item">
+                                    <span class="info-label">Full Name:</span>
+                                    <span class="info-value" id="detailFullName">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Username:</span>
+                                    <span class="info-value" id="detailUsername">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Student ID:</span>
+                                    <span class="info-value" id="detailStudentId">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Email:</span>
+                                    <span class="info-value" id="detailEmail">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Teacher ID:</span>
+                                    <span class="info-value" id="detailTeacherId">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-card">
+                            <h3 class="card-title">Progress Summary</h3>
+                            <div class="info-list">
+                                <div class="info-item">
+                                    <span class="info-label">Overall Progress:</span>
+                                    <span class="info-value" id="detailProgress">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Levels Completed:</span>
+                                    <span class="info-value" id="detailLevelsCompleted">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Total Levels:</span>
+                                    <span class="info-value" id="detailTotalLevels">10</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Last Active:</span>
+                                    <span class="info-value" id="detailLastActive">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Level Progress Card -->
+                    <div class="info-card">
+                        <h3 class="card-title">Level Progress</h3>
+                        <div class="progress-levels" id="progressLevels">
+                            <!-- Level cards will be populated here -->
+                        </div>
+                    </div>
+                    </div>
+
+                    <div id="errorMessage" class="error-message" style="display: none;">
+                        Error loading student details. Please try again.
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="studentDetails.js"></script>
+</body>
+</html>

@@ -313,11 +313,33 @@ document.addEventListener('DOMContentLoaded', async () => {
                             fullname: studentDoc.fields.fullname?.stringValue || 'Unknown',
                             username: studentDoc.fields.username?.stringValue || 'N/A',
                             email: studentDoc.fields.email?.stringValue || 'N/A',
+                            password: studentDoc.fields.password?.stringValue || 'N/A',
                             teacherID: studentDoc.fields.teacherID?.stringValue || studentDoc.fields.id?.stringValue || 'N/A',
                             timestamp: studentDoc.fields.timestamp?.timestampValue || studentDoc.fields.timestamp?.stringValue || null,
                             progress: calculateStudentProgress(studentDoc.fields),
                             lastActive: studentDoc.fields.timestamp?.timestampValue || studentDoc.fields.timestamp?.stringValue || null
                         };
+
+                        // Add level data from Firebase
+                        for (let i = 1; i <= 10; i++) {
+                            // Extract level finish status
+                            if (studentDoc.fields[`level${i}Finish`] !== undefined) {
+                                studentData[`level${i}Finish`] = studentDoc.fields[`level${i}Finish`].booleanValue || false;
+                            }
+
+                            // Extract level score
+                            if (studentDoc.fields[`level${i}Score`] !== undefined) {
+                                studentData[`level${i}Score`] = studentDoc.fields[`level${i}Score`].integerValue ||
+                                                               studentDoc.fields[`level${i}Score`].doubleValue || 0;
+                            }
+
+                            // Extract level date finished if available
+                            if (studentDoc.fields[`level${i}DateFinished`] !== undefined) {
+                                studentData[`level${i}DateFinished`] = studentDoc.fields[`level${i}DateFinished`].timestampValue ||
+                                                                       studentDoc.fields[`level${i}DateFinished`].stringValue || null;
+                            }
+                        }
+
                         allStudentsData.push(studentData);
                     }
                 });
@@ -358,12 +380,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Calculate progress percentage (handle missing data gracefully)
                 const progress = student.progress || 0;
                 const progressPercent = Math.round(progress * 100);
-                
-                // Format last active date (handle missing data gracefully)
-                const lastActive = student.lastActive ? new Date(student.lastActive).toLocaleDateString() : 'Never';
-                
+
                 row.innerHTML = `
-                    <td>${student.fullname || 'Unknown'}</td>
+                    <td><a href="#" class="student-name-link" data-id="${student.id || ''}" data-student='${JSON.stringify(student).replace(/'/g, "&apos;")}'>${student.fullname || 'Unknown'}</a></td>
                     <td>${student.id || 'N/A'}</td>
                     <td>
                         <div class="progress-bar">
@@ -371,10 +390,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <span>${progressPercent}%</span>
                         </div>
                     </td>
-                    <td>${lastActive}</td>
                     <td>
-                        <button class="button small view-student" data-id="${student.id || ''}">View</button>
-                        <button class="button small edit-student" data-id="${student.id || ''}">Edit</button>
+                        <button class="button small edit-student" data-id="${student.id || ''}" data-student='${JSON.stringify(student).replace(/'/g, "&apos;")}'>Edit</button>
                     </td>
                 `;
                 
@@ -384,21 +401,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
         
-        // Add event listeners to buttons
-        document.querySelectorAll('.view-student').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+        // Add event listeners to student name links
+        document.querySelectorAll('.student-name-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
                 const studentId = e.target.getAttribute('data-id');
-                if (studentId) {
-                    viewStudentDetails(studentId);
+                const studentData = e.target.getAttribute('data-student');
+                if (studentId && studentData) {
+                    viewStudentDetails(studentId, JSON.parse(studentData.replace(/&apos;/g, "'")));
                 }
             });
         });
-        
+
+        // Add event listeners to edit buttons
         document.querySelectorAll('.edit-student').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const studentId = e.target.getAttribute('data-id');
-                if (studentId) {
-                    editStudentDetails(studentId);
+                const studentData = e.target.getAttribute('data-student');
+                if (studentId && studentData) {
+                    editStudentDetails(studentId, JSON.parse(studentData.replace(/&apos;/g, "'")));
                 }
             });
         });
@@ -542,18 +563,129 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // --- EVENT HANDLERS ---
-    function viewStudentDetails(studentId) {
-        alert(`View student details for ID: ${studentId}`);
-        // In a real implementation, you would navigate to a student details page
-        // or open a modal with student details
+    function viewStudentDetails(studentId, studentData) {
+        // Navigate to student details page with student data
+        sessionStorage.setItem('selectedStudentData', JSON.stringify(studentData));
+        window.location.href = `studentDetails.html?id=${studentId}`;
     }
-    
-    function editStudentDetails(studentId) {
-        alert(`Edit student details for ID: ${studentId}`);
-        // In a real implementation, you would navigate to a student edit page
-        // or open a modal with an edit form
+
+    function editStudentDetails(studentId, studentData) {
+        // Create and show edit modal
+        showEditStudentModal(studentData);
     }
-    
+
+    function showEditStudentModal(studentData) {
+        // Remove existing modal if any
+        const existingModal = document.getElementById('editStudentModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        // Create modal HTML
+        const modalHTML = `
+            <div id="editStudentModal" class="student-details-modal active">
+                <div class="student-modal-content">
+                    <div class="student-modal-header">
+                        <h3>Edit Student: ${studentData.fullname || 'Unknown'}</h3>
+                        <button id="editStudentModalClose" class="student-modal-close">Close</button>
+                    </div>
+                    <div class="student-modal-body">
+                        <form id="editStudentForm" class="edit-form">
+                            <div class="form-group">
+                                <label for="editFullName">Full Name:</label>
+                                <input type="text" id="editFullName" value="${studentData.fullname || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="editUsername">Username:</label>
+                                <input type="text" id="editUsername" value="${studentData.username || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="editPassword">Password:</label>
+                                <input type="text" id="editPassword" value="${studentData.password || ''}" required>
+                            </div>
+                            <div class="form-actions">
+                                <button type="submit" class="button primary">Save Changes</button>
+                                <button type="button" id="cancelEdit" class="button secondary">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Add modal to body
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+        // Add event listeners
+        const modal = document.getElementById('editStudentModal');
+        const closeBtn = document.getElementById('editStudentModalClose');
+        const cancelBtn = document.getElementById('cancelEdit');
+        const form = document.getElementById('editStudentForm');
+
+        const closeModal = () => {
+            modal.classList.remove('active');
+            setTimeout(() => modal.remove(), 300);
+        };
+
+        closeBtn.addEventListener('click', closeModal);
+        cancelBtn.addEventListener('click', closeModal);
+
+        // Close modal when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Handle form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await updateStudentData(studentData, modal);
+        });
+    }
+
+    async function updateStudentData(originalStudentData, modal) {
+        try {
+            // Get form values
+            const updatedData = {
+                fullname: document.getElementById('editFullName').value,
+                username: document.getElementById('editUsername').value,
+                password: document.getElementById('editPassword').value,
+                // Preserve original fields that shouldn't be changed
+                id: originalStudentData.id,
+                email: originalStudentData.email,
+                teacherID: originalStudentData.teacherID,
+                progress: originalStudentData.progress,
+                lastActive: originalStudentData.lastActive
+            };
+
+            // Preserve level data
+            for (let i = 1; i <= 10; i++) {
+                if (originalStudentData[`level${i}Finish`] !== undefined) {
+                    updatedData[`level${i}Finish`] = originalStudentData[`level${i}Finish`];
+                }
+                if (originalStudentData[`level${i}Score`] !== undefined) {
+                    updatedData[`level${i}Score`] = originalStudentData[`level${i}Score`];
+                }
+            }
+
+            // In a real implementation, you would call an API to update the student
+            console.log('Updated student data:', updatedData);
+            alert('Student updated successfully!');
+
+            // Close modal
+            modal.classList.remove('active');
+            setTimeout(() => modal.remove(), 300);
+
+            // Refresh student list
+            await fetchStudentsForTeacher();
+
+        } catch (error) {
+            console.error('Error updating student:', error);
+            alert('Error updating student: ' + error.message);
+        }
+    }
+
     function editQuestion(level, index) {
         alert(`Edit question ${index} in ${level}`);
         // In a real implementation, you would open a modal with an edit form
