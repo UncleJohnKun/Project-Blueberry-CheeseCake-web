@@ -310,6 +310,46 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Add entrance animations to form elements
+    const formRows = document.querySelectorAll('.form-row');
+    const formActions = document.querySelector('.form-actions');
+
+    // Animate form rows with staggered delays
+    formRows.forEach((row, index) => {
+        row.style.opacity = '0';
+        row.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            row.style.transition = 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            row.style.opacity = '1';
+            row.style.transform = 'translateY(0)';
+        }, 200 + (index * 150));
+    });
+
+    // Animate form actions
+    if (formActions) {
+        formActions.style.opacity = '0';
+        formActions.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            formActions.style.transition = 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            formActions.style.opacity = '1';
+            formActions.style.transform = 'translateY(0)';
+        }, 200 + (formRows.length * 150));
+    }
+
+    // Add focus animations to form inputs
+    const formInputs = document.querySelectorAll('.form-group input');
+    formInputs.forEach(input => {
+        input.addEventListener('focus', () => {
+            input.style.transform = 'translateY(-2px)';
+            input.style.boxShadow = '0 4px 12px rgba(59, 130, 246, 0.15)';
+        });
+
+        input.addEventListener('blur', () => {
+            input.style.transform = 'translateY(0)';
+            input.style.boxShadow = '';
+        });
+    });
+
     // --- FORM SUBMISSION EVENT LISTENER ---
     signUpForm.addEventListener('submit', async (event) => {
         event.preventDefault();

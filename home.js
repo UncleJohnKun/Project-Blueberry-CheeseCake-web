@@ -244,6 +244,48 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize mobile tabs when DOM is ready
     initializeMobileTabs();
 
+    // Animation utility functions
+    function animateElements(elements, animationClass = 'animate-fade-in-up', stagger = 100) {
+        elements.forEach((element, index) => {
+            element.style.opacity = '0';
+            element.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                element.style.transition = 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                element.style.opacity = '1';
+                element.style.transform = 'translateY(0)';
+                element.classList.add(animationClass);
+            }, index * stagger);
+        });
+    }
+
+    function addHoverAnimations() {
+        // Add hover animations to teacher cards
+        const teacherCards = document.querySelectorAll('.teacher-item-box');
+        teacherCards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-4px) scale(1.02)';
+                card.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.15)';
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0) scale(1)';
+                card.style.boxShadow = '';
+            });
+        });
+
+        // Add hover animations to buttons
+        const buttons = document.querySelectorAll('.btn-primary, .btn-secondary, .btn-danger');
+        buttons.forEach(button => {
+            button.addEventListener('mouseenter', () => {
+                button.style.transform = 'translateY(-2px) scale(1.02)';
+            });
+
+            button.addEventListener('mouseleave', () => {
+                button.style.transform = 'translateY(0) scale(1)';
+            });
+        });
+    }
+
     // --- DETAIL VIEW FUNCTIONS ---
     function showTeacherDetail() {
         if (teacherListView && teacherDetailView) {
@@ -762,6 +804,18 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             targetList.innerHTML = `<p>No students found associated with this teacher.</p>`;
         }
+
+        // Add entrance animations to student items
+        const studentItems = targetList.querySelectorAll('.student-item');
+        studentItems.forEach((item, index) => {
+            item.style.opacity = '0';
+            item.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                item.style.transition = 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                item.style.opacity = '1';
+                item.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
     }
 
     async function handleTeacherItemClick(teacherDocPath) {
@@ -932,6 +986,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
             teacherTableBody.appendChild(row);
         });
+
+        // Add entrance animations to teacher rows
+        const teacherRows = teacherTableBody.querySelectorAll('tr');
+        teacherRows.forEach((row, index) => {
+            row.style.opacity = '0';
+            row.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                row.style.transition = 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                row.style.opacity = '1';
+                row.style.transform = 'translateY(0)';
+            }, index * 50);
+        });
+
+        // Add hover animations after rendering
+        addHoverAnimations();
     }
 
     function filterAndDisplayTeachers(searchTerm = "") {

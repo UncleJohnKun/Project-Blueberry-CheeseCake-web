@@ -385,9 +385,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <td><a href="#" class="student-name-link" data-id="${student.id || ''}" data-student='${JSON.stringify(student).replace(/'/g, "&apos;")}'>${student.fullname || 'Unknown'}</a></td>
                     <td>${student.username || 'N/A'}</td>
                     <td>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${progressPercent}%"></div>
-                            <span>${progressPercent}%</span>
+                        <div class="progress-display">
+                            <div class="progress-percentage">${progressPercent}%</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progressPercent}%"></div>
+                            </div>
                         </div>
                     </td>
                     <td>
@@ -423,6 +425,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             });
         });
+
+        // Add entrance animations to student rows
+        const studentRows = studentTableBody.querySelectorAll('tr');
+        studentRows.forEach((row, index) => {
+            row.style.opacity = '0';
+            row.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                row.style.transition = 'all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                row.style.opacity = '1';
+                row.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+
+        // Add hover animations after rendering
+        addHoverAnimations();
     }
 
     function renderQuestionsView() {
@@ -502,7 +519,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 
                 questionsContainer.appendChild(questionCard);
             });
-            
+
+            // Add entrance animations to question cards
+            const questionCards = questionsContainer.querySelectorAll('.question-card');
+            animateElements(questionCards, 150);
+
             // Add event listeners for edit and delete buttons
             document.querySelectorAll('.edit-question').forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -554,6 +575,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 levelUnlockGrid.appendChild(levelToggle);
             });
             
+            // Add entrance animations to level cards
+            const levelCards = levelUnlockGrid.querySelectorAll('.level-card');
+            animateElements(levelCards, 100);
+
             // Add event listener to save button
             const saveButton = document.getElementById('saveLevelChanges');
             if (saveButton) {
@@ -823,6 +848,47 @@ document.addEventListener('DOMContentLoaded', async () => {
                 window.location.href = 'index.html';
             });
         }
+    }
+
+    // Animation utility functions
+    function animateElements(elements, stagger = 100) {
+        elements.forEach((element, index) => {
+            element.style.opacity = '0';
+            element.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                element.style.transition = 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                element.style.opacity = '1';
+                element.style.transform = 'translateY(0)';
+            }, index * stagger);
+        });
+    }
+
+    function addHoverAnimations() {
+        // Add hover animations to student cards
+        const studentCards = document.querySelectorAll('.student-item');
+        studentCards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-3px)';
+                card.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.1)';
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+                card.style.boxShadow = '';
+            });
+        });
+
+        // Add hover animations to buttons
+        const buttons = document.querySelectorAll('.btn-primary, .btn-secondary, .btn-danger');
+        buttons.forEach(button => {
+            button.addEventListener('mouseenter', () => {
+                button.style.transform = 'translateY(-2px) scale(1.02)';
+            });
+
+            button.addEventListener('mouseleave', () => {
+                button.style.transform = 'translateY(0) scale(1)';
+            });
+        });
     }
 
     // --- INITIALIZATION ---
