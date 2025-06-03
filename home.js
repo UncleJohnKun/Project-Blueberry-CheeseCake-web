@@ -568,42 +568,15 @@ document.addEventListener('DOMContentLoaded', () => {
             teacherDetailInfo.appendChild(p);
         });
 
-        // Add "View Teacher Portal" button
-        const teacherId = formatFirestoreValue(mainDocFields.id);
-        if (teacherId) {
-            const portalButtonContainer = document.createElement('div');
-            portalButtonContainer.style.marginTop = '20px';
-            portalButtonContainer.style.paddingTop = '15px';
-            portalButtonContainer.style.borderTop = '1px solid var(--border-light)';
-
-            const portalButton = document.createElement('button');
-            portalButton.textContent = '🏫 View Teacher Portal';
-            portalButton.style.padding = '10px 20px';
-            portalButton.style.backgroundColor = '#007bff';
-            portalButton.style.color = 'white';
-            portalButton.style.border = 'none';
-            portalButton.style.borderRadius = '5px';
-            portalButton.style.cursor = 'pointer';
-            portalButton.style.fontSize = '14px';
-            portalButton.style.fontWeight = 'bold';
-            portalButton.title = `Open teacher portal for ${teacherId}`;
-
-            portalButton.addEventListener('click', () => {
-                const portalUrl = `teacherPortal.html?teacherId=${encodeURIComponent(teacherId)}`;
-                window.open(portalUrl, '_blank');
-            });
-
-            portalButtonContainer.appendChild(portalButton);
-            teacherDetailInfo.appendChild(portalButtonContainer);
-        }
+        // Teacher Portal button removed as requested
 
         // Update student list title with count
         if (studentListTitle) {
             studentListTitle.textContent = `Students (${studentDocs.length})`;
         }
 
-        // Display students
-        displayStudentsInDetailView(studentDocs);
+        // Display students using the comprehensive render function
+        renderStudentList(studentDocs);
     }
 
     function displayStudentsInDetailView(studentsToDisplay) {
@@ -782,7 +755,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const sortedLevels = Object.keys(levelData).map(Number).sort((a, b) => a - b);
                 let totalScore = 0;
                 let levelsFinished = 0;
-                let totalLevels = sortedLevels.length;
+                const totalLevels = 12; // Always show out of 12 levels
 
                 sortedLevels.forEach(levelNum => {
                     const score = levelData[levelNum].score !== undefined ? levelData[levelNum].score : 0;
@@ -791,7 +764,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (finished) levelsFinished++;
                 });
 
-                const completionPercentage = totalLevels > 0 ? Math.round((levelsFinished / totalLevels) * 100) : 0;
+                const completionPercentage = Math.round((levelsFinished / totalLevels) * 100);
                 const circumference = 2 * Math.PI * 26;
                 const strokeDashoffset = circumference * (1 - completionPercentage / 100);
 
@@ -1423,7 +1396,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const sortedLevels = Object.keys(levelData).map(Number).sort((a, b) => a - b);
             let totalScore = 0;
             let levelsFinished = 0;
-            let totalLevels = sortedLevels.length;
+            const totalLevels = 12; // Always show out of 12 levels
 
             sortedLevels.forEach(levelNum => {
                 const score = levelData[levelNum].score !== undefined ? levelData[levelNum].score : 0;
@@ -1446,10 +1419,6 @@ document.addEventListener('DOMContentLoaded', () => {
                             <span class="stat-value">${totalScore}</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-label">Levels Completed:</span>
-                            <span class="stat-value">${levelsFinished}/${totalLevels}</span>
-                        </div>
-                        <div class="stat-item">
                             <span class="stat-label">Progress:</span>
                             <span class="stat-value">${Math.round((levelsFinished / totalLevels) * 100)}%</span>
                         </div>
@@ -1458,7 +1427,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="progress-bar">
                             <div class="progress-fill" style="width: ${(levelsFinished / totalLevels) * 100}%"></div>
                         </div>
-                        <span class="progress-text">${levelsFinished} of ${totalLevels} levels completed</span>
                     </div>
                 `;
                 modalBody.appendChild(progressSection);
@@ -1471,9 +1439,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const levelGrid = document.createElement('div');
                 levelGrid.className = 'level-grid';
 
-                sortedLevels.forEach(levelNum => {
-                    const score = levelData[levelNum].score !== undefined ? levelData[levelNum].score : 0;
-                    const finished = levelData[levelNum].finish !== undefined ? levelData[levelNum].finish : false;
+                // Show all levels 1-12, regardless of whether they have data
+                for (let levelNum = 1; levelNum <= 12; levelNum++) {
+                    const score = levelData[levelNum]?.score !== undefined ? levelData[levelNum].score : 0;
+                    const finished = levelData[levelNum]?.finish !== undefined ? levelData[levelNum].finish : false;
 
                     const levelCard = document.createElement('div');
                     levelCard.className = `level-card ${finished ? 'completed' : 'incomplete'}`;
@@ -1483,7 +1452,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="level-status">${finished ? '✅ Completed' : '⏳ In Progress'}</div>
                     `;
                     levelGrid.appendChild(levelCard);
-                });
+                }
 
                 levelDetails.appendChild(levelGrid);
                 modalBody.appendChild(levelDetails);
@@ -1764,6 +1733,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 'Level 9 Completed',
                 'Level 10 Score',
                 'Level 10 Completed',
+                'Level 11 Score',
+                'Level 11 Completed',
+                'Level 12 Score',
+                'Level 12 Completed',
                 'Highest Level Reached',
                 'Last Activity Date',
                 'Account Status'
@@ -1792,8 +1765,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 let levelCompletions = [];
                 let highestLevel = 0;
 
-                // Process levels 1-10
-                for (let i = 1; i <= 10; i++) {
+                // Process levels 1-12
+                for (let i = 1; i <= 12; i++) {
                     const scoreField = fields[`level${i}Score`]?.integerValue || fields[`level${i}Score`]?.stringValue || '0';
                     const finishField = fields[`level${i}Finish`]?.booleanValue || fields[`level${i}Finish`]?.stringValue || false;
 
@@ -1813,11 +1786,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Calculate statistics
                 const averageScore = totalLevelsCompleted > 0 ? (totalScore / totalLevelsCompleted).toFixed(2) : '0.00';
-                const progressPercentage = ((totalLevelsCompleted / 10) * 100).toFixed(1) + '%';
+                const progressPercentage = ((totalLevelsCompleted / 12) * 100).toFixed(1) + '%';
 
                 // Determine account status
                 const accountStatus = totalLevelsCompleted === 0 ? 'Inactive' :
-                                   totalLevelsCompleted === 10 ? 'Completed' : 'Active';
+                                   totalLevelsCompleted === 12 ? 'Completed' : 'Active';
 
                 // Last activity (use the highest completed level's timestamp if available)
                 const lastActivity = registrationDate; // Could be enhanced with actual last activity tracking
@@ -1835,8 +1808,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     totalScore,
                     averageScore,
                     progressPercentage,
-                    ...levelScores, // Level 1-10 scores
-                    ...levelCompletions, // Level 1-10 completion status
+                    ...levelScores, // Level 1-12 scores
+                    ...levelCompletions, // Level 1-12 completion status
                     highestLevel || 'None',
                     lastActivity,
                     accountStatus

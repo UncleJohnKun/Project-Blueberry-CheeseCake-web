@@ -1206,7 +1206,7 @@ button.secondary:hover,
 
 /* Desktop: Show both sections */
 .detail-section.desktop-visible {
-    display: block;
+    display: block !important;
 }
 
 /* Mobile: Hide sections by default, show active */
@@ -1215,7 +1215,7 @@ button.secondary:hover,
 }
 
 .detail-section.active {
-    display: block;
+    display: block !important;
 }
 
 /* Students section should take remaining space */
@@ -1227,14 +1227,15 @@ button.secondary:hover,
 
 .detail-section[data-content="students"].desktop-visible {
     flex: 1;
-    display: flex;
+    display: flex !important;
     flex-direction: column;
 }
 
 .detail-section[data-content="students"] .detail-card {
     flex: 1;
-    display: flex;
+    display: flex !important;
     flex-direction: column;
+    min-height: 400px;
 }
 
 .detail-card {
@@ -1408,10 +1409,11 @@ button.secondary:hover,
     min-width: 0;
     box-sizing: border-box;
     position: relative;
-    display: grid;
+    display: grid !important;
     grid-template-columns: 1fr;
     gap: var(--space-3);
     align-content: start;
+    visibility: visible !important;
 }
 
 /* Responsive grid layout for wider screens */
@@ -1747,7 +1749,7 @@ button.secondary:hover,
 
 .progress-stats {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: var(--space-4);
     margin-bottom: var(--space-4);
 }
@@ -2607,6 +2609,79 @@ button.secondary:hover,
     border-color: var(--btn-danger-hover) !important;
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
+}
+
+/* Force logout button visibility - Override any conflicting styles */
+.settings-modal .settings-option #logoutButton,
+.settings-modal .settings-option button[id="logoutButton"],
+.settings-modal button#logoutButton {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background-color: #ef4444 !important;
+    color: #ffffff !important;
+    border: 1px solid #ef4444 !important;
+    padding: 12px 16px !important;
+    border-radius: 6px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    text-decoration: none !important;
+    position: relative !important;
+    z-index: 999 !important;
+    width: auto !important;
+    height: auto !important;
+    min-height: 36px !important;
+    line-height: normal !important;
+}
+
+/* Ensure logout button text is visible */
+.settings-modal button#logoutButton:before,
+.settings-modal button#logoutButton:after {
+    content: none !important;
+}
+
+.settings-modal button#logoutButton span,
+.settings-modal button#logoutButton {
+    color: white !important;
+    text-shadow: none !important;
+}
+
+/* Hover state for forced visibility */
+.settings-modal .settings-option #logoutButton:hover,
+.settings-modal .settings-option button[id="logoutButton"]:hover,
+.settings-modal button#logoutButton:hover {
+    background-color: #dc2626 !important;
+    border-color: #dc2626 !important;
+    color: #ffffff !important;
+}
+
+/* Ultimate logout button fix - nuclear option */
+.settings-modal button,
+.settings-modal .settings-option button,
+.settings-modal [id*="logout"],
+.settings-modal [id*="Logout"] {
+    background: #ef4444 !important;
+    color: #ffffff !important;
+    border: 2px solid #ef4444 !important;
+    padding: 10px 15px !important;
+    border-radius: 5px !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    text-decoration: none !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+}
+
+/* Force text to be visible */
+.settings-modal button *,
+.settings-modal .settings-option button *,
+.settings-modal [id*="logout"] *,
+.settings-modal [id*="Logout"] * {
+    color: white !important;
 }
 
 /* === Create Account Form === */
@@ -4594,6 +4669,7 @@ button.secondary:hover,
     display: flex;
     flex-direction: column;
     gap: var(--space-1);
+    text-align: left;
 }
 
 .student-stats span {
