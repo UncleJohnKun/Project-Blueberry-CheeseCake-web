@@ -616,7 +616,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         `;
         questionsContainer.innerHTML = headerHTML;
 
-        // Create level tabs for all levels 1-12
+        // Create organized level tabs container
+        const tabsContainerHTML = `
+            <div class="level-tabs-container">
+                <div class="level-tabs-grid" id="levelTabsGrid">
+                    <!-- Level tabs will be inserted here -->
+                </div>
+            </div>
+        `;
+        levelTabs.innerHTML = tabsContainerHTML;
+
+        const levelTabsGrid = document.getElementById('levelTabsGrid');
+
+        // Create level tabs for all levels 1-12 in organized grid
         for (let i = 1; i <= 12; i++) {
             const level = `level${i}`;
             const questions = teacherData?.rizal_questions?.[level] || [];
@@ -634,7 +646,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 loadQuestionsForLevel(level);
             });
 
-            levelTabs.appendChild(tab);
+            levelTabsGrid.appendChild(tab);
         }
 
         // Add event listener for Add Question button
