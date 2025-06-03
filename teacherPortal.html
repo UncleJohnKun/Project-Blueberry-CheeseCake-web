@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Portal - Kamusta Po Guro</title>
     <link rel="stylesheet" href="style.css">
+    <!-- SheetJS library for Excel export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
     <!-- Mobile Sidebar Toggle -->
@@ -77,6 +79,7 @@
                             <select id="sectionFilter" class="section-filter">
                                 <option value="">All Sections</option>
                             </select>
+                            <button id="exportExcelButton" class="button secondary">📊 Export Excel Report</button>
                             <button id="logoutButton" class="button danger">Logout</button>
                         </div>
                     </div>

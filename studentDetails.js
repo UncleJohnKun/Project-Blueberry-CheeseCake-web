@@ -17,10 +17,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Header elements
     const studentName = document.getElementById('studentName');
+    const studentIdHeader = document.getElementById('studentId');
 
     // Detail elements
     const detailFullName = document.getElementById('detailFullName');
     const detailUsername = document.getElementById('detailUsername');
+    const detailStudentId = document.getElementById('detailStudentId');
+    const detailTeacherId = document.getElementById('detailTeacherId');
+    const detailSection = document.getElementById('detailSection');
     const detailProgress = document.getElementById('detailProgress');
     const detailLevelsCompleted = document.getElementById('detailLevelsCompleted');
     const progressLevels = document.getElementById('progressLevels');
@@ -69,10 +73,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Populate header
             studentName.textContent = studentData.fullname || 'Unknown Student';
+            studentIdHeader.textContent = `Student ID: ${studentData.id || 'N/A'}`;
 
             // Populate basic information
             detailFullName.textContent = studentData.fullname || 'N/A';
             detailUsername.textContent = studentData.username || 'N/A';
+            detailStudentId.textContent = studentData.id || 'N/A';
+            detailTeacherId.textContent = studentData.teacherID || 'N/A';
+            detailSection.textContent = studentData.section || 'No Section';
 
             // Calculate and display progress
             const progressData = calculateProgress(studentData);
@@ -89,17 +97,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function calculateProgress(studentData) {
-        const totalLevels = 10;
+        const totalLevels = 12;
         let completedLevels = 0;
-        
+
         for (let i = 1; i <= totalLevels; i++) {
             if (studentData[`level${i}Finish`]) {
                 completedLevels++;
             }
         }
-        
+
         const percentage = totalLevels > 0 ? Math.round((completedLevels / totalLevels) * 100) : 0;
-        
+
         return {
             completed: completedLevels,
             total: totalLevels,

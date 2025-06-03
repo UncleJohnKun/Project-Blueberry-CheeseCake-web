@@ -129,6 +129,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const studentTableBody = document.getElementById('studentTableBody');
     const loadingMessage = document.getElementById('loadingMessage');
     const searchStudentInput = document.getElementById('searchStudentInput');
+    const exportExcelButton = document.getElementById('exportExcelButton');
     
     // Navigation elements
     const studentsLink = document.getElementById('studentsLink');
@@ -1661,6 +1662,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 window.location.href = 'index.html';
             });
         }
+
+        // Initialize Excel export functionality
+        if (exportExcelButton) {
+            exportExcelButton.addEventListener('click', () => {
+                exportStudentDataToExcel();
+            });
+        }
     }
 
     // --- SETTINGS MODAL FUNCTIONS ---
@@ -1987,6 +1995,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 level8Score: { integerValue: 0 },
                 level9Score: { integerValue: 0 },
                 level10Score: { integerValue: 0 },
+                level11Score: { integerValue: 0 },
+                level12Score: { integerValue: 0 },
                 level1Finish: { booleanValue: false },
                 level2Finish: { booleanValue: false },
                 level3Finish: { booleanValue: false },
@@ -1996,7 +2006,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 level7Finish: { booleanValue: false },
                 level8Finish: { booleanValue: false },
                 level9Finish: { booleanValue: false },
-                level10Finish: { booleanValue: false }
+                level10Finish: { booleanValue: false },
+                level11Finish: { booleanValue: false },
+                level12Finish: { booleanValue: false }
             }
         };
 
@@ -2539,6 +2551,126 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         });
     }
+
+    // --- EXCEL EXPORT FUNCTIONALITY ---
+    function exportStudentDataToExcel() {
+        if (!allStudentsData || allStudentsData.length === 0) {
+            alert('No student data available to export. Please load students first.');
+            return;
+        }
+
+        try {
+            // Show loading message
+            exportExcelButton.disabled = true;
+            exportExcelButton.textContent = '📊 Generating Report...';
+
+            // Get current teacher info
+            const teacherName = currentTeacherId || 'Teacher';
+
+            // Create workbook
+            const workbook = XLSX.utils.book_new();
+
+            // Group students by section
+            const studentsBySection = {};
+            allStudentsData.forEach(student => {
+                const section = student.section || 'No Section';
+                if (!studentsBySection[section]) {
+                    studentsBySection[section] = [];
+                }
+                studentsBySection[section].push(student);
+            });
+
+            // Create detailed sheets for each section
+            Object.keys(studentsBySection).forEach(sectionName => {
+                createSectionSheet(workbook, sectionName, studentsBySection[sectionName]);
+            });
+
+            // Generate filename
+            const sanitizedTeacherName = teacherName.replace(/[^a-zA-Z0-9]/g, '_');
+            const dateStr = new Date().toISOString().split('T')[0];
+            const filename = `${sanitizedTeacherName}_Student_Report_${dateStr}.xlsx`;
+
+            // Save the file
+            XLSX.writeFile(workbook, filename);
+
+            // Show success message
+            alert(`Excel report generated successfully!\nFile: ${filename}\nTotal students: ${allStudentsData.length}\nSections: ${Object.keys(studentsBySection).length}`);
+
+        } catch (error) {
+            console.error('Error generating Excel report:', error);
+            alert('Error generating Excel report. Please try again.');
+        } finally {
+            // Reset button
+            exportExcelButton.disabled = false;
+            exportExcelButton.textContent = '📊 Export Excel Report';
+        }
+    }
+
+
+
+    function createSectionSheet(workbook, sectionName, students) {
+        const sectionData = [
+            [`SECTION: ${sectionName.toUpperCase()}`],
+            [''],
+            ['Student Name', 'Username', 'Overall Progress', 'Levels Completed', 'L1', 'L2', 'L3', 'L4', 'L5', 'L6', 'L7', 'L8', 'L9', 'L10', 'L11', 'L12']
+        ];
+
+        // Add student data
+        students.forEach(student => {
+            const row = [
+                student.fullname || 'Unknown',
+                student.username || 'N/A',
+                `${student.progress?.percentage || 0}%`,
+                `${student.progress?.completed || 0}/12`
+            ];
+
+            // Add individual level scores (only scores, no status)
+            for (let i = 1; i <= 10; i++) {
+                const score = student[`level${i}Score`];
+                const finished = student[`level${i}Finish`];
+
+                if (finished && score !== undefined && score !== null) {
+                    row.push(score);
+                } else if (score !== undefined && score !== null && score > 0) {
+                    row.push(score);
+                } else {
+                    row.push(0);
+                }
+            }
+
+            sectionData.push(row);
+        });
+
+        // Add section statistics
+        sectionData.push(['']);
+        sectionData.push(['SECTION STATISTICS']);
+
+        const totalProgress = students.reduce((sum, student) => {
+            return sum + (student.progress?.percentage || 0);
+        }, 0);
+        const avgProgress = students.length > 0 ? Math.round(totalProgress / students.length) : 0;
+
+        sectionData.push(['Total Students:', students.length]);
+        sectionData.push(['Average Progress:', `${avgProgress}%`]);
+        sectionData.push(['Students with 100% Progress:', students.filter(s => (s.progress?.percentage || 0) === 100).length]);
+
+        const sectionSheet = XLSX.utils.aoa_to_sheet(sectionData);
+
+        // Set column widths
+        sectionSheet['!cols'] = [
+            { width: 20 }, // Student Name
+            { width: 15 }, // Username
+            { width: 15 }, // Overall Progress
+            { width: 15 }, // Levels Completed
+            ...Array(12).fill({ width: 6 }) // Level columns (L1-L12) - made narrower
+        ];
+
+        // Sanitize sheet name (Excel has restrictions)
+        const sanitizedSectionName = sectionName.replace(/[\\\/\?\*\[\]]/g, '_').substring(0, 31);
+        XLSX.utils.book_append_sheet(workbook, sectionSheet, sanitizedSectionName);
+    }
+
+
 
     // --- INITIALIZATION ---
     initializeApp();
