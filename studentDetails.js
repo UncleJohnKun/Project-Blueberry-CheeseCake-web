@@ -17,13 +17,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Header elements
     const studentName = document.getElementById('studentName');
-    const studentIdHeader = document.getElementById('studentId');
 
     // Detail elements
     const detailFullName = document.getElementById('detailFullName');
     const detailUsername = document.getElementById('detailUsername');
-    const detailStudentId = document.getElementById('detailStudentId');
-    const detailTeacherId = document.getElementById('detailTeacherId');
     const detailProgress = document.getElementById('detailProgress');
     const detailLevelsCompleted = document.getElementById('detailLevelsCompleted');
     const progressLevels = document.getElementById('progressLevels');
@@ -72,13 +69,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Populate header
             studentName.textContent = studentData.fullname || 'Unknown Student';
-            studentIdHeader.textContent = `Student ID: ${studentData.id || 'N/A'}`;
 
             // Populate basic information
             detailFullName.textContent = studentData.fullname || 'N/A';
             detailUsername.textContent = studentData.username || 'N/A';
-            detailStudentId.textContent = studentData.id || 'N/A';
-            detailTeacherId.textContent = studentData.teacherID || 'N/A';
 
             // Calculate and display progress
             const progressData = calculateProgress(studentData);

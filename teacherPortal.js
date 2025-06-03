@@ -384,8 +384,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 results.forEach(result => {
                     if (result.document && result.document.fields) {
                         const studentDoc = result.document;
+                        // Extract the actual document ID from the document path
+                        const documentId = studentDoc.name.split('/').pop();
+
                         const studentData = {
                             id: studentDoc.fields.id?.stringValue || 'N/A',
+                            documentId: documentId, // Store the actual Firestore document ID
                             fullname: studentDoc.fields.fullname?.stringValue || 'Unknown',
                             username: studentDoc.fields.username?.stringValue || 'N/A',
                             email: studentDoc.fields.email?.stringValue || 'N/A',
@@ -471,6 +475,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             try {
                 const row = document.createElement('tr');
 
+                // Set initial hidden state for animation
+                row.style.opacity = '0';
+                row.style.transform = 'translateY(20px)';
+
                 // Calculate progress percentage (handle missing data gracefully)
                 const progress = student.progress || 0;
                 const progressPercent = Math.round(progress * 100);
@@ -526,12 +534,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // Add entrance animations to student rows (fixed)
         const studentRows = studentTableBody.querySelectorAll('tr');
-        animateElements(studentRows, 80);
+        animateElements(studentRows, 60);
 
         // Add hover animations after rendering (with delay to avoid conflicts)
         setTimeout(() => {
             addHoverAnimations();
-        }, studentRows.length * 80 + 100);
+        }, studentRows.length * 60 + 150);
     }
 
     function updatePaginationControls(totalPages) {
@@ -856,6 +864,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             existingModal.remove();
         }
 
+        // Generate section options
+        const sectionOptions = generateSectionOptions(studentData.section);
+
         // Create modal HTML
         const modalHTML = `
             <div id="editStudentModal" class="student-details-modal active">
@@ -877,6 +888,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <div class="form-group">
                                 <label for="editPassword">Password:</label>
                                 <input type="text" id="editPassword" value="${studentData.password || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="editSection">Section:</label>
+                                <select id="editSection" required>
+                                    ${sectionOptions}
+                                </select>
                             </div>
                             <div class="form-actions">
                                 <button type="submit" class="button primary">Save Changes</button>
@@ -919,23 +936,40 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    function generateSectionOptions(currentSection) {
+        let options = '<option value="No Section"' + (currentSection === 'No Section' || !currentSection ? ' selected' : '') + '>No Section</option>';
+
+        sectionsData.forEach(section => {
+            const isSelected = currentSection === section.name ? ' selected' : '';
+            options += `<option value="${section.name}"${isSelected}>${section.name}</option>`;
+        });
+
+        return options;
+    }
+
     async function updateStudentData(originalStudentData, modal) {
         try {
+            if (!CONFIG) {
+                throw new Error("Configuration not loaded");
+            }
+
             // Get form values
             const updatedData = {
                 fullname: document.getElementById('editFullName').value,
                 username: document.getElementById('editUsername').value,
                 password: document.getElementById('editPassword').value,
+                section: document.getElementById('editSection').value,
                 // Preserve original fields that shouldn't be changed
                 id: originalStudentData.id,
                 email: originalStudentData.email,
                 teacherID: originalStudentData.teacherID,
                 progress: originalStudentData.progress,
-                lastActive: originalStudentData.lastActive
+                lastActive: originalStudentData.lastActive,
+                timestamp: originalStudentData.timestamp
             };
 
             // Preserve level data
-            for (let i = 1; i <= 10; i++) {
+            for (let i = 1; i <= 12; i++) {
                 if (originalStudentData[`level${i}Finish`] !== undefined) {
                     updatedData[`level${i}Finish`] = originalStudentData[`level${i}Finish`];
                 }
@@ -944,8 +978,47 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
 
-            // In a real implementation, you would call an API to update the student
-            console.log('Updated student data:', updatedData);
+            // Prepare Firestore document format
+            const firestoreDocument = {
+                fields: {
+                    fullname: { stringValue: updatedData.fullname },
+                    username: { stringValue: updatedData.username },
+                    password: { stringValue: updatedData.password },
+                    section: { stringValue: updatedData.section },
+                    id: { stringValue: updatedData.id },
+                    email: { stringValue: updatedData.email || '' },
+                    teacherID: { stringValue: updatedData.teacherID || '' },
+                    timestamp: { timestampValue: updatedData.timestamp || new Date().toISOString() }
+                }
+            };
+
+            // Add level data to Firestore document
+            for (let i = 1; i <= 12; i++) {
+                if (updatedData[`level${i}Finish`] !== undefined) {
+                    firestoreDocument.fields[`level${i}Finish`] = { booleanValue: updatedData[`level${i}Finish`] };
+                }
+                if (updatedData[`level${i}Score`] !== undefined) {
+                    firestoreDocument.fields[`level${i}Score`] = { integerValue: updatedData[`level${i}Score`] };
+                }
+            }
+
+            // Update student in Firebase using the correct document ID
+            const documentId = originalStudentData.documentId || originalStudentData.id;
+            const url = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents/studentData/${documentId}?key=${CONFIG.apiKey}`;
+            const response = await fetch(url, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(firestoreDocument)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Failed to update student: ${response.status} - ${errorText}`);
+            }
+
+            console.log('✅ Student updated successfully:', updatedData);
             alert('Student updated successfully!');
 
             // Close modal
@@ -1978,28 +2051,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // Animation utility functions - Fixed to prevent glitching
-    function animateElements(elements, stagger = 100) {
+    function animateElements(elements, stagger = 80) {
         if (!elements || elements.length === 0) return;
 
         elements.forEach((element, index) => {
             // Clear any existing animations and transitions
             element.style.transition = 'none';
-            element.style.transform = '';
             element.classList.remove('animate-fade-in-up', 'animate-fade-in', 'animate-slide-in-up');
 
             // Force reflow to ensure styles are applied
             element.offsetHeight;
 
-            // Set initial state
-            element.style.opacity = '0';
-            element.style.transform = 'translateY(20px)';
+            // Ensure initial hidden state (in case not already set)
+            if (element.style.opacity !== '0') {
+                element.style.opacity = '0';
+                element.style.transform = 'translateY(20px)';
+            }
 
             // Apply animation with delay
             setTimeout(() => {
-                element.style.transition = 'opacity 0.4s ease-out, transform 0.4s ease-out';
+                element.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out';
                 element.style.opacity = '1';
                 element.style.transform = 'translateY(0)';
-            }, index * stagger);
+            }, index * stagger + 50); // Small base delay to ensure DOM is ready
         });
     }
 

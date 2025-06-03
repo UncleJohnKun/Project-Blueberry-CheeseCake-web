@@ -5077,6 +5077,21 @@ button.secondary:hover,
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.4s ease-out forwards;
+}
+
+/* Staggered animation delays for form fields */
+.edit-form .form-group:nth-child(1) { animation-delay: 0.1s; }
+.edit-form .form-group:nth-child(2) { animation-delay: 0.2s; }
+.edit-form .form-group:nth-child(3) { animation-delay: 0.3s; }
+.edit-form .form-group:nth-child(4) { animation-delay: 0.4s; }
+.edit-form .form-actions {
+    animation: fadeInUp 0.4s ease-out forwards;
+    animation-delay: 0.5s;
+    opacity: 0;
+    transform: translateY(20px);
 }
 
 .edit-form .form-group label {
@@ -5085,7 +5100,8 @@ button.secondary:hover,
     color: var(--text-primary);
 }
 
-.edit-form .form-group input {
+.edit-form .form-group input,
+.edit-form .form-group select {
     width: 100%;
     padding: var(--space-3) var(--space-4);
     border: 1px solid var(--border-light);
@@ -5093,14 +5109,112 @@ button.secondary:hover,
     background: var(--secondary-bg);
     font-size: 0.875rem;
     color: var(--text-primary);
-    transition: all var(--transition);
+    transition: all 0.3s ease;
     box-sizing: border-box;
+    font-family: var(--font-google);
+    transform: translateY(0);
 }
 
-.edit-form .form-group input:focus {
+.edit-form .form-group input:hover,
+.edit-form .form-group select:hover {
+    border-color: var(--accent-yellow);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(251, 191, 36, 0.15);
+}
+
+.edit-form .form-group select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right var(--space-3) center;
+    background-size: 16px;
+    padding-right: calc(var(--space-4) + 24px);
+}
+
+.edit-form .form-group select:hover {
+    border-color: var(--border-medium);
+    background-color: rgba(251, 191, 36, 0.05);
+}
+
+.edit-form .form-group input:focus,
+.edit-form .form-group select:focus {
     outline: none;
     border-color: var(--accent-yellow);
     box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15);
+}
+
+.edit-form .form-group select option {
+    background: var(--secondary-bg);
+    color: var(--text-primary);
+    padding: var(--space-2);
+    border: none;
+}
+
+/* Section dropdown specific styling */
+.edit-form .form-group select#editSection {
+    background-color: var(--secondary-bg);
+    border: 1px solid var(--border-light);
+    position: relative;
+}
+
+.edit-form .form-group select#editSection:hover {
+    border-color: var(--accent-yellow);
+    background-color: rgba(251, 191, 36, 0.08);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.edit-form .form-group select#editSection:focus {
+    border-color: var(--accent-yellow);
+    box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15);
+    background-color: var(--secondary-bg);
+}
+
+/* Enhanced form group styling for section */
+.edit-form .form-group:has(select#editSection) label {
+    color: var(--text-primary);
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: var(--space-2);
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.edit-form .form-group:has(select#editSection) label::before {
+    content: "📚";
+    font-size: 0.875rem;
+    opacity: 0.7;
+}
+
+/* Mobile responsive adjustments for edit form */
+@media (max-width: 768px) {
+    .edit-form .form-group select {
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: var(--space-4);
+        min-height: 44px; /* Touch-friendly */
+    }
+
+    .edit-form .form-group select#editSection {
+        background-size: 18px;
+        padding-right: calc(var(--space-4) + 28px);
+    }
+
+    .student-modal-content {
+        padding: var(--space-6);
+        margin: var(--space-2);
+    }
+
+    .edit-form {
+        gap: var(--space-5);
+    }
+}
+
+/* Dark mode support for select dropdown */
+@media (prefers-color-scheme: dark) {
+    .edit-form .form-group select {
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    }
 }
 
 .edit-form .form-actions {
@@ -5118,8 +5232,20 @@ button.secondary:hover,
     font-weight: var(--font-weight-medium);
     border-radius: var(--radius-md);
     cursor: pointer;
-    transition: all var(--transition);
+    transition: all 0.3s ease;
     min-height: 40px;
+    transform: translateY(0);
+    border: none;
+}
+
+.edit-form .form-actions button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.edit-form .form-actions button:active {
+    transform: translateY(0);
+    transition: all 0.1s ease;
 }
 
 /* Improve touch scrolling on mobile devices */
