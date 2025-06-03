@@ -475,7 +475,8 @@ async function initializeTeacherPortal() {
 
             console.log("Students loaded:", allStudentsData.length);
 
-            // Render the student list
+            // Set initial filtered students and render the student list
+            filteredStudents = allStudentsData;
             renderStudentList(allStudentsData);
 
         } catch (error) {
@@ -489,6 +490,69 @@ async function initializeTeacherPortal() {
     let currentPage = 1;
     const studentsPerPage = 10;
     let filteredStudents = [];
+
+    // --- SORTING VARIABLES ---
+    let currentSortField = '';
+    let currentSortDirection = 'asc'; // 'asc' or 'desc'
+
+    // --- SORTING FUNCTIONS ---
+    function sortStudents(students, field, direction) {
+        return [...students].sort((a, b) => {
+            let aValue = a[field];
+            let bValue = b[field];
+
+            // Handle different data types
+            if (field === 'progress') {
+                aValue = aValue || 0;
+                bValue = bValue || 0;
+            } else if (typeof aValue === 'string') {
+                aValue = aValue.toLowerCase();
+                bValue = (bValue || '').toLowerCase();
+            }
+
+            // Compare values
+            if (aValue < bValue) {
+                return direction === 'asc' ? -1 : 1;
+            }
+            if (aValue > bValue) {
+                return direction === 'asc' ? 1 : -1;
+            }
+            return 0;
+        });
+    }
+
+    function handleColumnSort(field) {
+        // Toggle direction if same field, otherwise start with ascending
+        if (currentSortField === field) {
+            currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            currentSortField = field;
+            currentSortDirection = 'asc';
+        }
+
+        // Update header indicators
+        updateSortIndicators();
+
+        // Sort and render the current filtered students
+        const sortedStudents = sortStudents(filteredStudents, currentSortField, currentSortDirection);
+        currentPage = 1; // Reset to first page when sorting
+        renderStudentList(sortedStudents);
+    }
+
+    function updateSortIndicators() {
+        // Remove all sort classes
+        document.querySelectorAll('.sortable').forEach(header => {
+            header.classList.remove('sort-asc', 'sort-desc');
+        });
+
+        // Add sort class to current sorted column
+        if (currentSortField) {
+            const currentHeader = document.querySelector(`[data-sort="${currentSortField}"]`);
+            if (currentHeader) {
+                currentHeader.classList.add(`sort-${currentSortDirection}`);
+            }
+        }
+    }
 
     // --- RENDER FUNCTIONS ---
     function renderStudentList(students) {
@@ -1668,10 +1732,17 @@ async function initializeTeacherPortal() {
         if (searchStudentInput) {
             searchStudentInput.addEventListener('input', () => {
                 const searchTerm = searchStudentInput.value.toLowerCase();
-                const searchResults = allStudentsData.filter(student => {
+                let searchResults = allStudentsData.filter(student => {
                     return (student.fullname || '').toLowerCase().includes(searchTerm) ||
                            (student.id || '').toLowerCase().includes(searchTerm);
                 });
+
+                // Apply current sorting if any
+                if (currentSortField) {
+                    searchResults = sortStudents(searchResults, currentSortField, currentSortDirection);
+                }
+
+                filteredStudents = searchResults;
                 currentPage = 1; // Reset to first page when searching
                 renderStudentList(searchResults);
             });
@@ -1825,6 +1896,21 @@ async function initializeTeacherPortal() {
                 exportStudentDataToExcel();
             });
         }
+
+        // Initialize table sorting functionality
+        initializeTableSorting();
+    }
+
+    function initializeTableSorting() {
+        // Add click event listeners to sortable headers
+        document.querySelectorAll('.sortable').forEach(header => {
+            header.addEventListener('click', () => {
+                const sortField = header.getAttribute('data-sort');
+                if (sortField) {
+                    handleColumnSort(sortField);
+                }
+            });
+        });
     }
 
     // --- SETTINGS MODAL FUNCTIONS ---
@@ -1875,6 +1961,12 @@ async function initializeTeacherPortal() {
             studentsToShow = allStudentsData.filter(student => student.section === sectionName);
         }
 
+        // Apply current sorting if any
+        if (currentSortField) {
+            studentsToShow = sortStudents(studentsToShow, currentSortField, currentSortDirection);
+        }
+
+        filteredStudents = studentsToShow;
         // Reset to first page when filtering
         currentPage = 1;
         renderStudentList(studentsToShow);
