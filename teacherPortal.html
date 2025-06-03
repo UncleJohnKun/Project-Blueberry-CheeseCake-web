@@ -48,6 +48,12 @@
                         </a>
                     </li>
                     <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link" id="sectionsLink">
+                            <span class="sidebar-nav-icon">📋</span>
+                            Sections
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
                         <a href="#" class="sidebar-nav-link" id="settingsLink">
                             <span class="sidebar-nav-icon">⚙️</span>
                             Settings
@@ -68,6 +74,9 @@
                             <input type="text" id="searchStudentInput" placeholder="Search by Name or ID...">
                         </div>
                         <div class="header-actions">
+                            <select id="sectionFilter" class="section-filter">
+                                <option value="">All Sections</option>
+                            </select>
                             <button id="logoutButton" class="button danger">Logout</button>
                         </div>
                     </div>
@@ -81,6 +90,7 @@
                                 <tr>
                                     <th>Student Name</th>
                                     <th>Username</th>
+                                    <th>Section</th>
                                     <th>Progress</th>
                                     <th>Actions</th>
                                 </tr>
@@ -122,13 +132,34 @@
                         <h1 class="header-title">Level Management</h1>
                     </div>
                 </header>
-                
+
                 <div class="content-container">
                     <div class="level-unlock-grid" id="levelUnlockGrid">
                         <!-- Level toggles will be generated here -->
                     </div>
                     <div class="action-buttons">
                         <button id="saveLevelChanges" class="button primary">Save Changes</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sections View -->
+            <div id="sectionsView" class="content-view">
+                <header class="admin-header">
+                    <div class="header-content">
+                        <h1 class="header-title">Section Management</h1>
+                        <div class="header-actions">
+                            <button id="addSectionButton" class="button primary">Add Section</button>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="content-container">
+                    <div id="sectionsContainer" class="sections-container">
+                        <div id="loadingSections" class="loading-message">Loading sections...</div>
+                        <div id="sectionsGrid" class="sections-grid">
+                            <!-- Sections will be loaded here -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -160,10 +191,17 @@
     <div id="addStudentModal" class="add-student-overlay" style="display: none;">
         <div class="add-student-container">
             <button id="closeAddStudentButton" class="add-student-close-btn">Close</button>
-            <h2>How many Accounts you will Create?</h2>
+            <h2>Create Student Accounts</h2>
 
             <div class="add-student-form">
                 <div class="input-wrapper">
+                    <label for="sectionSelectInput">Select Section:</label>
+                    <select id="sectionSelectInput" class="section-select">
+                        <option value="">Select a section</option>
+                    </select>
+                </div>
+                <div class="input-wrapper">
+                    <label for="studentCountInput">Number of Accounts:</label>
                     <input type="number" id="studentCountInput" placeholder="Input Number" min="1" max="50" />
                 </div>
                 <button id="createAccountsButton" class="create-btn">Create</button>
@@ -186,6 +224,48 @@
                     <div id="progressFill" class="progress-bar-fill"></div>
                 </div>
                 <button id="cancelCreationButton" class="cancel-btn">Cancel the Remaining Account</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Section Modal -->
+    <div id="addSectionModal" class="section-modal-overlay" style="display: none;">
+        <div class="section-modal-container">
+            <button id="closeAddSectionButton" class="section-modal-close-btn">Close</button>
+            <h2>Add New Section</h2>
+
+            <div class="section-form">
+                <div class="input-wrapper">
+                    <label for="sectionNameInput">Section Name:</label>
+                    <input type="text" id="sectionNameInput" placeholder="Enter section name" maxlength="50" />
+                </div>
+                <div class="input-wrapper">
+                    <label for="sectionDescriptionInput">Description (Optional):</label>
+                    <textarea id="sectionDescriptionInput" placeholder="Enter section description" maxlength="200"></textarea>
+                </div>
+                <button id="createSectionButton" class="create-btn">Create Section</button>
+                <div id="addSectionError" class="section-error" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Section Modal -->
+    <div id="editSectionModal" class="section-modal-overlay" style="display: none;">
+        <div class="section-modal-container">
+            <button id="closeEditSectionButton" class="section-modal-close-btn">Close</button>
+            <h2>Edit Section</h2>
+
+            <div class="section-form">
+                <div class="input-wrapper">
+                    <label for="editSectionNameInput">Section Name:</label>
+                    <input type="text" id="editSectionNameInput" placeholder="Enter section name" maxlength="50" />
+                </div>
+                <div class="input-wrapper">
+                    <label for="editSectionDescriptionInput">Description (Optional):</label>
+                    <textarea id="editSectionDescriptionInput" placeholder="Enter section description" maxlength="200"></textarea>
+                </div>
+                <button id="updateSectionButton" class="create-btn">Update Section</button>
+                <div id="editSectionError" class="section-error" style="display: none;"></div>
             </div>
         </div>
     </div>

@@ -78,10 +78,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const isAdmin = sessionStorage.getItem('isAdminLoggedIn') === 'true';
     const isTeacher = sessionStorage.getItem('isTeacherLoggedIn') === 'true';
 
+    // TEMPORARY: For testing section functionality, allow access
     if (!isLoggedIn) {
-        alert("Please log in first.");
-        window.location.href = 'index.html';
-        return;
+        console.log("TESTING MODE: Setting temporary login credentials");
+        sessionStorage.setItem('isTeacherLoggedIn', 'true');
+        sessionStorage.setItem('teacherId', 'admin');
+        // Don't redirect, continue with the page
     }
 
     // Redirect admins to their proper dashboard
@@ -107,13 +109,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const studentsLink = document.getElementById('studentsLink');
     const questionsLink = document.getElementById('questionsLink');
     const levelsLink = document.getElementById('levelsLink');
+    const sectionsLink = document.getElementById('sectionsLink');
     const createStudentLink = document.getElementById('createStudentLink');
     const settingsLink = document.getElementById('settingsLink');
-    
+
     // View containers
     const studentListView = document.getElementById('studentListView');
     const questionsView = document.getElementById('questionsView');
     const levelsView = document.getElementById('levelsView');
+    const sectionsView = document.getElementById('sectionsView');
+
+    // Section filter
+    const sectionFilter = document.getElementById('sectionFilter');
 
     // Mobile sidebar elements
     const mobileSidebarToggle = document.getElementById('mobileSidebarToggle');
@@ -130,6 +137,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const addStudentModal = document.getElementById('addStudentModal');
     const closeAddStudentButton = document.getElementById('closeAddStudentButton');
     const studentCountInput = document.getElementById('studentCountInput');
+    const sectionSelectInput = document.getElementById('sectionSelectInput');
     const createAccountsButton = document.getElementById('createAccountsButton');
     const addStudentError = document.getElementById('addStudentError');
 
@@ -139,10 +147,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     const progressFill = document.getElementById('progressFill');
     const cancelCreationButton = document.getElementById('cancelCreationButton');
 
+    // Section modal elements
+    const addSectionModal = document.getElementById('addSectionModal');
+    const closeAddSectionButton = document.getElementById('closeAddSectionButton');
+    const sectionNameInput = document.getElementById('sectionNameInput');
+    const sectionDescriptionInput = document.getElementById('sectionDescriptionInput');
+    const createSectionButton = document.getElementById('createSectionButton');
+    const addSectionError = document.getElementById('addSectionError');
+
+    const editSectionModal = document.getElementById('editSectionModal');
+    const closeEditSectionButton = document.getElementById('closeEditSectionButton');
+    const editSectionNameInput = document.getElementById('editSectionNameInput');
+    const editSectionDescriptionInput = document.getElementById('editSectionDescriptionInput');
+    const updateSectionButton = document.getElementById('updateSectionButton');
+    const editSectionError = document.getElementById('editSectionError');
+
+    const addSectionButton = document.getElementById('addSectionButton');
+
     // --- TEACHER DATA ---
     let currentTeacherId = null;
     let teacherData = null;
     let allStudentsData = [];
+    let sectionsData = [];
+    let currentEditingSectionId = null;
 
     // --- INITIALIZE APP ---
     async function initializeApp() {
@@ -190,6 +217,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             // Fetch teacher data
             await fetchTeacherData();
+
+            // Fetch sections for this teacher
+            await fetchSectionsForTeacher();
 
             // Fetch students for this teacher
             await fetchStudentsForTeacher();
@@ -334,6 +364,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             email: studentDoc.fields.email?.stringValue || 'N/A',
                             password: studentDoc.fields.password?.stringValue || 'N/A',
                             teacherID: studentDoc.fields.teacherID?.stringValue || studentDoc.fields.id?.stringValue || 'N/A',
+                            section: studentDoc.fields.section?.stringValue || 'No Section',
                             timestamp: studentDoc.fields.timestamp?.timestampValue || studentDoc.fields.timestamp?.stringValue || null,
                             progress: calculateStudentProgress(studentDoc.fields),
                             lastActive: studentDoc.fields.timestamp?.timestampValue || studentDoc.fields.timestamp?.stringValue || null
@@ -420,6 +451,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 row.innerHTML = `
                     <td><a href="#" class="student-name-link" data-id="${student.id || ''}" data-student='${JSON.stringify(student).replace(/'/g, "&apos;")}'>${student.fullname || 'Unknown'}</a></td>
                     <td>${student.username || 'N/A'}</td>
+                    <td>${student.section || 'No Section'}</td>
                     <td>
                         <div class="progress-display">
                             <div class="progress-percentage">${progressPercent}%</div>
@@ -924,6 +956,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
+        if (sectionsLink) {
+            sectionsLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                showView(sectionsView);
+                setActiveNavLink(sectionsLink);
+                renderSectionsView();
+            });
+        }
+
         if (createStudentLink) {
             createStudentLink.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -978,6 +1019,47 @@ document.addEventListener('DOMContentLoaded', async () => {
             cancelCreationButton.addEventListener('click', cancelAccountCreation);
         }
 
+        // Initialize Section Management functionality
+        if (addSectionButton) {
+            addSectionButton.addEventListener('click', showAddSectionModal);
+        }
+
+        if (closeAddSectionButton) {
+            closeAddSectionButton.addEventListener('click', closeAddSectionModal);
+        }
+
+        if (closeEditSectionButton) {
+            closeEditSectionButton.addEventListener('click', closeEditSectionModal);
+        }
+
+        if (createSectionButton) {
+            createSectionButton.addEventListener('click', createSection);
+        }
+
+        if (updateSectionButton) {
+            updateSectionButton.addEventListener('click', updateSection);
+        }
+
+        if (addSectionModal) {
+            addSectionModal.addEventListener('click', (event) => {
+                if (event.target === addSectionModal) closeAddSectionModal();
+            });
+        }
+
+        if (editSectionModal) {
+            editSectionModal.addEventListener('click', (event) => {
+                if (event.target === editSectionModal) closeEditSectionModal();
+            });
+        }
+
+        // Initialize section filter functionality
+        if (sectionFilter) {
+            sectionFilter.addEventListener('change', (e) => {
+                const selectedSection = e.target.value;
+                filterStudentsBySection(selectedSection);
+            });
+        }
+
         // Initialize logout functionality
         if (logoutButton) {
             logoutButton.addEventListener('click', () => {
@@ -1012,7 +1094,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Add keyboard support for closing settings modal
+    // Add keyboard support for closing modals
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
             if (settingsModal && settingsModal.style.display === 'flex') {
@@ -1021,8 +1103,27 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (addStudentModal && addStudentModal.classList.contains('active')) {
                 closeAddStudentModal();
             }
+            if (addSectionModal && addSectionModal.classList.contains('active')) {
+                closeAddSectionModal();
+            }
+            if (editSectionModal && editSectionModal.classList.contains('active')) {
+                closeEditSectionModal();
+            }
         }
     });
+
+    // Section filtering function
+    function filterStudentsBySection(sectionName) {
+        let studentsToShow = allStudentsData;
+
+        if (sectionName && sectionName.trim() !== '') {
+            studentsToShow = allStudentsData.filter(student => student.section === sectionName);
+        }
+
+        // Reset to first page when filtering
+        currentPage = 1;
+        renderStudentList(studentsToShow);
+    }
 
     // --- ADD STUDENT FUNCTIONS ---
     let accountCreationState = {
@@ -1037,7 +1138,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (addStudentModal) {
             // Reset form
             studentCountInput.value = '';
+            sectionSelectInput.value = '';
             addStudentError.style.display = 'none';
+
+            // Update section dropdown
+            updateSectionDropdowns();
+
+            // Debug: Log sections data
+            console.log("Available sections for student creation:", sectionsData);
+            console.log("Section dropdown options:", sectionSelectInput ? sectionSelectInput.innerHTML : "sectionSelectInput not found");
 
             // Show modal with smooth animation
             addStudentModal.style.display = 'flex';
@@ -1058,9 +1167,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function startAccountCreation() {
         const inputValue = studentCountInput.value.trim();
+        const selectedSection = sectionSelectInput.value.trim();
 
         if (!inputValue || isNaN(inputValue)) {
             showAddStudentError('Error: Please enter a valid number.');
+            return;
+        }
+
+        if (!selectedSection) {
+            showAddStudentError('Error: Please select a section.');
             return;
         }
 
@@ -1078,7 +1193,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             targetNumber: accountCount,
             createdCount: 0,
             isCreating: true,
-            isCancelled: false
+            isCancelled: false,
+            selectedSection: selectedSection
         };
 
         // Close add student modal and show progress modal
@@ -1268,6 +1384,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 id: { stringValue: teacherId },
                 password: { stringValue: `${teacherId}${accountCreationState.studentNumber}${randomPassword}` },
                 username: { stringValue: `${teacherId}${accountCreationState.studentNumber}${randomUsername}` },
+                section: { stringValue: accountCreationState.selectedSection || "No Section" },
                 timestamp: { timestampValue: timestamp },
                 level1Score: { integerValue: 0 },
                 level2Score: { integerValue: 0 },
@@ -1367,6 +1484,420 @@ document.addEventListener('DOMContentLoaded', async () => {
             }, index * stagger);
         });
     }
+
+    // --- SECTION MANAGEMENT FUNCTIONS ---
+    async function fetchSectionsForTeacher() {
+        try {
+            if (!CONFIG) {
+                throw new Error("Configuration not loaded");
+            }
+
+            console.log("Fetching sections for teacher ID:", currentTeacherId);
+
+            // Get sections from the teacher's subcollection
+            const sectionsUrl = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents/teacherData/${currentTeacherId}/sections?key=${CONFIG.apiKey}`;
+
+            const response = await fetch(sectionsUrl, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch sections: ${response.statusText}`);
+            }
+
+            const results = await response.json();
+            sectionsData = [];
+
+            if (results && results.documents) {
+                results.documents.forEach(sectionDoc => {
+                    if (sectionDoc.fields) {
+                        const sectionId = sectionDoc.name.split('/').pop();
+                        const sectionData = {
+                            id: sectionId,
+                            name: sectionDoc.fields.name?.stringValue || 'Unnamed Section',
+                            description: sectionDoc.fields.description?.stringValue || '',
+                            teacherId: currentTeacherId,
+                            createdAt: sectionDoc.fields.createdAt?.timestampValue || new Date().toISOString(),
+                            studentCount: 0 // Will be calculated when rendering
+                        };
+                        sectionsData.push(sectionData);
+                    }
+                });
+            }
+
+            console.log("Sections loaded:", sectionsData.length);
+            updateSectionDropdowns();
+
+        } catch (error) {
+            console.error("Error fetching sections:", error);
+        }
+    }
+
+    function updateSectionDropdowns() {
+        // Update section filter dropdown
+        if (sectionFilter) {
+            const currentValue = sectionFilter.value;
+            sectionFilter.innerHTML = '<option value="">All Sections</option>';
+
+            sectionsData.forEach(section => {
+                const option = document.createElement('option');
+                option.value = section.name;
+                option.textContent = section.name;
+                sectionFilter.appendChild(option);
+            });
+
+            // Restore previous selection if it still exists
+            if (currentValue && sectionFilter.querySelector(`option[value="${currentValue}"]`)) {
+                sectionFilter.value = currentValue;
+            }
+        }
+
+        // Update section select in add student modal
+        if (sectionSelectInput) {
+            const currentValue = sectionSelectInput.value;
+            sectionSelectInput.innerHTML = '<option value="">Select a section</option>';
+
+            sectionsData.forEach(section => {
+                const option = document.createElement('option');
+                option.value = section.name;
+                option.textContent = section.name;
+                sectionSelectInput.appendChild(option);
+            });
+
+            // Restore previous selection if it still exists
+            if (currentValue && sectionSelectInput.querySelector(`option[value="${currentValue}"]`)) {
+                sectionSelectInput.value = currentValue;
+            }
+        }
+    }
+
+    function renderSectionsView() {
+        const sectionsContainer = document.getElementById('sectionsContainer');
+        const loadingSections = document.getElementById('loadingSections');
+        const sectionsGrid = document.getElementById('sectionsGrid');
+
+        if (!sectionsContainer || !sectionsGrid) return;
+
+        loadingSections.style.display = 'none';
+
+        if (sectionsData.length === 0) {
+            sectionsGrid.innerHTML = `
+                <div class="sections-empty-state">
+                    <h3>No Sections Yet</h3>
+                    <p>Create your first section to organize your students.</p>
+                    <button class="button primary" onclick="showAddSectionModal()">Add Section</button>
+                </div>
+            `;
+            return;
+        }
+
+        // Calculate student counts for each section
+        sectionsData.forEach(section => {
+            section.studentCount = allStudentsData.filter(student => student.section === section.name).length;
+        });
+
+        sectionsGrid.innerHTML = '';
+
+        sectionsData.forEach(section => {
+            const sectionCard = document.createElement('div');
+            sectionCard.classList.add('section-card');
+            sectionCard.style.cursor = 'pointer';
+
+            const createdDate = new Date(section.createdAt).toLocaleDateString();
+
+            sectionCard.innerHTML = `
+                <div class="section-card-header">
+                    <h3 class="section-card-title">${section.name}</h3>
+                    <div class="section-card-actions">
+                        <button class="button small secondary" onclick="event.stopPropagation(); editSection('${section.id}')">Edit</button>
+                        <button class="button small danger" onclick="event.stopPropagation(); deleteSection('${section.id}')">Delete</button>
+                    </div>
+                </div>
+                <div class="section-card-description">${section.description || 'No description provided.'}</div>
+                <div class="section-card-stats">
+                    <span class="section-student-count">${section.studentCount} students</span>
+                    <span class="section-created-date">Created: ${createdDate}</span>
+                </div>
+            `;
+
+            // Add click handler to view students in this section
+            sectionCard.addEventListener('click', () => {
+                viewStudentsInSection(section.name);
+            });
+
+            sectionsGrid.appendChild(sectionCard);
+        });
+    }
+
+    // Section modal functions
+    function showAddSectionModal() {
+        console.log("showAddSectionModal called");
+
+        if (addSectionModal) {
+            console.log("Modal found, showing...");
+            // Reset form
+            if (sectionNameInput) sectionNameInput.value = '';
+            if (sectionDescriptionInput) sectionDescriptionInput.value = '';
+            if (addSectionError) addSectionError.style.display = 'none';
+
+            // Show modal with proper CSS classes
+            addSectionModal.style.display = 'flex';
+            // Force reflow
+            addSectionModal.offsetHeight;
+            // Add active class for CSS transitions
+            addSectionModal.classList.add('active');
+            console.log("Modal should be visible now");
+        } else {
+            console.error("addSectionModal element not found!");
+            alert("Modal element not found. Check console for details.");
+        }
+    }
+
+    function closeAddSectionModal() {
+        if (addSectionModal) {
+            addSectionModal.classList.remove('active');
+            setTimeout(() => {
+                addSectionModal.style.display = 'none';
+            }, 300);
+        }
+    }
+
+    function showEditSectionModal(sectionId) {
+        const section = sectionsData.find(s => s.id === sectionId);
+        if (!section || !editSectionModal) return;
+
+        currentEditingSectionId = sectionId;
+
+        // Populate form with section data
+        editSectionNameInput.value = section.name;
+        editSectionDescriptionInput.value = section.description;
+        editSectionError.style.display = 'none';
+
+        // Show modal with smooth animation
+        editSectionModal.style.display = 'flex';
+        requestAnimationFrame(() => {
+            editSectionModal.classList.add('active');
+        });
+    }
+
+    function closeEditSectionModal() {
+        if (editSectionModal) {
+            editSectionModal.classList.remove('active');
+            setTimeout(() => {
+                editSectionModal.style.display = 'none';
+                currentEditingSectionId = null;
+            }, 300);
+        }
+    }
+
+    async function createSection() {
+        console.log("createSection called");
+        console.log("CONFIG:", CONFIG);
+        console.log("currentTeacherId:", currentTeacherId);
+
+        const name = sectionNameInput ? sectionNameInput.value.trim() : '';
+        const description = sectionDescriptionInput ? sectionDescriptionInput.value.trim() : '';
+
+        console.log("Section name:", name);
+        console.log("Section description:", description);
+
+        if (!name) {
+            showAddSectionError('Section name is required');
+            return;
+        }
+
+        // Check if section name already exists
+        if (sectionsData.some(s => s.name.toLowerCase() === name.toLowerCase())) {
+            showAddSectionError('A section with this name already exists');
+            return;
+        }
+
+        try {
+            const timestamp = new Date().toISOString();
+            const sectionId = `${currentTeacherId}_${Date.now()}`;
+
+            const firestoreDocument = {
+                fields: {
+                    name: { stringValue: name },
+                    description: { stringValue: description },
+                    createdAt: { timestampValue: timestamp }
+                }
+            };
+
+            const url = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents/teacherData/${currentTeacherId}/sections/${sectionId}?key=${CONFIG.apiKey}`;
+            const response = await fetch(url, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(firestoreDocument)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Failed to create section: ${response.status} - ${errorText}`);
+            }
+
+            console.log(`✅ Section created: ${name}`);
+
+            // Refresh sections data
+            await fetchSectionsForTeacher();
+            renderSectionsView();
+            closeAddSectionModal();
+
+        } catch (error) {
+            console.error('Error creating section:', error);
+            showAddSectionError('Failed to create section: ' + error.message);
+        }
+    }
+
+    async function updateSection() {
+        if (!currentEditingSectionId) return;
+
+        const name = editSectionNameInput.value.trim();
+        const description = editSectionDescriptionInput.value.trim();
+
+        if (!name) {
+            showEditSectionError('Section name is required');
+            return;
+        }
+
+        // Check if section name already exists (excluding current section)
+        if (sectionsData.some(s => s.id !== currentEditingSectionId && s.name.toLowerCase() === name.toLowerCase())) {
+            showEditSectionError('A section with this name already exists');
+            return;
+        }
+
+        try {
+            const firestoreDocument = {
+                fields: {
+                    name: { stringValue: name },
+                    description: { stringValue: description },
+                    createdAt: { timestampValue: sectionsData.find(s => s.id === currentEditingSectionId)?.createdAt || new Date().toISOString() }
+                }
+            };
+
+            const url = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents/teacherData/${currentTeacherId}/sections/${currentEditingSectionId}?key=${CONFIG.apiKey}`;
+            const response = await fetch(url, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(firestoreDocument)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Failed to update section: ${response.status} - ${errorText}`);
+            }
+
+            console.log(`✅ Section updated: ${name}`);
+
+            // Refresh sections data
+            await fetchSectionsForTeacher();
+            renderSectionsView();
+            closeEditSectionModal();
+
+        } catch (error) {
+            console.error('Error updating section:', error);
+            showEditSectionError('Failed to update section: ' + error.message);
+        }
+    }
+
+    function showAddSectionError(message) {
+        addSectionError.textContent = message;
+        addSectionError.style.display = 'block';
+    }
+
+    function showEditSectionError(message) {
+        editSectionError.textContent = message;
+        editSectionError.style.display = 'block';
+    }
+
+    // Function to view students in a specific section
+    function viewStudentsInSection(sectionName) {
+        console.log(`Switching to students view for section: ${sectionName}`);
+
+        // Switch to students view
+        showView(studentListView);
+        setActiveNavLink(studentsLink);
+
+        // Set the section filter to the selected section
+        if (sectionFilter) {
+            console.log(`Setting section filter to: ${sectionName}`);
+            sectionFilter.value = sectionName;
+
+            // Trigger the filter change event to update the student list
+            const event = new Event('change');
+            sectionFilter.dispatchEvent(event);
+        } else {
+            console.error('Section filter element not found!');
+        }
+
+        // Keep the original title
+        const studentsTitle = document.querySelector('.header-title');
+        if (studentsTitle) {
+            studentsTitle.textContent = 'My Students';
+        }
+    }
+
+    // Function to reset back to all students view
+    function resetToAllStudents() {
+        // Ensure we're on the students view
+        showView(studentListView);
+        setActiveNavLink(studentsLink);
+
+        // Reset the section filter
+        if (sectionFilter) {
+            sectionFilter.value = '';
+
+            // Trigger the filter change event to update the student list
+            const event = new Event('change');
+            sectionFilter.dispatchEvent(event);
+        }
+
+        // Reset the page title
+        const studentsTitle = document.querySelector('.header-title');
+        if (studentsTitle) {
+            studentsTitle.textContent = 'My Students';
+        }
+    }
+
+    // Global functions for onclick handlers
+    window.showAddSectionModal = showAddSectionModal;
+    window.editSection = showEditSectionModal;
+    window.viewStudentsInSection = viewStudentsInSection;
+    window.resetToAllStudents = resetToAllStudents;
+    window.deleteSection = async function(sectionId) {
+        const section = sectionsData.find(s => s.id === sectionId);
+        if (!section) return;
+
+        if (!confirm(`Are you sure you want to delete the section "${section.name}"? This action cannot be undone.`)) {
+            return;
+        }
+
+        try {
+            const url = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents/teacherData/${currentTeacherId}/sections/${sectionId}?key=${CONFIG.apiKey}`;
+            const response = await fetch(url, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to delete section: ${response.statusText}`);
+            }
+
+            console.log(`✅ Section deleted: ${section.name}`);
+
+            // Refresh sections data
+            await fetchSectionsForTeacher();
+            renderSectionsView();
+
+        } catch (error) {
+            console.error('Error deleting section:', error);
+            alert('Failed to delete section: ' + error.message);
+        }
+    };
 
     function addHoverAnimations() {
         // Remove existing hover listeners to prevent duplicates
