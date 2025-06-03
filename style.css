@@ -5650,6 +5650,51 @@ button:focus, .nav-button:focus, input:focus, .student-toggle-button:focus {
     padding: 20px;
 }
 
+/* Section Selector for Level Management */
+.section-selector-container {
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    margin-bottom: var(--space-6);
+    box-shadow: var(--shadow-sm);
+}
+
+.section-selector-header h3 {
+    margin-bottom: var(--space-4);
+    color: var(--text-primary);
+    font-weight: var(--font-weight-semibold);
+    font-size: 1.125rem;
+}
+
+.section-select {
+    width: 100%;
+    max-width: 400px;
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    background: var(--secondary-bg);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    transition: all var(--transition);
+    cursor: pointer;
+}
+
+.section-select:focus {
+    outline: none;
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.section-select:hover {
+    border-color: var(--accent-yellow);
+}
+
+/* Save Level Changes Button */
+#saveLevelChanges {
+    display: none; /* Hidden by default, shown when section is selected */
+}
+
 .levels-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));

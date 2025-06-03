@@ -352,9 +352,17 @@ async function initializeTeacherPortal() {
                 fullname: teacherDoc.fields.fullname?.stringValue || 'Unknown Teacher',
                 email: teacherDoc.fields.email?.stringValue || '',
                 username: teacherDoc.fields.username?.stringValue || '',
-                levelUnlocks: ensureAllLevels(rawLevelUnlocks), // Ensure all levels 1-12 exist
+                levelUnlocks: ensureAllLevels(rawLevelUnlocks), // Ensure all levels 1-12 exist (legacy)
                 rizal_questions: convertFirestoreValue(teacherDoc.fields.rizal_questions) || {}
             };
+
+            // Load all section-specific level unlocks
+            Object.keys(teacherDoc.fields).forEach(fieldName => {
+                if (fieldName.startsWith('levelUnlocks') && fieldName !== 'levelUnlocks') {
+                    const sectionLevelUnlocks = convertFirestoreValue(teacherDoc.fields[fieldName]) || {};
+                    teacherData[fieldName] = ensureAllLevels(sectionLevelUnlocks);
+                }
+            });
 
             console.log("Teacher data loaded:", teacherData);
 
@@ -801,12 +809,65 @@ async function initializeTeacherPortal() {
         loadingLevels.style.display = 'none';
         levelUnlockGrid.innerHTML = '';
 
-        // Ensure we have all levels 1-12, fill gaps if needed
-        const completeLevelUnlocks = ensureAllLevels(teacherData?.levelUnlocks || {});
+        // Add section selector for level management
+        const sectionSelectorContainer = document.createElement('div');
+        sectionSelectorContainer.className = 'section-selector-container';
+        sectionSelectorContainer.innerHTML = `
+            <div class="section-selector-header">
+                <h3>Select Section for Level Management</h3>
+                <select id="levelManagementSectionSelect" class="section-select">
+                    <option value="">Select a section...</option>
+                </select>
+            </div>
+        `;
+        levelUnlockGrid.appendChild(sectionSelectorContainer);
 
-        // Update teacherData with complete level unlocks
+        // Populate section dropdown
+        const sectionSelect = sectionSelectorContainer.querySelector('#levelManagementSectionSelect');
+        if (sectionsData && sectionsData.length > 0) {
+            sectionsData.forEach(section => {
+                const option = document.createElement('option');
+                option.value = section.name;
+                option.textContent = section.name;
+                sectionSelect.appendChild(option);
+            });
+        } else {
+            sectionSelect.innerHTML = '<option value="">No sections available</option>';
+        }
+
+        // Add event listener for section selection
+        sectionSelect.addEventListener('change', function() {
+            const selectedSection = this.value;
+            if (selectedSection) {
+                renderLevelUnlocksForSection(selectedSection);
+            } else {
+                // Clear level unlocks display
+                const existingLevelCards = levelUnlockGrid.querySelectorAll('.level-card');
+                existingLevelCards.forEach(card => card.remove());
+                const saveButton = document.getElementById('saveLevelChanges');
+                if (saveButton) saveButton.style.display = 'none';
+            }
+        });
+    }
+
+    function renderLevelUnlocksForSection(sectionName) {
+        const levelUnlockGrid = document.getElementById('levelUnlockGrid');
+        if (!levelUnlockGrid) return;
+
+        // Remove existing level cards
+        const existingLevelCards = levelUnlockGrid.querySelectorAll('.level-card');
+        existingLevelCards.forEach(card => card.remove());
+
+        // Get section-specific level unlocks
+        const sectionFieldName = `levelUnlocks${sectionName}`;
+        const sectionLevelUnlocks = teacherData?.[sectionFieldName] || {};
+
+        // Ensure we have all levels 1-12, fill gaps if needed
+        const completeLevelUnlocks = ensureAllLevels(sectionLevelUnlocks);
+
+        // Update teacherData with complete level unlocks for this section
         if (teacherData) {
-            teacherData.levelUnlocks = completeLevelUnlocks;
+            teacherData[sectionFieldName] = completeLevelUnlocks;
         }
 
         // Create level cards for levels 1-12
@@ -825,12 +886,13 @@ async function initializeTeacherPortal() {
                     </div>
                 </div>
                 <div class="level-card-description">
-                    ${isUnlocked ? 'Students can access this level and its questions.' : 'Students cannot access this level yet.'}
+                    ${isUnlocked ? `Students in section "${sectionName}" can access this level and its questions.` : `Students in section "${sectionName}" cannot access this level yet.`}
                 </div>
                 <div class="level-card-toggle">
-                    <label class="toggle-switch" for="level${i}">
-                        <input type="checkbox" id="level${i}"
+                    <label class="toggle-switch" for="level${i}_${sectionName.replace(/\s+/g, '')}">
+                        <input type="checkbox" id="level${i}_${sectionName.replace(/\s+/g, '')}"
                                data-level="${level}"
+                               data-section="${sectionName}"
                                ${isUnlocked ? 'checked' : ''}>
                         <span class="toggle-slider"></span>
                     </label>
@@ -859,17 +921,18 @@ async function initializeTeacherPortal() {
             const statusElement = levelCard.querySelector('.level-card-status');
             const labelElement = levelCard.querySelector('.toggle-label');
             const descriptionElement = levelCard.querySelector('.level-card-description');
+            const sectionName = toggleInput.getAttribute('data-section');
 
             if (toggleInput.checked) {
                 statusElement.className = 'level-card-status unlocked';
                 statusElement.innerHTML = '🔓 Unlocked';
                 labelElement.textContent = 'Enabled';
-                descriptionElement.textContent = 'Students can access this level and its questions.';
+                descriptionElement.textContent = `Students in section "${sectionName}" can access this level and its questions.`;
             } else {
                 statusElement.className = 'level-card-status locked';
                 statusElement.innerHTML = '🔒 Locked';
                 labelElement.textContent = 'Disabled';
-                descriptionElement.textContent = 'Students cannot access this level yet.';
+                descriptionElement.textContent = `Students in section "${sectionName}" cannot access this level yet.`;
             }
         }
 
@@ -879,10 +942,14 @@ async function initializeTeacherPortal() {
             animateElements(levelCards, 100);
         }, 50);
 
-        // Add event listener to save button
+        // Show and add event listener to save button
         const saveButton = document.getElementById('saveLevelChanges');
         if (saveButton) {
-            saveButton.addEventListener('click', saveLevelChanges);
+            saveButton.style.display = 'block';
+            // Remove existing event listeners to avoid duplicates
+            const newSaveButton = saveButton.cloneNode(true);
+            saveButton.parentNode.replaceChild(newSaveButton, saveButton);
+            newSaveButton.addEventListener('click', () => saveLevelChanges(sectionName));
         }
     }
 
@@ -1442,7 +1509,7 @@ async function initializeTeacherPortal() {
         }
     }
 
-    async function saveLevelChanges() {
+    async function saveLevelChanges(sectionName) {
         try {
             if (!CONFIG) {
                 throw new Error("Configuration not loaded");
@@ -1452,18 +1519,29 @@ async function initializeTeacherPortal() {
                 throw new Error("Teacher ID not found");
             }
 
+            if (!sectionName) {
+                throw new Error("Section name not provided");
+            }
+
             const levelToggles = document.querySelectorAll('.toggle-switch input');
             const updatedLevelUnlocks = {};
 
             levelToggles.forEach(toggle => {
                 const level = toggle.getAttribute('data-level');
-                updatedLevelUnlocks[level] = toggle.checked;
+                const toggleSection = toggle.getAttribute('data-section');
+                // Only process toggles for the current section
+                if (toggleSection === sectionName) {
+                    updatedLevelUnlocks[level] = toggle.checked;
+                }
             });
 
             // Ensure we have all levels 1-12 with current toggle states
             const completeLevelUnlocks = ensureAllLevels(updatedLevelUnlocks);
 
-            console.log("Saving complete level unlocks (1-12):", completeLevelUnlocks);
+            // Create section-specific field name
+            const sectionFieldName = `levelUnlocks${sectionName}`;
+
+            console.log(`Saving level unlocks for section "${sectionName}" (field: ${sectionFieldName}):`, completeLevelUnlocks);
 
             // First, get the current teacher document to preserve other fields
             const queryUrl = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents:runQuery?key=${CONFIG.apiKey}`;
@@ -1499,11 +1577,11 @@ async function initializeTeacherPortal() {
             const teacherDoc = queryResults[0].document;
             const documentPath = teacherDoc.name; // Full document path
 
-            // Prepare the update data - preserve all existing fields and update levelUnlocks with complete 1-12 set
+            // Prepare the update data - preserve all existing fields and update section-specific levelUnlocks
             const updateData = {
                 fields: {
                     ...teacherDoc.fields, // Preserve all existing fields
-                    levelUnlocks: toFirestoreValue(completeLevelUnlocks) // Update with complete levelUnlocks (1-12)
+                    [sectionFieldName]: toFirestoreValue(completeLevelUnlocks) // Update with section-specific levelUnlocks (1-12)
                 }
             };
 
@@ -1520,11 +1598,11 @@ async function initializeTeacherPortal() {
                 throw new Error(`Failed to update level unlocks: ${updateResponse.status} - ${errorText}`);
             }
 
-            // Update local teacher data with complete level set
-            teacherData.levelUnlocks = completeLevelUnlocks;
+            // Update local teacher data with section-specific level set
+            teacherData[sectionFieldName] = completeLevelUnlocks;
 
-            alert("Level changes saved successfully! All levels 1-12 are now configured.");
-            console.log("Complete level unlocks updated successfully:", completeLevelUnlocks);
+            alert(`Level changes saved successfully for section "${sectionName}"! All levels 1-12 are now configured.`);
+            console.log(`Section-specific level unlocks updated successfully for "${sectionName}":`, completeLevelUnlocks);
 
         } catch (error) {
             console.error("Error saving level changes:", error);
