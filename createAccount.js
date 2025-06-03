@@ -424,38 +424,35 @@ document.addEventListener('DOMContentLoaded', () => {
             const timestamp = new Date().toISOString();
             const documentPath = teacherId; // Use the teacher's chosen ID as the Firestore Document ID for their record
 
-            const firestoreData = {
-                fields: {
-                    email: { stringValue: email },
-                    fullname: { stringValue: fullName },
-                    username: { stringValue: username },
-                    password: { stringValue: password }, // WARNING: Storing plaintext password!
-                    id: { stringValue: teacherId },      // Storing the teacher ID as a field too
-                    timestamp: { timestampValue: timestamp },
-                    totalStudents: { integerValue: String(globalTotalStudents) },
-                    rizal_questions: toFirestoreValue(globalRizalQuestions),
-                    levelUnlocks: toFirestoreValue(globalLevelUnlocks)
-                }
+            // Use server API to create teacher account with proper password hashing
+            const teacherData = {
+                email: email,
+                fullname: fullName,
+                username: username,
+                password: password, // Will be hashed by server
+                id: teacherId,
+                totalStudents: globalTotalStudents,
+                rizal_questions: globalRizalQuestions,
+                levelUnlocks: globalLevelUnlocks
             };
 
-            const createUrl = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents/${COLLECTION}/${documentPath}?key=${CONFIG.apiKey}`;
-
-            const createResponse = await fetch(createUrl, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(firestoreData)
+            // Send to secure server endpoint
+            const response = await fetch('/api/teachers/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(teacherData)
             });
 
-            if (createResponse.ok) {
-                // const responseData = await createResponse.json(); // Can inspect if needed
-                console.log("Teacher data successfully stored in Firestore!");
-                alert("Teacher Account Created Successfully!");
-                signUpForm.reset();
-            } else {
-                const errorData = await createResponse.json();
-                console.error("Error storing teacher data:", errorData);
-                alert("Error creating teacher account: " + (errorData.error?.message || 'Unknown error'));
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to create teacher account');
             }
+
+            console.log('✅ Teacher created successfully:', teacherId);
+            alert("Teacher Account Created Successfully!");
+            signUpForm.reset();
 
         } catch (error) {
             console.error("Request failed (teacher account creation):", error);

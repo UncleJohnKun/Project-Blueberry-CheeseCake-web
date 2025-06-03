@@ -287,44 +287,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // 2. If not exists, proceed to send teacher data
-            const timestamp = new Date().toISOString();
-            const documentPath = id;
+            // 2. If not exists, proceed to create admin account
 
-            const firestoreData = {
-                fields: {
-                    email: { stringValue: email },
-                    fullname: { stringValue: fullName },
-                    username: { stringValue: username },
-                    password: { stringValue: password },
-                    id: { stringValue: id },
-                    timestamp: { timestampValue: timestamp },
-                    totalStudents: { integerValue: String(globalTotalStudents) },
-                    rizal_questions: toFirestoreValue(globalRizalQuestions),
-                    levelUnlocks: toFirestoreValue(globalLevelUnlocks)
-                }
+            // Use server API to create admin account with proper password hashing
+            const adminData = {
+                email: email,
+                fullname: fullName,
+                username: username,
+                password: password, // Will be hashed by server
+                id: id,
+                totalStudents: globalTotalStudents,
+                rizal_questions: globalRizalQuestions,
+                levelUnlocks: globalLevelUnlocks
             };
 
-            const createUrl = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents/${COLLECTION}/${documentPath}?key=${CONFIG.apiKey}`;
-
-            const createResponse = await fetch(createUrl, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(firestoreData)
+            // Send to secure server endpoint
+            const response = await fetch('/api/admin/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(adminData)
             });
 
-            if (createResponse.ok) {
-                const responseData = await createResponse.json();
-                console.log("Data successfully stored in Firestore!", responseData);
-                subTitleElement.textContent = "Account Created Successfully!";
-                subTitleElement.style.color = 'green';
-                signUpForm.reset();
-            } else {
-                const errorData = await createResponse.json();
-                console.error("Error storing data:", errorData);
-                subTitleElement.textContent = "Error creating account: " + (errorData.error?.message || 'Unknown error');
-                subTitleElement.style.color = 'red';
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to create admin account');
             }
+
+            console.log('✅ Admin created successfully:', id);
+            subTitleElement.textContent = "Account Created Successfully!";
+            subTitleElement.style.color = 'green';
+            signUpForm.reset();
 
         } catch (error) {
             console.error("Request failed overall:", error); // Catching other potential errors (network, etc.)

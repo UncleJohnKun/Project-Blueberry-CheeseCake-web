@@ -2580,26 +2580,31 @@ button.secondary:hover,
     word-wrap: break-word;
 }
 
-/* Settings Modal Logout Button */
+/* Settings Modal Logout Button - High Priority */
+.settings-modal #logoutButton,
 .settings-modal #settingsLogoutButton {
     flex: 0 0 30%;
     width: 30%;
-    padding: var(--space-3) var(--space-4);
-    font-size: 0.875rem;
-    font-weight: var(--font-weight-semibold);
-    border-radius: var(--radius-md);
-    background: var(--btn-danger);
-    color: white;
-    border: 1px solid var(--btn-danger);
-    cursor: pointer;
-    transition: all var(--transition);
+    padding: var(--space-3) var(--space-4) !important;
+    font-size: 0.875rem !important;
+    font-weight: var(--font-weight-semibold) !important;
+    border-radius: var(--radius-md) !important;
+    background: var(--btn-danger) !important;
+    color: white !important;
+    border: 1px solid var(--btn-danger) !important;
+    cursor: pointer !important;
+    transition: all var(--transition) !important;
     box-sizing: border-box;
     text-align: center;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
+.settings-modal #logoutButton:hover,
 .settings-modal #settingsLogoutButton:hover {
-    background: var(--btn-danger-hover);
-    border-color: var(--btn-danger-hover);
+    background: var(--btn-danger-hover) !important;
+    border-color: var(--btn-danger-hover) !important;
     transform: translateY(-1px);
     box-shadow: var(--shadow-md);
 }

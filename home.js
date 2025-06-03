@@ -89,11 +89,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- EVENT LISTENERS ---
     if (logoutButton) {
-        logoutButton.addEventListener('click', () => {
-            sessionStorage.removeItem('isAdminLoggedIn');
-            alert('Admin logged out.');
-            window.location.href = 'index.html';
-        });
+        logoutButton.addEventListener('click', handleLogout);
+        console.log('Initial logout button event listener attached');
+    } else {
+        console.error('Logout button not found in DOM initially');
     }
 
     // Mobile sidebar toggle functionality
@@ -132,17 +131,31 @@ document.addEventListener('DOMContentLoaded', () => {
     if (settingsLink && settingsModal) {
         settingsLink.addEventListener('click', (e) => {
             e.preventDefault();
+            console.log('Settings link clicked');
             openSettingsModal();
         });
+        console.log('Settings link event listener attached');
+    } else {
+        console.error('Settings elements not found:', { settingsLink: !!settingsLink, settingsModal: !!settingsModal });
     }
 
     if (closeSettingsButton) {
-        closeSettingsButton.addEventListener('click', closeSettingsModal);
+        closeSettingsButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('Close settings button clicked');
+            closeSettingsModal();
+        });
+        console.log('Close settings button event listener attached');
+    } else {
+        console.error('Close settings button not found');
     }
 
     if (settingsModal) {
         settingsModal.addEventListener('click', (event) => {
-            if (event.target === settingsModal) closeSettingsModal();
+            if (event.target === settingsModal) {
+                console.log('Settings modal overlay clicked');
+                closeSettingsModal();
+            }
         });
     }
     if (searchTeacherInput) {
@@ -374,18 +387,65 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- SETTINGS MODAL FUNCTIONS ---
     function openSettingsModal() {
+        console.log('openSettingsModal called');
         if (settingsModal) {
+            console.log('Opening settings modal');
             settingsModal.style.display = 'flex';
-            setTimeout(() => settingsModal.classList.add('active'), 10);
+            setTimeout(() => {
+                settingsModal.classList.add('active');
+                console.log('Settings modal opened successfully');
+
+                // Ensure logout button event listener is attached
+                attachLogoutButtonListener();
+            }, 10);
         } else {
             console.error("home.js: settingsModal element not found.");
         }
     }
 
+    // Function to attach logout button listener (can be called multiple times safely)
+    function attachLogoutButtonListener() {
+        const modalLogoutButton = document.getElementById('logoutButton');
+        if (modalLogoutButton) {
+            // Remove existing listener to prevent duplicates
+            modalLogoutButton.removeEventListener('click', handleLogout);
+            // Add the listener
+            modalLogoutButton.addEventListener('click', handleLogout);
+            console.log('Logout button event listener attached to modal button');
+        } else {
+            console.error('Logout button not found in settings modal');
+        }
+    }
+
+    // Logout handler function
+    function handleLogout(e) {
+        e.preventDefault();
+        console.log('Logout button clicked');
+
+        if (confirm('Are you sure you want to logout?')) {
+            console.log('Logout confirmed, clearing session data');
+
+            // Clear all session data
+            sessionStorage.clear();
+            localStorage.clear();
+
+            console.log('Session data cleared, redirecting to login');
+            alert('Admin logged out successfully.');
+            window.location.href = 'index.html';
+        }
+    }
+
     function closeSettingsModal() {
+        console.log('closeSettingsModal called');
         if (settingsModal) {
+            console.log('Closing settings modal');
             settingsModal.classList.remove('active');
-            setTimeout(() => settingsModal.style.display = 'none', 300);
+            setTimeout(() => {
+                settingsModal.style.display = 'none';
+                console.log('Settings modal closed successfully');
+            }, 300);
+        } else {
+            console.error("home.js: settingsModal element not found for closing.");
         }
     }
 

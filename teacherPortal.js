@@ -1,21 +1,22 @@
 // Direct Firestore access (similar to other parts of the app)
 let CONFIG = null;
 
-// Get secure configuration
+// Get secure configuration with fallback
 async function getSecureConfig() {
     try {
+        // Try server first
         const response = await fetch('/api/config');
         if (response.ok) {
             return await response.json();
         }
     } catch (error) {
-        console.log('Server config not available, using fallback');
+        console.log('Server not available, using direct Firebase access');
     }
 
-    // Fallback configuration (base64 encoded for basic obfuscation)
+    // Fallback to direct Firebase (for development)
     return {
-        projectId: atob('Y2Fwc3RvbmVwcm9qZWN0LTJiNDI4'),
-        apiKey: atob('QUl6YVN5QWpDVkJnekFvSlRqZnpqXzFEYm5yS21JQmNmVlRXb3AwOA==')
+        projectId: 'capstoneproject-2b428',
+        apiKey: 'AIzaSyAjCVBgzAoJTjfzj_1DbnrKmIBcfVTWop08'
     };
 }
 
@@ -75,7 +76,7 @@ function calculateStudentProgress(studentFields) {
     if (!studentFields) return 0;
 
     let completedLevels = 0;
-    let totalLevels = 10; // Assuming 10 levels total
+    let totalLevels = 12; // Updated to 12 levels total
 
     // Count completed levels
     for (let i = 1; i <= totalLevels; i++) {
@@ -90,26 +91,40 @@ function calculateStudentProgress(studentFields) {
 
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("teacherPortal.js: DOMContentLoaded");
+    await initializeTeacherPortal();
+});
 
-    // Load configuration
-    CONFIG = await getSecureConfig();
-    console.log("Configuration loaded");
+async function initializeTeacherPortal() {
+    try {
+        console.log("Starting teacher portal initialization...");
 
-    // Remove testing code - users must properly log in
+        // Load configuration
+        try {
+            CONFIG = await getSecureConfig();
+            console.log("Configuration loaded successfully");
+        } catch (configError) {
+            console.error("Configuration error:", configError);
+            alert("Failed to load configuration. Please check your connection and try again.");
+            return;
+        }
 
-    // --- AUTH CHECK ---
-    const isLoggedIn = sessionStorage.getItem('isTeacherLoggedIn') === 'true' ||
-                       sessionStorage.getItem('isAdminLoggedIn') === 'true';
-    const isAdmin = sessionStorage.getItem('isAdminLoggedIn') === 'true';
-    const isTeacher = sessionStorage.getItem('isTeacherLoggedIn') === 'true';
+        // --- AUTH CHECK ---
+        const isLoggedIn = sessionStorage.getItem('isTeacherLoggedIn') === 'true' ||
+                           sessionStorage.getItem('isAdminLoggedIn') === 'true';
 
-    // TEMPORARY: For testing section functionality, allow access
-    if (!isLoggedIn) {
-        console.log("TESTING MODE: Setting temporary login credentials");
-        sessionStorage.setItem('isTeacherLoggedIn', 'true');
-        sessionStorage.setItem('teacherId', 'admin');
-        // Don't redirect, continue with the page
-    }
+        console.log("Authentication check:", { isLoggedIn });
+
+        if (!isLoggedIn) {
+            console.log("User not authenticated, redirecting to login");
+            alert("Please log in to access the teacher portal.");
+            window.location.href = 'index.html';
+            return;
+        }
+
+        const isAdmin = sessionStorage.getItem('isAdminLoggedIn') === 'true';
+        const isTeacher = sessionStorage.getItem('isTeacherLoggedIn') === 'true';
+
+        console.log("User roles:", { isAdmin, isTeacher });
 
     // Redirect admins to their proper dashboard
     if (isAdmin && !isTeacher) {
@@ -125,11 +140,43 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // --- DOM ELEMENTS ---
+    console.log("Getting DOM elements...");
+
     const logoutButton = document.getElementById('logoutButton');
     const studentTableBody = document.getElementById('studentTableBody');
     const loadingMessage = document.getElementById('loadingMessage');
     const searchStudentInput = document.getElementById('searchStudentInput');
     const exportExcelButton = document.getElementById('exportExcelButton');
+
+    // Check if essential elements exist
+    if (!studentTableBody) {
+        console.error("Critical DOM element missing: studentTableBody");
+        alert("Page not loaded properly. Please refresh the page.");
+        return;
+    }
+
+    if (!loadingMessage) {
+        console.error("Critical DOM element missing: loadingMessage");
+        alert("Page not loaded properly. Please refresh the page.");
+        return;
+    }
+
+    console.log("Essential DOM elements found");
+
+    // Add logout functionality
+    if (logoutButton) {
+        logoutButton.addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (confirm('Are you sure you want to logout?')) {
+                // Clear session data
+                sessionStorage.clear();
+                window.location.href = 'index.html';
+            }
+        });
+        console.log("Logout functionality added");
+    } else {
+        console.warn("Logout button not found");
+    }
     
     // Navigation elements
     const studentsLink = document.getElementById('studentsLink');
@@ -200,49 +247,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- INITIALIZE APP ---
     async function initializeApp() {
         try {
-            // Get current teacher ID from multiple sources
-            const params = new URLSearchParams(window.location.search);
-            currentTeacherId = params.get('teacherId') || params.get('id');
+            console.log("initializeApp: Starting...");
 
-            if (!currentTeacherId) {
-                currentTeacherId = sessionStorage.getItem('teacherId');
-            }
+            // Get current teacher ID from session storage
+            currentTeacherId = sessionStorage.getItem('teacherId');
+            console.log("initializeApp: Teacher ID from session:", currentTeacherId);
 
-            // Try to get teacher ID from auth token user data
-            if (!currentTeacherId) {
-                const authToken = sessionStorage.getItem('authToken');
-                if (authToken) {
-                    try {
-                        // Decode JWT token to get user info (basic decode, not verification)
-                        const tokenParts = authToken.split('.');
-                        if (tokenParts.length === 3) {
-                            const payload = JSON.parse(atob(tokenParts[1]));
-                            currentTeacherId = payload.id;
-                            console.log("Teacher ID extracted from auth token:", currentTeacherId);
-                        }
-                    } catch (e) {
-                        console.log("Could not decode auth token:", e);
-                    }
-                }
-            }
-
-            // For testing purposes, if still no teacher ID and we're admin, use 'admin'
+            // For admin users, allow them to view teacher portal with 'admin' ID
             if (!currentTeacherId && isAdmin) {
-                console.log("No teacher ID specified, using 'admin' for testing");
+                console.log("Admin user accessing teacher portal, using 'admin' as teacher ID");
                 currentTeacherId = 'admin';
             }
 
+            // Try to get from URL parameters as fallback
             if (!currentTeacherId) {
-                console.error("No teacher ID found in URL parameters, session storage, or auth token");
-                loadingMessage.textContent = "Error: Teacher ID not found. Please log in properly.";
-                loadingMessage.style.color = "red";
-                return;
+                const params = new URLSearchParams(window.location.search);
+                currentTeacherId = params.get('teacherId') || params.get('id');
+                console.log("initializeApp: Teacher ID from URL:", currentTeacherId);
+            }
+
+            if (!currentTeacherId) {
+                console.error("No teacher ID found. Please log in properly.");
+                if (loadingMessage) {
+                    loadingMessage.textContent = "Error: Teacher ID not found. Please log in properly.";
+                    loadingMessage.style.color = "red";
+                }
+                throw new Error("Teacher ID not found");
             }
 
             console.log("Using teacher ID:", currentTeacherId);
 
             // Fetch teacher data
+            console.log("initializeApp: Fetching teacher data...");
             await fetchTeacherData();
+            console.log("initializeApp: Teacher data fetched successfully");
 
             // Fetch sections for this teacher
             await fetchSectionsForTeacher();
@@ -402,8 +440,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                             lastActive: studentDoc.fields.timestamp?.timestampValue || studentDoc.fields.timestamp?.stringValue || null
                         };
 
-                        // Add level data from Firebase
-                        for (let i = 1; i <= 10; i++) {
+                        // Add level data from Firebase (updated to 12 levels)
+                        for (let i = 1; i <= 12; i++) {
                             // Extract level finish status
                             if (studentDoc.fields[`level${i}Finish`] !== undefined) {
                                 studentData[`level${i}Finish`] = studentDoc.fields[`level${i}Finish`].booleanValue || false;
@@ -484,10 +522,25 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const progress = student.progress || 0;
                 const progressPercent = Math.round(progress * 100);
 
+                // Sanitize student data for safe display (with fallback)
+                const escapeHtml = (text) => {
+                    if (typeof text !== 'string') return text;
+                    return text.replace(/[&<>"']/g, (s) => ({
+                        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+                    }[s]));
+                };
+
+                const safeStudentData = {
+                    id: escapeHtml(student.id || ''),
+                    fullname: escapeHtml(student.fullname || 'Unknown'),
+                    username: escapeHtml(student.username || 'N/A'),
+                    section: escapeHtml(student.section || 'No Section')
+                };
+
                 row.innerHTML = `
-                    <td><a href="#" class="student-name-link" data-id="${student.id || ''}" data-student='${JSON.stringify(student).replace(/'/g, "&apos;")}'>${student.fullname || 'Unknown'}</a></td>
-                    <td>${student.username || 'N/A'}</td>
-                    <td>${student.section || 'No Section'}</td>
+                    <td><a href="#" class="student-name-link" data-id="${safeStudentData.id}" data-student='${escapeHtml(JSON.stringify(student))}'>${safeStudentData.fullname}</a></td>
+                    <td>${safeStudentData.username}</td>
+                    <td>${safeStudentData.section}</td>
                     <td>
                         <div class="progress-display">
                             <div class="progress-percentage">${progressPercent}%</div>
@@ -497,7 +550,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         </div>
                     </td>
                     <td>
-                        <button class="button small edit-student" data-id="${student.id || ''}" data-student='${JSON.stringify(student).replace(/'/g, "&apos;")}'>Edit</button>
+                        <button class="button small edit-student" data-id="${safeStudentData.id}" data-student='${escapeHtml(JSON.stringify(student))}'>Edit</button>
                     </td>
                 `;
 
@@ -855,6 +908,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function editStudentDetails(studentId, studentData) {
         // Create and show edit modal
+        console.log("Editing student:", studentId);
         showEditStudentModal(studentData);
     }
 
@@ -954,12 +1008,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                 throw new Error("Configuration not loaded");
             }
 
-            // Get form values
-            const updatedData = {
+            // Get and sanitize form values
+            const formData = {
                 fullname: document.getElementById('editFullName').value,
                 username: document.getElementById('editUsername').value,
                 password: document.getElementById('editPassword').value,
-                section: document.getElementById('editSection').value,
+                section: document.getElementById('editSection').value
+            };
+
+            // Sanitize the input data (with fallback)
+            const sanitizeText = (text) => {
+                if (typeof text !== 'string') return '';
+                return text.trim().replace(/[<>"']/g, '').substring(0, 100);
+            };
+
+            const sanitizedData = {
+                fullname: sanitizeText(formData.fullname),
+                username: sanitizeText(formData.username).toLowerCase(),
+                password: formData.password, // Don't sanitize passwords
+                section: sanitizeText(formData.section)
+            };
+
+            const updatedData = {
+                ...sanitizedData,
                 // Preserve original fields that shouldn't be changed
                 id: originalStudentData.id,
                 email: originalStudentData.email,
@@ -2672,8 +2743,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
 
-    // --- INITIALIZATION ---
-    initializeApp();
-});
+        // --- INITIALIZATION ---
+        console.log("Starting app initialization...");
+        await initializeApp();
+        console.log("Teacher portal initialized successfully");
+
+    } catch (error) {
+        console.error("Failed to initialize teacher portal:", error);
+
+        // Show user-friendly error message
+        const errorMessage = error.message || "Unknown error occurred";
+        alert(`Failed to load teacher portal: ${errorMessage}\n\nPlease check the browser console for details and try again.`);
+
+        // Don't redirect immediately, let user see the error
+        setTimeout(() => {
+            if (confirm("Would you like to return to the login page?")) {
+                window.location.href = 'index.html';
+            }
+        }, 1000);
+    }
+}
 
 

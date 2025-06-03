@@ -1,180 +1,127 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Secure login implementation
-    const API_BASE_URL = window.location.origin + '/api';
-
     const adminLoginForm = document.getElementById('adminLoginForm');
     const adminUsernameInput = document.getElementById('adminUsername');
     const adminPasswordInput = document.getElementById('adminPassword');
     const subTitleElement = document.getElementById('subTitle');
 
-    // Security utilities
-    const SecurityUtils = {
-        clearAuthData() {
-            sessionStorage.removeItem('authToken');
-            sessionStorage.removeItem('refreshToken');
-            sessionStorage.removeItem('isAdminLoggedIn');
-            sessionStorage.removeItem('isTeacherLoggedIn');
-            sessionStorage.removeItem('userRole');
-            sessionStorage.removeItem('teacherId');
-        },
+    // Clear any existing auth data when page loads
+    sessionStorage.clear();
 
-        setAuthData(sessionData, isAdmin = true) {
-            sessionStorage.setItem('authToken', sessionData.accessToken);
-            sessionStorage.setItem('refreshToken', sessionData.refreshToken);
-            
-            if (isAdmin) {
-                sessionStorage.setItem('isAdminLoggedIn', 'true');
-                sessionStorage.setItem('userRole', 'admin');
-            } else {
-                sessionStorage.setItem('isTeacherLoggedIn', 'true');
-                sessionStorage.setItem('userRole', 'teacher');
-                if (sessionData.teacherId) {
-                    sessionStorage.setItem('teacherId', sessionData.teacherId);
-                }
+    // Secure configuration function
+    async function getSecureConfig() {
+        try {
+            // Try server first
+            const response = await fetch('/api/config');
+            if (response.ok) {
+                return await response.json();
             }
-        },
+        } catch (error) {
+            console.log('Server not available, using direct Firebase access');
+        }
 
-        async getSecureConfig() {
-            // Try to get config from server first (secure method)
-            try {
-                const response = await fetch('/api/config');
-                if (response.ok) {
-                    return await response.json();
-                }
-            } catch (error) {
-                console.log('Server config not available, using fallback');
-            }
+        // Fallback to direct Firebase (for development)
+        return {
+            projectId: 'capstoneproject-2b428',
+            apiKey: 'AIzaSyAjCVBgzAoJTjfzj_1DbnrKmIBcfVTWop08'
+        };
+    }
 
-            // Fallback configuration (temporary until server is set up)
-            return {
-                projectId: atob('Y2Fwc3RvbmVwcm9qZWN0LTJiNDI4'), // base64 encoded
-                apiKey: atob('QUl6YVN5QWpDVkJnekFvSlRqZnpqXzFEYm5yS21JQmNmVlRXb3AwOA==') // base64 encoded
-            };
-        },
+    // Secure authentication function
+    async function authenticateUser(username, password) {
+        const config = await getSecureConfig();
 
-        async secureLogin(username, password) {
-            // Get configuration from secure source
-            const config = await this.getSecureConfig();
-
-            // First try admin login
-            try {
-                const adminResult = await this.tryAdminLogin(username, password, config);
-                return {
-                    ...adminResult,
-                    isAdmin: true
-                };
-            } catch (error) {
-                console.log('Admin login failed, trying teacher login');
-                
-                // If admin login fails, try teacher login
-                try {
-                    const teacherResult = await this.tryTeacherLogin(username, password, config);
-                    return {
-                        ...teacherResult,
-                        isAdmin: false,
-                        teacherId: teacherResult.id || username // Store teacher ID for later use
-                    };
-                } catch (teacherError) {
-                    // Both login attempts failed
-                    throw new Error('Invalid credentials');
-                }
-            }
-        },
-        
-        async tryAdminLogin(username, password, config) {
-            const queryUrl = `https://firestore.googleapis.com/v1/projects/${config.projectId}/databases/(default)/documents:runQuery?key=${config.apiKey}`;
-            const queryBody = {
-                structuredQuery: {
-                    from: [{ collectionId: "admin" }],
-                    where: {
-                        fieldFilter: {
-                            field: { fieldPath: "username" },
-                            op: "EQUAL",
-                            value: { stringValue: username }
-                        }
-                    },
-                    limit: 1
-                }
-            };
-
-            const response = await fetch(queryUrl, {
+        // Try server authentication first
+        try {
+            const serverResponse = await fetch('/api/auth/admin/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(queryBody)
+                body: JSON.stringify({ username, password })
             });
 
-            if (!response.ok) {
-                throw new Error('Network error occurred');
+            if (serverResponse.ok) {
+                const data = await serverResponse.json();
+                return { success: true, isAdmin: true, data, method: 'server' };
+            }
+        } catch (error) {
+            console.log('Server auth failed, trying direct Firebase');
+        }
+
+        // Fallback to direct Firebase authentication
+        try {
+            // Check admin collection
+            const adminResult = await checkFirebaseAuth(config, 'admin', username, password);
+            if (adminResult.success) {
+                return { ...adminResult, isAdmin: true, method: 'firebase' };
             }
 
-            const results = await response.json();
-            if (!results || results.length === 0 || !results[0].document) {
-                throw new Error('Admin not found');
+            // Check teacher collection
+            const teacherResult = await checkFirebaseAuth(config, 'teacherData', username, password);
+            if (teacherResult.success) {
+                return { ...teacherResult, isAdmin: false, method: 'firebase' };
             }
 
-            const adminDocFields = results[0].document.fields;
-            const storedPassword = adminDocFields.password?.stringValue;
+            throw new Error('Invalid credentials');
+        } catch (error) {
+            throw new Error('Authentication failed: ' + error.message);
+        }
+    }
 
-            if (storedPassword !== password) {
-                throw new Error('Invalid admin password');
+    // Firebase authentication helper
+    async function checkFirebaseAuth(config, collection, username, password) {
+        const queryUrl = `https://firestore.googleapis.com/v1/projects/${config.projectId}/databases/(default)/documents:runQuery?key=${config.apiKey}`;
+        const queryBody = {
+            structuredQuery: {
+                from: [{ collectionId: collection }],
+                where: {
+                    fieldFilter: {
+                        field: { fieldPath: "username" },
+                        op: "EQUAL",
+                        value: { stringValue: username }
+                    }
+                },
+                limit: 1
             }
+        };
 
-            // Return mock session data for compatibility
+        const response = await fetch(queryUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(queryBody)
+        });
+
+        if (!response.ok) {
+            throw new Error('Network error');
+        }
+
+        const results = await response.json();
+        if (!results || results.length === 0 || !results[0].document) {
+            return { success: false };
+        }
+
+        const userDoc = results[0].document.fields;
+        const storedPassword = userDoc.password?.stringValue;
+        const userId = userDoc.id?.stringValue;
+
+        // Check if password is hashed (bcrypt format)
+        if (storedPassword && storedPassword.startsWith('$2b$')) {
+            // For hashed passwords, we need server verification
+            throw new Error('Hashed password requires server authentication');
+        }
+
+        // Direct comparison for non-hashed passwords (temporary fallback)
+        if (storedPassword === password) {
             return {
-                accessToken: 'admin-token',
-                refreshToken: 'admin-refresh',
-                message: 'Admin login successful'
-            };
-        },
-        
-        async tryTeacherLogin(username, password, config) {
-            const queryUrl = `https://firestore.googleapis.com/v1/projects/${config.projectId}/databases/(default)/documents:runQuery?key=${config.apiKey}`;
-            const queryBody = {
-                structuredQuery: {
-                    from: [{ collectionId: "teacherData" }],
-                    where: {
-                        fieldFilter: {
-                            field: { fieldPath: "username" },
-                            op: "EQUAL",
-                            value: { stringValue: username }
-                        }
-                    },
-                    limit: 1
+                success: true,
+                user: {
+                    id: userId,
+                    username: username,
+                    fullname: userDoc.fullname?.stringValue
                 }
-            };
-
-            const response = await fetch(queryUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(queryBody)
-            });
-
-            if (!response.ok) {
-                throw new Error('Network error occurred');
-            }
-
-            const results = await response.json();
-            if (!results || results.length === 0 || !results[0].document) {
-                throw new Error('Teacher not found');
-            }
-
-            const teacherDocFields = results[0].document.fields;
-            const storedPassword = teacherDocFields.password?.stringValue;
-            const teacherId = teacherDocFields.id?.stringValue;
-
-            if (storedPassword !== password) {
-                throw new Error('Invalid teacher password');
-            }
-
-            // Return mock session data for compatibility
-            return {
-                accessToken: 'teacher-token',
-                refreshToken: 'teacher-refresh',
-                message: 'Teacher login successful',
-                id: teacherId
             };
         }
-    };
+
+        return { success: false };
+    }
 
     adminLoginForm.addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -191,39 +138,39 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            // Clear any existing auth data
-            SecurityUtils.clearAuthData();
+            const result = await authenticateUser(enteredUsername, enteredPassword);
 
-            // Attempt secure login
-            const sessionData = await SecurityUtils.secureLogin(enteredUsername, enteredPassword);
+            // Set session data
+            if (result.isAdmin) {
+                sessionStorage.setItem('isAdminLoggedIn', 'true');
+                sessionStorage.setItem('userRole', 'admin');
+            } else {
+                sessionStorage.setItem('isTeacherLoggedIn', 'true');
+                sessionStorage.setItem('userRole', 'teacher');
+                if (result.user && result.user.id) {
+                    sessionStorage.setItem('teacherId', result.user.id);
+                }
+            }
 
-            // Store authentication data securely
-            SecurityUtils.setAuthData(sessionData, sessionData.isAdmin);
-
-            // Redirect based on user type
             subTitleElement.textContent = "Login successful! Redirecting...";
-            console.log(`${sessionData.isAdmin ? "Admin" : "Teacher"} logged in successfully.`);
+            subTitleElement.style.color = 'green';
+            console.log(`${result.isAdmin ? "Admin" : "Teacher"} logged in successfully via ${result.method}`);
 
-            // Redirect to appropriate portal based on user role
+            // Redirect to appropriate portal
             setTimeout(() => {
-                if (sessionData.isAdmin) {
-                    window.location.href = 'home.html';  // Admin goes to home.html
+                if (result.isAdmin) {
+                    window.location.href = 'home.html';
                 } else {
-                    // Teacher goes to teacher portal with their ID
-                    const teacherId = sessionData.teacherId || sessionData.user?.id || 'unknown';
-                    window.location.href = `teacherPortal.html?teacherId=${encodeURIComponent(teacherId)}`;
+                    window.location.href = 'teacherPortal.html';
                 }
             }, 1000);
-            
-            subTitleElement.style.color = 'green';
 
         } catch (error) {
             console.error("Login failed:", error);
 
-            // Handle specific error types
-            if (error.message.includes('Rate limit') || error.message.includes('Too many')) {
-                subTitleElement.textContent = "Too many login attempts. Please try again later.";
-            } else if (error.message.includes('Invalid credentials') || error.message.includes('Authentication failed')) {
+            if (error.message.includes('Hashed password')) {
+                subTitleElement.textContent = "Please use the secure server for login.";
+            } else if (error.message.includes('Invalid credentials')) {
                 subTitleElement.textContent = "Invalid username or password.";
             } else if (error.message.includes('Network')) {
                 subTitleElement.textContent = "Network error. Please check your connection.";
@@ -232,12 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             subTitleElement.style.color = 'red';
-
-            // Clear password field for security
             adminPasswordInput.value = '';
         }
     });
-
-    // Clear any existing auth data when page loads
-    SecurityUtils.clearAuthData();
 });
