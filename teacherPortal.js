@@ -809,7 +809,13 @@ async function initializeTeacherPortal() {
         loadingLevels.style.display = 'none';
         levelUnlockGrid.innerHTML = '';
 
-        // Add section selector for level management
+        // Remove any existing section selector to avoid duplicates
+        const existingSectionSelector = levelsContainer.querySelector('.section-selector-container');
+        if (existingSectionSelector) {
+            existingSectionSelector.remove();
+        }
+
+        // Add section selector for level management at the top
         const sectionSelectorContainer = document.createElement('div');
         sectionSelectorContainer.className = 'section-selector-container';
         sectionSelectorContainer.innerHTML = `
@@ -820,7 +826,8 @@ async function initializeTeacherPortal() {
                 </select>
             </div>
         `;
-        levelUnlockGrid.appendChild(sectionSelectorContainer);
+        // Insert at the very beginning of the container
+        levelsContainer.insertBefore(sectionSelectorContainer, levelsContainer.firstChild);
 
         // Populate section dropdown
         const sectionSelect = sectionSelectorContainer.querySelector('#levelManagementSectionSelect');
