@@ -45,6 +45,31 @@ function convertFirestoreValue(firestoreValue) {
     return firestoreValue;
 }
 
+// Helper function to convert JS values to Firestore format
+function toFirestoreValue(value) {
+    if (typeof value === 'string') return { stringValue: value };
+    if (typeof value === 'number') {
+        if (Number.isInteger(value)) return { integerValue: String(value) };
+        return { doubleValue: value };
+    }
+    if (typeof value === 'boolean') return { booleanValue: value };
+    if (value instanceof Date) return { timestampValue: value.toISOString() };
+    if (Array.isArray(value)) {
+        return { arrayValue: { values: value.map(toFirestoreValue) } };
+    }
+    if (value === null) return { nullValue: null };
+    if (typeof value === 'object' && value !== null) {
+        const fields = {};
+        for (const key in value) {
+            if (Object.hasOwnProperty.call(value, key)) {
+                fields[key] = toFirestoreValue(value[key]);
+            }
+        }
+        return { mapValue: { fields: fields } };
+    }
+    return { stringValue: String(value) };
+}
+
 // Calculate student progress based on completed levels
 function calculateStudentProgress(studentFields) {
     if (!studentFields) return 0;
@@ -281,12 +306,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             // Convert Firestore format to regular object
+            const rawLevelUnlocks = convertFirestoreValue(teacherDoc.fields.levelUnlocks) || {};
+
             teacherData = {
                 id: teacherDoc.fields.id?.stringValue || currentTeacherId,
                 fullname: teacherDoc.fields.fullname?.stringValue || 'Unknown Teacher',
                 email: teacherDoc.fields.email?.stringValue || '',
                 username: teacherDoc.fields.username?.stringValue || '',
-                levelUnlocks: convertFirestoreValue(teacherDoc.fields.levelUnlocks) || {},
+                levelUnlocks: ensureAllLevels(rawLevelUnlocks), // Ensure all levels 1-12 exist
                 rizal_questions: convertFirestoreValue(teacherDoc.fields.rizal_questions) || {}
             };
 
@@ -570,146 +597,232 @@ document.addEventListener('DOMContentLoaded', async () => {
     function renderQuestionsView() {
         const levelTabs = document.getElementById('levelTabs');
         const questionsContainer = document.getElementById('questionsContainer');
-        
+
         if (!levelTabs || !questionsContainer) return;
-        
+
         // Clear existing content
         levelTabs.innerHTML = '';
-        questionsContainer.innerHTML = '<p>Select a level to view questions</p>';
-        
-        // Create level tabs based on teacher's unlocked levels
-        if (teacherData && teacherData.levelUnlocks) {
-            const levels = Object.keys(teacherData.levelUnlocks)
-                .filter(level => teacherData.levelUnlocks[level])
-                .sort();
-                
-            levels.forEach((level, index) => {
-                const tab = document.createElement('button');
-                tab.classList.add('level-tab');
-                if (index === 0) tab.classList.add('active');
-                tab.textContent = level.replace('level', 'Level ');
-                tab.dataset.level = level;
-                
-                tab.addEventListener('click', () => {
-                    document.querySelectorAll('.level-tab').forEach(t => t.classList.remove('active'));
-                    tab.classList.add('active');
-                    loadQuestionsForLevel(level);
-                });
-                
-                levelTabs.appendChild(tab);
+        questionsContainer.innerHTML = '';
+
+        // Create header with Add Question button
+        const headerHTML = `
+            <div class="questions-header">
+                <h2>Question Management</h2>
+                <button id="addQuestionBtn" class="button primary">Add Question</button>
+            </div>
+            <div id="questionsContent" class="questions-content">
+                <p>Select a level to view questions</p>
+            </div>
+        `;
+        questionsContainer.innerHTML = headerHTML;
+
+        // Create level tabs for all levels 1-12
+        for (let i = 1; i <= 12; i++) {
+            const level = `level${i}`;
+            const questions = teacherData?.rizal_questions?.[level] || [];
+            const questionCount = questions.length;
+
+            const tab = document.createElement('button');
+            tab.classList.add('level-tab');
+            if (i === 1) tab.classList.add('active');
+            tab.textContent = `Level ${i} (${questionCount})`;
+            tab.dataset.level = level;
+
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.level-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                loadQuestionsForLevel(level);
             });
-            
-            // Load questions for first level
-            if (levels.length > 0) {
-                loadQuestionsForLevel(levels[0]);
-            }
+
+            levelTabs.appendChild(tab);
         }
+
+        // Add event listener for Add Question button
+        document.getElementById('addQuestionBtn').addEventListener('click', () => {
+            const activeLevel = document.querySelector('.level-tab.active')?.getAttribute('data-level') || 'level1';
+            showAddQuestionModal(activeLevel);
+        });
+
+        // Load questions for first level
+        loadQuestionsForLevel('level1');
     }
 
     async function loadQuestionsForLevel(level) {
-        const questionsContainer = document.getElementById('questionsContainer');
-        if (!questionsContainer) return;
-        
-        questionsContainer.innerHTML = '<p>Loading questions...</p>';
-        
+        const questionsContent = document.getElementById('questionsContent');
+        if (!questionsContent) return;
+
+        questionsContent.innerHTML = '<p>Loading questions...</p>';
+
         try {
-            // In a real implementation, you would fetch questions from the API
-            // For now, we'll use the questions from teacherData if available
             const questions = teacherData?.rizal_questions?.[level] || [];
-            
+
             if (questions.length === 0) {
-                questionsContainer.innerHTML = '<p>No questions found for this level</p>';
+                questionsContent.innerHTML = `
+                    <div class="no-questions">
+                        <p>No questions found for ${level.replace('level', 'Level ')}.</p>
+                        <p>Click "Add Question" to create your first question.</p>
+                    </div>
+                `;
                 return;
             }
-            
-            questionsContainer.innerHTML = '';
-            
-            questions.forEach((q, index) => {
-                const questionCard = document.createElement('div');
-                questionCard.classList.add('question-card');
-                
-                questionCard.innerHTML = `
+
+            questionsContent.innerHTML = questions.map((question, index) => `
+                <div class="question-card" data-level="${level}" data-index="${index}">
                     <div class="question-header">
-                        <h3>Question ${index + 1}</h3>
+                        <h4>Question ${index + 1}</h4>
                         <div class="question-actions">
-                            <button class="button small edit-question" data-index="${index}">Edit</button>
-                            <button class="button small danger delete-question" data-index="${index}">Delete</button>
+                            <button class="button secondary small edit-question" data-level="${level}" data-index="${index}">Edit</button>
+                            <button class="button danger small delete-question" data-level="${level}" data-index="${index}">Delete</button>
                         </div>
                     </div>
                     <div class="question-content">
-                        <p><strong>Question:</strong> ${q.question}</p>
-                        <p><strong>Answer:</strong> ${q.answer}</p>
+                        <p class="question-text"><strong>Question:</strong> ${question.text || 'No question text'}</p>
+                        <div class="choices-list">
+                            ${question.choices?.map((choice, choiceIndex) => `
+                                <div class="choice-item ${choice.correct ? 'correct' : ''}">
+                                    <span class="choice-letter">${String.fromCharCode(65 + choiceIndex)}.</span>
+                                    <span class="choice-text">${choice.text || 'No choice text'}</span>
+                                    ${choice.correct ? '<span class="correct-indicator">✓</span>' : ''}
+                                </div>
+                            `).join('') || '<p>No choices available</p>'}
+                        </div>
                     </div>
-                `;
-                
-                questionsContainer.appendChild(questionCard);
-            });
+                </div>
+            `).join('');
 
             // Add entrance animations to question cards
-            const questionCards = questionsContainer.querySelectorAll('.question-card');
+            const questionCards = questionsContent.querySelectorAll('.question-card');
             animateElements(questionCards, 150);
 
             // Add event listeners for edit and delete buttons
             document.querySelectorAll('.edit-question').forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    const index = e.target.getAttribute('data-index');
+                    const level = e.target.getAttribute('data-level');
+                    const index = parseInt(e.target.getAttribute('data-index'));
                     editQuestion(level, index);
                 });
             });
-            
+
             document.querySelectorAll('.delete-question').forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    const index = e.target.getAttribute('data-index');
+                    const level = e.target.getAttribute('data-level');
+                    const index = parseInt(e.target.getAttribute('data-index'));
                     deleteQuestion(level, index);
                 });
             });
-            
+
         } catch (error) {
             console.error("Error loading questions:", error);
-            questionsContainer.innerHTML = `<p class="error">Error loading questions: ${error.message}</p>`;
+            questionsContent.innerHTML = `<p class="error">Error loading questions: ${error.message}</p>`;
         }
     }
 
     function renderLevelsView() {
+        const levelsContainer = document.getElementById('levelsContainer');
+        const loadingLevels = document.getElementById('loadingLevels');
         const levelUnlockGrid = document.getElementById('levelUnlockGrid');
-        if (!levelUnlockGrid) return;
-        
+
+        if (!levelsContainer || !levelUnlockGrid) return;
+
+        loadingLevels.style.display = 'none';
         levelUnlockGrid.innerHTML = '';
-        
-        // Create level toggles based on teacher's level unlocks
-        if (teacherData && teacherData.levelUnlocks) {
-            const levels = Object.keys(teacherData.levelUnlocks).sort();
-            
-            levels.forEach(level => {
-                const isUnlocked = teacherData.levelUnlocks[level];
-                const levelNumber = level.replace('level', '');
-                
-                const levelToggle = document.createElement('div');
-                levelToggle.classList.add('level-toggle');
-                
-                levelToggle.innerHTML = `
-                    <label for="level${levelNumber}">Level ${levelNumber}</label>
-                    <div class="toggle-switch">
-                        <input type="checkbox" id="level${levelNumber}" 
-                               data-level="${level}" 
+
+        // Ensure we have all levels 1-12, fill gaps if needed
+        const completeLevelUnlocks = ensureAllLevels(teacherData?.levelUnlocks || {});
+
+        // Update teacherData with complete level unlocks
+        if (teacherData) {
+            teacherData.levelUnlocks = completeLevelUnlocks;
+        }
+
+        // Create level cards for levels 1-12
+        for (let i = 1; i <= 12; i++) {
+            const level = `level${i}`;
+            const isUnlocked = completeLevelUnlocks[level] || false;
+
+            const levelCard = document.createElement('div');
+            levelCard.classList.add('level-card');
+
+            levelCard.innerHTML = `
+                <div class="level-card-header">
+                    <h3 class="level-card-title">Level ${i}</h3>
+                    <div class="level-card-status ${isUnlocked ? 'unlocked' : 'locked'}">
+                        ${isUnlocked ? '🔓 Unlocked' : '🔒 Locked'}
+                    </div>
+                </div>
+                <div class="level-card-description">
+                    ${isUnlocked ? 'Students can access this level and its questions.' : 'Students cannot access this level yet.'}
+                </div>
+                <div class="level-card-toggle">
+                    <label class="toggle-switch" for="level${i}">
+                        <input type="checkbox" id="level${i}"
+                               data-level="${level}"
                                ${isUnlocked ? 'checked' : ''}>
                         <span class="toggle-slider"></span>
-                    </div>
-                `;
-                
-                levelUnlockGrid.appendChild(levelToggle);
-            });
-            
-            // Add entrance animations to level cards
-            const levelCards = levelUnlockGrid.querySelectorAll('.level-card');
-            animateElements(levelCards, 100);
+                    </label>
+                    <span class="toggle-label">
+                        ${isUnlocked ? 'Enabled' : 'Disabled'}
+                    </span>
+                </div>
+            `;
 
-            // Add event listener to save button
-            const saveButton = document.getElementById('saveLevelChanges');
-            if (saveButton) {
-                saveButton.addEventListener('click', saveLevelChanges);
+            levelUnlockGrid.appendChild(levelCard);
+        }
+
+        // Add event listeners to toggle switches for dynamic updates
+        const toggleInputs = levelUnlockGrid.querySelectorAll('.toggle-switch input');
+
+        toggleInputs.forEach((input) => {
+            // Add change event listener for toggle functionality
+            input.addEventListener('change', (e) => {
+                updateLevelCardDisplay(e.target);
+            });
+        });
+
+        // Helper function to update level card display
+        function updateLevelCardDisplay(toggleInput) {
+            const levelCard = toggleInput.closest('.level-card');
+            const statusElement = levelCard.querySelector('.level-card-status');
+            const labelElement = levelCard.querySelector('.toggle-label');
+            const descriptionElement = levelCard.querySelector('.level-card-description');
+
+            if (toggleInput.checked) {
+                statusElement.className = 'level-card-status unlocked';
+                statusElement.innerHTML = '🔓 Unlocked';
+                labelElement.textContent = 'Enabled';
+                descriptionElement.textContent = 'Students can access this level and its questions.';
+            } else {
+                statusElement.className = 'level-card-status locked';
+                statusElement.innerHTML = '🔒 Locked';
+                labelElement.textContent = 'Disabled';
+                descriptionElement.textContent = 'Students cannot access this level yet.';
             }
         }
+
+        // Add entrance animations to level cards (after event listeners are set)
+        setTimeout(() => {
+            const levelCards = levelUnlockGrid.querySelectorAll('.level-card');
+            animateElements(levelCards, 100);
+        }, 50);
+
+        // Add event listener to save button
+        const saveButton = document.getElementById('saveLevelChanges');
+        if (saveButton) {
+            saveButton.addEventListener('click', saveLevelChanges);
+        }
+    }
+
+    // Helper function to ensure all levels 1-12 exist
+    function ensureAllLevels(existingLevels) {
+        const completeLevels = {};
+
+        // Create levels 1-12, preserving existing values
+        for (let i = 1; i <= 12; i++) {
+            const levelKey = `level${i}`;
+            completeLevels[levelKey] = existingLevels[levelKey] || false;
+        }
+
+        return completeLevels;
     }
 
     // --- EVENT HANDLERS ---
@@ -836,33 +949,426 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    function editQuestion(level, index) {
-        alert(`Edit question ${index} in ${level}`);
-        // In a real implementation, you would open a modal with an edit form
+    function showAddQuestionModal(level) {
+        const questions = teacherData?.rizal_questions?.[level] || [];
+
+        // Check if level has reached maximum of 10 questions
+        if (questions.length >= 10) {
+            alert(`Level ${level.replace('level', '')} already has the maximum of 10 questions.`);
+            return;
+        }
+
+        showQuestionModal(level, null, 'Add Question');
     }
-    
-    function deleteQuestion(level, index) {
-        if (confirm(`Are you sure you want to delete question ${index} from ${level}?`)) {
-            alert(`Question deleted (simulated)`);
-            // In a real implementation, you would call an API to delete the question
-            // and then refresh the questions list
+
+    function editQuestion(level, index) {
+        const questions = teacherData?.rizal_questions?.[level] || [];
+        const question = questions[index];
+
+        if (!question) {
+            alert('Question not found');
+            return;
+        }
+
+        showQuestionModal(level, question, 'Edit Question', index);
+    }
+
+    async function deleteQuestion(level, index) {
+        if (!confirm(`Are you sure you want to delete question ${index + 1} from ${level.replace('level', 'Level ')}?`)) {
+            return;
+        }
+
+        try {
+            // Initialize rizal_questions if it doesn't exist
+            if (!teacherData.rizal_questions) {
+                teacherData.rizal_questions = {};
+            }
+
+            // Initialize level array if it doesn't exist
+            if (!teacherData.rizal_questions[level]) {
+                teacherData.rizal_questions[level] = [];
+            }
+
+            // Remove question from array
+            teacherData.rizal_questions[level].splice(index, 1);
+
+            // Save to Firebase
+            await saveQuestionsToFirebase();
+
+            // Refresh the questions view
+            loadQuestionsForLevel(level);
+
+            // Update tab count
+            updateLevelTabCount(level);
+
+            alert('Question deleted successfully!');
+
+        } catch (error) {
+            console.error('Error deleting question:', error);
+            alert('Error deleting question: ' + error.message);
         }
     }
-    
+
+    function showQuestionModal(level, existingQuestion = null, title = 'Add Question', questionIndex = null) {
+        // Remove existing modal if any
+        const existingModal = document.getElementById('questionModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        // Create modal HTML
+        const modalHTML = `
+            <div id="questionModal" class="student-details-modal active">
+                <div class="student-modal-content question-modal-content">
+                    <div class="student-modal-header">
+                        <h3>${title} - ${level.replace('level', 'Level ')}</h3>
+                        <button id="questionModalClose" class="student-modal-close">Close</button>
+                    </div>
+                    <div class="student-modal-body">
+                        <form id="questionForm" class="question-form">
+                            <div class="form-group">
+                                <label for="questionText">Question Text:</label>
+                                <textarea id="questionText" rows="3" placeholder="Enter your question here..." required>${existingQuestion?.text || ''}</textarea>
+                            </div>
+
+                            <div class="choices-section">
+                                <h4>Answer Choices:</h4>
+                                ${generateChoiceInputs(existingQuestion?.choices)}
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="button primary">${questionIndex !== null ? 'Update Question' : 'Add Question'}</button>
+                                <button type="button" id="cancelQuestion" class="button secondary">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Add modal to body
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+        // Add event listeners
+        const modal = document.getElementById('questionModal');
+        const closeBtn = document.getElementById('questionModalClose');
+        const cancelBtn = document.getElementById('cancelQuestion');
+        const form = document.getElementById('questionForm');
+
+        const closeModal = () => {
+            modal.classList.remove('active');
+            setTimeout(() => modal.remove(), 300);
+        };
+
+        closeBtn.addEventListener('click', closeModal);
+        cancelBtn.addEventListener('click', closeModal);
+
+        // Close modal when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+
+        // Add choice radio button listeners for auto-toggle
+        setupChoiceListeners();
+
+        // Handle form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await saveQuestion(level, questionIndex, modal);
+        });
+    }
+
+    function generateChoiceInputs(existingChoices = null) {
+        const choices = existingChoices || [
+            { text: '', correct: false },
+            { text: '', correct: false },
+            { text: '', correct: false },
+            { text: '', correct: false }
+        ];
+
+        return choices.map((choice, index) => `
+            <div class="choice-group">
+                <div class="choice-header">
+                    <label class="choice-label">Choice ${String.fromCharCode(65 + index)}:</label>
+                    <label class="correct-choice">
+                        <input type="radio" name="correctChoice" value="${index}" ${choice.correct ? 'checked' : ''}>
+                        Correct Answer
+                    </label>
+                </div>
+                <input type="text" class="choice-input" data-index="${index}"
+                       value="${choice.text || ''}" placeholder="Enter choice text..." required>
+            </div>
+        `).join('');
+    }
+
+    function setupChoiceListeners() {
+        const radioButtons = document.querySelectorAll('input[name="correctChoice"]');
+        radioButtons.forEach(radio => {
+            radio.addEventListener('change', () => {
+                // Auto-toggle: when one is selected, others become false
+                radioButtons.forEach(r => {
+                    if (r !== radio) {
+                        r.checked = false;
+                    }
+                });
+            });
+        });
+    }
+
+    async function saveQuestion(level, questionIndex, modal) {
+        try {
+            // Get form data
+            const questionText = document.getElementById('questionText').value.trim();
+            const choiceInputs = document.querySelectorAll('.choice-input');
+            const correctChoiceRadio = document.querySelector('input[name="correctChoice"]:checked');
+
+            // Validation
+            if (!questionText) {
+                alert('Please enter a question text.');
+                return;
+            }
+
+            if (!correctChoiceRadio) {
+                alert('Please select the correct answer.');
+                return;
+            }
+
+            // Check if all choices have text
+            const choices = [];
+            let hasEmptyChoice = false;
+
+            choiceInputs.forEach((input, index) => {
+                const text = input.value.trim();
+                if (!text) {
+                    hasEmptyChoice = true;
+                    return;
+                }
+
+                choices.push({
+                    text: text,
+                    correct: index === parseInt(correctChoiceRadio.value)
+                });
+            });
+
+            if (hasEmptyChoice) {
+                alert('Please fill in all choice texts.');
+                return;
+            }
+
+            // Create question object
+            const questionData = {
+                text: questionText,
+                choices: choices
+            };
+
+            // Initialize rizal_questions if it doesn't exist
+            if (!teacherData.rizal_questions) {
+                teacherData.rizal_questions = {};
+            }
+
+            // Initialize level array if it doesn't exist
+            if (!teacherData.rizal_questions[level]) {
+                teacherData.rizal_questions[level] = [];
+            }
+
+            // Add or update question
+            if (questionIndex !== null) {
+                // Update existing question
+                teacherData.rizal_questions[level][questionIndex] = questionData;
+            } else {
+                // Add new question
+                teacherData.rizal_questions[level].push(questionData);
+            }
+
+            // Save to Firebase
+            await saveQuestionsToFirebase();
+
+            // Close modal
+            modal.classList.remove('active');
+            setTimeout(() => modal.remove(), 300);
+
+            // Refresh the questions view
+            loadQuestionsForLevel(level);
+
+            // Update tab count
+            updateLevelTabCount(level);
+
+            alert(questionIndex !== null ? 'Question updated successfully!' : 'Question added successfully!');
+
+        } catch (error) {
+            console.error('Error saving question:', error);
+            alert('Error saving question: ' + error.message);
+        }
+    }
+
+    async function saveQuestionsToFirebase() {
+        try {
+            if (!CONFIG) {
+                throw new Error("Configuration not loaded");
+            }
+
+            if (!currentTeacherId) {
+                throw new Error("Teacher ID not found");
+            }
+
+            // First, get the current teacher document to preserve other fields
+            const queryUrl = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents:runQuery?key=${CONFIG.apiKey}`;
+            const queryBody = {
+                structuredQuery: {
+                    from: [{ collectionId: 'teacherData' }],
+                    where: {
+                        fieldFilter: {
+                            field: { fieldPath: 'id' },
+                            op: "EQUAL",
+                            value: { stringValue: currentTeacherId }
+                        }
+                    },
+                    limit: 1
+                }
+            };
+
+            const queryResponse = await fetch(queryUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(queryBody)
+            });
+
+            if (!queryResponse.ok) {
+                throw new Error(`Failed to fetch teacher data: ${queryResponse.statusText}`);
+            }
+
+            const queryResults = await queryResponse.json();
+            if (!queryResults || queryResults.length === 0) {
+                throw new Error("Teacher document not found");
+            }
+
+            const teacherDoc = queryResults[0].document;
+            const documentPath = teacherDoc.name; // Full document path
+
+            // Prepare the update data - preserve all existing fields and update rizal_questions
+            const updateData = {
+                fields: {
+                    ...teacherDoc.fields, // Preserve all existing fields
+                    rizal_questions: toFirestoreValue(teacherData.rizal_questions) // Update with new questions
+                }
+            };
+
+            // Update the teacher document
+            const updateUrl = `https://firestore.googleapis.com/v1/${documentPath}?key=${CONFIG.apiKey}`;
+            const updateResponse = await fetch(updateUrl, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updateData)
+            });
+
+            if (!updateResponse.ok) {
+                const errorText = await updateResponse.text();
+                throw new Error(`Failed to update questions: ${updateResponse.status} - ${errorText}`);
+            }
+
+            console.log("Questions saved to Firebase successfully");
+
+        } catch (error) {
+            console.error("Error saving questions to Firebase:", error);
+            throw error;
+        }
+    }
+
+    function updateLevelTabCount(level) {
+        const tab = document.querySelector(`.level-tab[data-level="${level}"]`);
+        if (tab) {
+            const questions = teacherData?.rizal_questions?.[level] || [];
+            const levelNumber = level.replace('level', '');
+            tab.textContent = `Level ${levelNumber} (${questions.length})`;
+        }
+    }
+
     async function saveLevelChanges() {
         try {
+            if (!CONFIG) {
+                throw new Error("Configuration not loaded");
+            }
+
+            if (!currentTeacherId) {
+                throw new Error("Teacher ID not found");
+            }
+
             const levelToggles = document.querySelectorAll('.toggle-switch input');
             const updatedLevelUnlocks = {};
-            
+
             levelToggles.forEach(toggle => {
                 const level = toggle.getAttribute('data-level');
                 updatedLevelUnlocks[level] = toggle.checked;
             });
-            
-            // In a real implementation, you would call an API to update the level unlocks
-            alert("Level changes saved (simulated)");
-            console.log("Updated level unlocks:", updatedLevelUnlocks);
-            
+
+            // Ensure we have all levels 1-12 with current toggle states
+            const completeLevelUnlocks = ensureAllLevels(updatedLevelUnlocks);
+
+            console.log("Saving complete level unlocks (1-12):", completeLevelUnlocks);
+
+            // First, get the current teacher document to preserve other fields
+            const queryUrl = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents:runQuery?key=${CONFIG.apiKey}`;
+            const queryBody = {
+                structuredQuery: {
+                    from: [{ collectionId: 'teacherData' }],
+                    where: {
+                        fieldFilter: {
+                            field: { fieldPath: 'id' },
+                            op: "EQUAL",
+                            value: { stringValue: currentTeacherId }
+                        }
+                    },
+                    limit: 1
+                }
+            };
+
+            const queryResponse = await fetch(queryUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(queryBody)
+            });
+
+            if (!queryResponse.ok) {
+                throw new Error(`Failed to fetch teacher data: ${queryResponse.statusText}`);
+            }
+
+            const queryResults = await queryResponse.json();
+            if (!queryResults || queryResults.length === 0) {
+                throw new Error("Teacher document not found");
+            }
+
+            const teacherDoc = queryResults[0].document;
+            const documentPath = teacherDoc.name; // Full document path
+
+            // Prepare the update data - preserve all existing fields and update levelUnlocks with complete 1-12 set
+            const updateData = {
+                fields: {
+                    ...teacherDoc.fields, // Preserve all existing fields
+                    levelUnlocks: toFirestoreValue(completeLevelUnlocks) // Update with complete levelUnlocks (1-12)
+                }
+            };
+
+            // Update the teacher document
+            const updateUrl = `https://firestore.googleapis.com/v1/${documentPath}?key=${CONFIG.apiKey}`;
+            const updateResponse = await fetch(updateUrl, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updateData)
+            });
+
+            if (!updateResponse.ok) {
+                const errorText = await updateResponse.text();
+                throw new Error(`Failed to update level unlocks: ${updateResponse.status} - ${errorText}`);
+            }
+
+            // Update local teacher data with complete level set
+            teacherData.levelUnlocks = completeLevelUnlocks;
+
+            alert("Level changes saved successfully! All levels 1-12 are now configured.");
+            console.log("Complete level unlocks updated successfully:", completeLevelUnlocks);
+
         } catch (error) {
             console.error("Error saving level changes:", error);
             alert("Error saving changes: " + error.message);
