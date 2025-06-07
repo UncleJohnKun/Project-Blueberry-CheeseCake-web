@@ -1246,17 +1246,20 @@ async function initializeTeacherPortal() {
             modal.classList.remove('active');
             setTimeout(() => modal.remove(), 300);
 
-            // Reset section filter to "All Sections"
-            const sectionFilter = document.getElementById('sectionFilter');
-            if (sectionFilter) {
-                sectionFilter.value = '';
-                // Trigger the filter change event to update the student list
-                const event = new Event('change');
-                sectionFilter.dispatchEvent(event);
-            }
-
-            // Refresh student list
+            // Refresh student list first
             await fetchStudentsForTeacher();
+
+            // Reset section filter to "All Sections" after data is refreshed
+            // Add a small delay to ensure DOM is fully updated
+            setTimeout(() => {
+                const sectionFilter = document.getElementById('sectionFilter');
+                if (sectionFilter) {
+                    sectionFilter.value = '';
+                    // Trigger the filter change event to update the student list display
+                    const event = new Event('change');
+                    sectionFilter.dispatchEvent(event);
+                }
+            }, 100);
 
         } catch (error) {
             console.error('Error updating student:', error);
