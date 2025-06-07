@@ -178,19 +178,7 @@ async function initializeTeacherPortal() {
         console.warn("Logout button not found");
     }
     
-    // Navigation elements
-    const studentsLink = document.getElementById('studentsLink');
-    const questionsLink = document.getElementById('questionsLink');
-    const levelsLink = document.getElementById('levelsLink');
-    const sectionsLink = document.getElementById('sectionsLink');
-    const createStudentLink = document.getElementById('createStudentLink');
-    const settingsLink = document.getElementById('settingsLink');
-
-    // View containers
-    const studentListView = document.getElementById('studentListView');
-    const questionsView = document.getElementById('questionsView');
-    const levelsView = document.getElementById('levelsView');
-    const sectionsView = document.getElementById('sectionsView');
+    // Navigation elements and view containers will be retrieved in initializeUI()
 
     // Section filter
     const sectionFilter = document.getElementById('sectionFilter');
@@ -742,7 +730,7 @@ async function initializeTeacherPortal() {
         const headerHTML = `
             <div class="questions-header">
                 <h2>Question Management</h2>
-                <button id="addQuestionBtn" class="button primary">Add Question</button>
+                <button id="addQuestionButton" class="button primary">Add Question</button>
             </div>
             <div id="questionsContent" class="questions-content">
                 <p>Select a level to view questions</p>
@@ -783,11 +771,19 @@ async function initializeTeacherPortal() {
             levelTabsGrid.appendChild(tab);
         }
 
-        // Add event listener for Add Question button
-        document.getElementById('addQuestionBtn').addEventListener('click', () => {
-            const activeLevel = document.querySelector('.level-tab.active')?.getAttribute('data-level') || 'level1';
-            showAddQuestionModal(activeLevel);
-        });
+        // Add event listener for Add Question button with a small delay to ensure DOM is ready
+        setTimeout(() => {
+            const addQuestionButton = document.getElementById('addQuestionButton');
+            if (addQuestionButton) {
+                addQuestionButton.addEventListener('click', () => {
+                    const activeLevel = document.querySelector('.level-tab.active')?.getAttribute('data-level') || 'level1';
+                    showAddQuestionModal(activeLevel);
+                });
+                console.log("Add Question button event listener attached successfully");
+            } else {
+                console.error("Add Question button not found!");
+            }
+        }, 100);
 
         // Load questions for first level
         loadQuestionsForLevel('level1');
@@ -1245,6 +1241,7 @@ async function initializeTeacherPortal() {
     }
 
     function showAddQuestionModal(level) {
+        console.log("showAddQuestionModal called for level:", level);
         const questions = teacherData?.rizal_questions?.[level] || [];
 
         // Check if level has reached maximum of 10 questions
@@ -1253,6 +1250,7 @@ async function initializeTeacherPortal() {
             return;
         }
 
+        console.log("Calling showQuestionModal...");
         showQuestionModal(level, null, 'Add Question');
     }
 
@@ -1305,9 +1303,12 @@ async function initializeTeacherPortal() {
     }
 
     function showQuestionModal(level, existingQuestion = null, title = 'Add Question', questionIndex = null) {
+        console.log("showQuestionModal called with:", { level, title, questionIndex });
+
         // Remove existing modal if any
         const existingModal = document.getElementById('questionModal');
         if (existingModal) {
+            console.log("Removing existing modal");
             existingModal.remove();
         }
 
@@ -1683,29 +1684,68 @@ async function initializeTeacherPortal() {
 
     // --- UTILITY FUNCTIONS ---
     function showView(targetView) {
+        console.log("showView called with:", targetView);
         // Hide all views
         const allViews = document.querySelectorAll('.content-view');
+        console.log("Found content views:", allViews.length);
         allViews.forEach(view => view.classList.remove('active'));
 
         // Show target view
         if (targetView) {
             targetView.classList.add('active');
+            console.log("Activated view:", targetView.id);
+        } else {
+            console.warn("No target view provided to showView");
         }
     }
 
     function setActiveNavLink(targetLink) {
+        console.log("setActiveNavLink called with:", targetLink);
         // Remove active class from all nav links
         const allNavLinks = document.querySelectorAll('.sidebar-nav-link');
+        console.log("Found nav links:", allNavLinks.length);
         allNavLinks.forEach(link => link.classList.remove('active'));
 
         // Add active class to target link
         if (targetLink) {
             targetLink.classList.add('active');
+            console.log("Activated nav link:", targetLink.id);
+        } else {
+            console.warn("No target link provided to setActiveNavLink");
         }
     }
 
     // --- UI INITIALIZATION ---
     function initializeUI() {
+        console.log("=== initializeUI called ===");
+
+        // Re-get all DOM elements to ensure they're available
+        const studentsLink = document.getElementById('studentsLink');
+        const questionsLink = document.getElementById('questionsLink');
+        const levelsLink = document.getElementById('levelsLink');
+        const sectionsLink = document.getElementById('sectionsLink');
+        const createStudentLink = document.getElementById('createStudentLink');
+        const settingsLink = document.getElementById('settingsLink');
+
+        // Re-get view containers
+        const studentListView = document.getElementById('studentListView');
+        const questionsView = document.getElementById('questionsView');
+        const levelsView = document.getElementById('levelsView');
+        const sectionsView = document.getElementById('sectionsView');
+
+        console.log("DOM elements check:", {
+            studentsLink: studentsLink ? studentsLink.id : 'NOT FOUND',
+            questionsLink: questionsLink ? questionsLink.id : 'NOT FOUND',
+            levelsLink: levelsLink ? levelsLink.id : 'NOT FOUND',
+            sectionsLink: sectionsLink ? sectionsLink.id : 'NOT FOUND',
+            createStudentLink: createStudentLink ? createStudentLink.id : 'NOT FOUND',
+            settingsLink: settingsLink ? settingsLink.id : 'NOT FOUND',
+            studentListView: studentListView ? studentListView.id : 'NOT FOUND',
+            questionsView: questionsView ? questionsView.id : 'NOT FOUND',
+            levelsView: levelsView ? levelsView.id : 'NOT FOUND',
+            sectionsView: sectionsView ? sectionsView.id : 'NOT FOUND'
+        });
+
         // Initialize mobile sidebar functionality
         if (mobileSidebarToggle) {
             mobileSidebarToggle.addEventListener('click', () => {
@@ -1749,54 +1789,80 @@ async function initializeTeacherPortal() {
         }
 
         // Initialize navigation
+        console.log("Setting up navigation event listeners...");
+
         if (studentsLink) {
+            console.log("Setting up studentsLink event listener");
             studentsLink.addEventListener('click', (e) => {
                 e.preventDefault();
+                console.log("Students link clicked");
                 showView(studentListView);
                 setActiveNavLink(studentsLink);
             });
+        } else {
+            console.warn("studentsLink not found");
         }
 
         if (questionsLink) {
+            console.log("Setting up questionsLink event listener");
             questionsLink.addEventListener('click', (e) => {
                 e.preventDefault();
+                console.log("Questions link clicked");
                 showView(questionsView);
                 setActiveNavLink(questionsLink);
                 renderQuestionsView();
             });
+        } else {
+            console.warn("questionsLink not found");
         }
 
         if (levelsLink) {
+            console.log("Setting up levelsLink event listener");
             levelsLink.addEventListener('click', (e) => {
                 e.preventDefault();
+                console.log("Levels link clicked");
                 showView(levelsView);
                 setActiveNavLink(levelsLink);
                 renderLevelsView();
             });
+        } else {
+            console.warn("levelsLink not found");
         }
 
         if (sectionsLink) {
+            console.log("Setting up sectionsLink event listener");
             sectionsLink.addEventListener('click', (e) => {
                 e.preventDefault();
+                console.log("Sections link clicked");
                 showView(sectionsView);
                 setActiveNavLink(sectionsLink);
                 renderSectionsView();
             });
+        } else {
+            console.warn("sectionsLink not found");
         }
 
         if (createStudentLink) {
+            console.log("Setting up createStudentLink event listener");
             createStudentLink.addEventListener('click', (e) => {
                 e.preventDefault();
+                console.log("Create student link clicked");
                 showAddStudentModal();
             });
+        } else {
+            console.warn("createStudentLink not found");
         }
 
         // Initialize settings functionality
         if (settingsLink) {
+            console.log("Setting up settingsLink event listener");
             settingsLink.addEventListener('click', (e) => {
                 e.preventDefault();
+                console.log("Settings link clicked");
                 openSettingsModal();
             });
+        } else {
+            console.warn("settingsLink not found");
         }
 
         if (closeSettingsButton) {
@@ -2671,6 +2737,11 @@ async function initializeTeacherPortal() {
     function viewStudentsInSection(sectionName) {
         console.log(`Switching to students view for section: ${sectionName}`);
 
+        // Get DOM elements dynamically
+        const studentListView = document.getElementById('studentListView');
+        const studentsLink = document.getElementById('studentsLink');
+        const sectionFilter = document.getElementById('sectionFilter');
+
         // Switch to students view
         showView(studentListView);
         setActiveNavLink(studentsLink);
@@ -2696,6 +2767,11 @@ async function initializeTeacherPortal() {
 
     // Function to reset back to all students view
     function resetToAllStudents() {
+        // Get DOM elements dynamically
+        const studentListView = document.getElementById('studentListView');
+        const studentsLink = document.getElementById('studentsLink');
+        const sectionFilter = document.getElementById('sectionFilter');
+
         // Ensure we're on the students view
         showView(studentListView);
         setActiveNavLink(studentsLink);
@@ -2918,12 +2994,105 @@ async function initializeTeacherPortal() {
         XLSX.utils.book_append_sheet(workbook, sectionSheet, sanitizedSectionName);
     }
 
+    // --- HASH NAVIGATION HANDLER ---
+    function handleHashNavigation() {
+        const hash = window.location.hash.substring(1); // Remove the # symbol
+        console.log("Handling hash navigation:", hash);
 
+        if (!hash) return; // No hash, stay on default view
+
+        // Get DOM elements for navigation
+        const studentsLink = document.getElementById('studentsLink');
+        const questionsLink = document.getElementById('questionsLink');
+        const levelsLink = document.getElementById('levelsLink');
+        const sectionsLink = document.getElementById('sectionsLink');
+        const createStudentLink = document.getElementById('createStudentLink');
+        const settingsLink = document.getElementById('settingsLink');
+
+        const studentListView = document.getElementById('studentListView');
+        const questionsView = document.getElementById('questionsView');
+        const levelsView = document.getElementById('levelsView');
+        const sectionsView = document.getElementById('sectionsView');
+
+        // Navigate based on hash
+        switch (hash.toLowerCase()) {
+            case 'students':
+                if (studentsLink && studentListView) {
+                    showView(studentListView);
+                    setActiveNavLink(studentsLink);
+                }
+                break;
+            case 'questions':
+                if (questionsLink && questionsView) {
+                    showView(questionsView);
+                    setActiveNavLink(questionsLink);
+                    renderQuestionsView();
+                }
+                break;
+            case 'levels':
+                if (levelsLink && levelsView) {
+                    showView(levelsView);
+                    setActiveNavLink(levelsLink);
+                    renderLevelsView();
+                }
+                break;
+            case 'sections':
+                if (sectionsLink && sectionsView) {
+                    showView(sectionsView);
+                    setActiveNavLink(sectionsLink);
+                    renderSectionsView();
+                }
+                break;
+            case 'addstudent':
+                if (createStudentLink) {
+                    // Stay on students view but open add student modal
+                    if (studentsLink && studentListView) {
+                        showView(studentListView);
+                        setActiveNavLink(studentsLink);
+                    }
+                    // Small delay to ensure the page is loaded before opening modal
+                    setTimeout(() => {
+                        const addStudentModal = document.getElementById('addStudentModal');
+                        if (addStudentModal) {
+                            showAddStudentModal();
+                        }
+                    }, 500);
+                }
+                break;
+            case 'settings':
+                if (settingsLink) {
+                    // Stay on students view but open settings modal
+                    if (studentsLink && studentListView) {
+                        showView(studentListView);
+                        setActiveNavLink(studentsLink);
+                    }
+                    // Small delay to ensure the page is loaded before opening modal
+                    setTimeout(() => {
+                        const settingsModal = document.getElementById('settingsModal');
+                        if (settingsModal) {
+                            openSettingsModal();
+                        }
+                    }, 500);
+                }
+                break;
+            default:
+                console.log("Unknown hash:", hash);
+                break;
+        }
+
+        // Clear the hash from URL after navigation
+        if (window.history && window.history.replaceState) {
+            window.history.replaceState(null, null, window.location.pathname);
+        }
+    }
 
         // --- INITIALIZATION ---
         console.log("Starting app initialization...");
         await initializeApp();
         console.log("Teacher portal initialized successfully");
+
+        // Handle hash-based navigation from external links (like studentDetails.html)
+        handleHashNavigation();
 
     } catch (error) {
         console.error("Failed to initialize teacher portal:", error);
