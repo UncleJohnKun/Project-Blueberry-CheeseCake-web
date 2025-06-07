@@ -1,11 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- ADMIN LOGIN CHECK ---
-    // This MUST be the first thing that runs on this page.
-    if (sessionStorage.getItem('isAdminLoggedIn') !== 'true') {
-        alert("Admin access required. Please log in as admin first.");
-        window.location.href = 'index.html'; // Redirect to admin login page
-        return; // Stop further execution of this script
-    }
+    // --- ADMIN LOGIN CHECK REMOVED ---
+    // Authentication check removed as requested
     // If you want a logout button for admin:
     // const goBackButton = document.getElementById('goBackButton'); // Assuming you add this button
     // if (goBackButton) {
@@ -424,30 +419,48 @@ document.addEventListener('DOMContentLoaded', () => {
             const timestamp = new Date().toISOString();
             const documentPath = teacherId; // Use the teacher's chosen ID as the Firestore Document ID for their record
 
-            // Use server API to create teacher account with proper password hashing
+            // Create teacher data with direct Firebase format
             const teacherData = {
                 email: email,
                 fullname: fullName,
                 username: username,
-                password: password, // Will be hashed by server
+                password: password, // Store as plain text for now (not recommended for production)
                 id: teacherId,
+                timestamp: timestamp,
                 totalStudents: globalTotalStudents,
                 rizal_questions: globalRizalQuestions,
                 levelUnlocks: globalLevelUnlocks
             };
 
-            // Send to secure server endpoint
-            const response = await fetch('/api/teachers/create', {
-                method: 'POST',
+            // Convert to Firestore format
+            const firestoreData = {
+                fields: {
+                    email: toFirestoreValue(teacherData.email),
+                    fullname: toFirestoreValue(teacherData.fullname),
+                    username: toFirestoreValue(teacherData.username),
+                    password: toFirestoreValue(teacherData.password),
+                    id: toFirestoreValue(teacherData.id),
+                    timestamp: toFirestoreValue(teacherData.timestamp),
+                    totalStudents: toFirestoreValue(teacherData.totalStudents),
+                    rizal_questions: toFirestoreValue(teacherData.rizal_questions),
+                    levelUnlocks: toFirestoreValue(teacherData.levelUnlocks)
+                }
+            };
+
+            // Send to Firebase directly
+            const createUrl = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents/${COLLECTION}/${documentPath}?key=${CONFIG.apiKey}`;
+            const response = await fetch(createUrl, {
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(teacherData)
+                body: JSON.stringify(firestoreData)
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Failed to create teacher account');
+                let errorMsg = 'Failed to create teacher account.';
+                try { const errorData = await response.json(); errorMsg = errorData.error?.message || `HTTP error ${response.status}`; } catch(e){}
+                throw new Error(errorMsg);
             }
 
             console.log('✅ Teacher created successfully:', teacherId);

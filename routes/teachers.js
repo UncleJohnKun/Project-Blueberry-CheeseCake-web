@@ -213,12 +213,10 @@ router.get('/:id/students',
 );
 
 /**
- * Create new teacher account (Admin only)
+ * Create new teacher account (No authentication required - for development)
  * POST /api/teachers
  */
 router.post('/',
-    authenticateToken,
-    requireAdmin,
     validateInputMiddleware(validationRules.createTeacher),
     async (req, res) => {
         try {
@@ -280,7 +278,7 @@ router.post('/',
             await db.collection('teacherData').doc(id).set(teacherData);
 
             // Log teacher creation
-            console.log(`Teacher account created: ${username} by admin ${req.user.username}`);
+            console.log(`Teacher account created: ${username}`);
 
             // Return success without password
             const responseData = { ...teacherData };

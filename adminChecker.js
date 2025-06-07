@@ -144,11 +144,29 @@ document.addEventListener('DOMContentLoaded', () => {
             if (result.isAdmin) {
                 sessionStorage.setItem('isAdminLoggedIn', 'true');
                 sessionStorage.setItem('userRole', 'admin');
+
+                // Store authentication tokens if available (from server auth)
+                if (result.data && result.data.accessToken) {
+                    sessionStorage.setItem('authToken', result.data.accessToken);
+                    sessionStorage.setItem('refreshToken', result.data.refreshToken);
+                    if (result.data.csrfToken) {
+                        sessionStorage.setItem('csrfToken', result.data.csrfToken);
+                    }
+                }
             } else {
                 sessionStorage.setItem('isTeacherLoggedIn', 'true');
                 sessionStorage.setItem('userRole', 'teacher');
                 if (result.user && result.user.id) {
                     sessionStorage.setItem('teacherId', result.user.id);
+                }
+
+                // Store authentication tokens if available (from server auth)
+                if (result.data && result.data.accessToken) {
+                    sessionStorage.setItem('authToken', result.data.accessToken);
+                    sessionStorage.setItem('refreshToken', result.data.refreshToken);
+                    if (result.data.csrfToken) {
+                        sessionStorage.setItem('csrfToken', result.data.csrfToken);
+                    }
                 }
             }
 
