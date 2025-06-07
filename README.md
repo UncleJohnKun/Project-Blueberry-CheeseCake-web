@@ -2,7 +2,65 @@
 
 A secure, modern admin dashboard for the Kamusta Po Guro educational platform with comprehensive security features.
 
-## 🔒 Security Features
+## � Latest Update - 6/7/25:
+✅ **Git Commit**: Project-Blueberry-CheeseCake-web
+✅ **Web Deployment** - Admin Major Changes
+✅ **Teacher and Admin Account Creation Revamp**
+
+### 🚀 Major Changes:
+- **Teacher and Admin Account Creation Revamp**
+  - Secure account creation now uses a server API
+  - Input fields are now protected with sanitization to avoid errors and security issues
+  - Improved login/logout experience for teachers and admins
+  - Better error messages for failed logins or access issues
+
+- **New Teacher Portal Features**
+
+Teachers can now manage students more effectively:
+- View student info like ID, section, and progress
+- Edit and update student details
+- Track student performance in real-time
+- Organized student data into different levels or tabs for easier navigation
+- Added Excel export feature so teachers can download student records
+- Improved UI animations when switching between levels or tabs
+
+### 👥 Student Information:
+- Student display updated to show more details like ID and section
+- Switched from using internal IDs to usernames (more readable)
+- Removed email and "last active" info to clean up the view
+
+### 📚 Section and Question Management:
+- Teachers can now create, edit, filter, and delete sections of students
+- Question management improved with tabs based on difficulty levels
+- Cleaner layout for adding and managing questions
+
+### 🎨 Major UI/UX Enhancements:
+- Animated modals added for account creation and logout
+- Smooth entrance animations for lists of students and teachers
+- Hover animations added to avoid accidental duplication
+- Pagination now helps teachers scroll through long student lists
+- New mobile-friendly sidebar and setting menus
+
+### 🔧 Minor Improvements:
+- "View Teacher Portal" button removed for clarity
+- Logout button made always visible and styled better
+- Progress modal added to show batch account creation status
+- Added new settings and close buttons for modals and sidebars
+- Alert added when viewing temporary student details for future updates
+- Cleaned up unnecessary code and comments in many files
+- Fixed header title from "COMPANY" to "ADMIN PORTAL" for accuracy
+- Simplified spacing in search areas and modals for consistency
+- Improved search design for better mobile and desktop viewing
+- Teacher info toggle now lets users collapse or expand extra details
+- Password toggle added when editing teacher accounts
+- Fixed some buttons not responding
+- Fixed some UI problems
+
+### 📋 Full Changelog:
+- [Project-Blueberry-CheeseCake](https://github.com/UncleJohnKun/Project-Blueberry-CheeseCake/commits/main/)
+- [Project-Blueberry-CheeseCake-web](https://github.com/UncleJohnKun/Project-Blueberry-CheeseCake-web/commits/main/)
+
+## �🔒 Security Features
 
 ### Authentication & Authorization
 - ✅ **Password Hashing**: Bcrypt with configurable rounds
