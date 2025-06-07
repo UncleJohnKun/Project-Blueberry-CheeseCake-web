@@ -637,11 +637,11 @@ async function initializeTeacherPortal() {
 
         // Add event listeners to edit buttons
         document.querySelectorAll('.edit-student').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', async (e) => {
                 const studentId = e.target.getAttribute('data-id');
                 const studentData = e.target.getAttribute('data-student');
                 if (studentId && studentData) {
-                    editStudentDetails(studentId, JSON.parse(studentData.replace(/&apos;/g, "'")));
+                    await editStudentDetails(studentId, JSON.parse(studentData.replace(/&apos;/g, "'")));
                 }
             });
         });
@@ -1040,17 +1040,23 @@ async function initializeTeacherPortal() {
         window.location.href = `studentDetails.html?id=${studentId}`;
     }
 
-    function editStudentDetails(studentId, studentData) {
+    async function editStudentDetails(studentId, studentData) {
         // Create and show edit modal
         console.log("Editing student:", studentId);
-        showEditStudentModal(studentData);
+        await showEditStudentModal(studentData);
     }
 
-    function showEditStudentModal(studentData) {
+    async function showEditStudentModal(studentData) {
         // Remove existing modal if any
         const existingModal = document.getElementById('editStudentModal');
         if (existingModal) {
             existingModal.remove();
+        }
+
+        // Ensure sections are loaded before generating options
+        if (!sectionsData || sectionsData.length === 0) {
+            console.warn("Sections data not loaded, fetching sections...");
+            await fetchSectionsForTeacher();
         }
 
         // Generate section options
@@ -1128,7 +1134,16 @@ async function initializeTeacherPortal() {
     function generateSectionOptions(currentSection) {
         let options = '<option value="No Section"' + (currentSection === 'No Section' || !currentSection ? ' selected' : '') + '>No Section</option>';
 
-        sectionsData.forEach(section => {
+        // Ensure we have sections data
+        if (!sectionsData || sectionsData.length === 0) {
+            console.warn("No sections data available for edit modal");
+            return options;
+        }
+
+        // Sort sections alphabetically by name
+        const sortedSections = [...sectionsData].sort((a, b) => a.name.localeCompare(b.name));
+
+        sortedSections.forEach(section => {
             const isSelected = currentSection === section.name ? ' selected' : '';
             options += `<option value="${section.name}"${isSelected}>${section.name}</option>`;
         });
@@ -1230,6 +1245,15 @@ async function initializeTeacherPortal() {
             // Close modal
             modal.classList.remove('active');
             setTimeout(() => modal.remove(), 300);
+
+            // Reset section filter to "All Sections"
+            const sectionFilter = document.getElementById('sectionFilter');
+            if (sectionFilter) {
+                sectionFilter.value = '';
+                // Trigger the filter change event to update the student list
+                const event = new Event('change');
+                sectionFilter.dispatchEvent(event);
+            }
 
             // Refresh student list
             await fetchStudentsForTeacher();
@@ -2453,12 +2477,15 @@ async function initializeTeacherPortal() {
     }
 
     function updateSectionDropdowns() {
+        // Sort sections alphabetically by name
+        const sortedSections = [...sectionsData].sort((a, b) => a.name.localeCompare(b.name));
+
         // Update section filter dropdown
         if (sectionFilter) {
             const currentValue = sectionFilter.value;
             sectionFilter.innerHTML = '<option value="">All Sections</option>';
 
-            sectionsData.forEach(section => {
+            sortedSections.forEach(section => {
                 const option = document.createElement('option');
                 option.value = section.name;
                 option.textContent = section.name;
@@ -2476,7 +2503,7 @@ async function initializeTeacherPortal() {
             const currentValue = sectionSelectInput.value;
             sectionSelectInput.innerHTML = '<option value="">Select a section</option>';
 
-            sectionsData.forEach(section => {
+            sortedSections.forEach(section => {
                 const option = document.createElement('option');
                 option.value = section.name;
                 option.textContent = section.name;
