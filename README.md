@@ -141,3 +141,20 @@ npm start
 ├── package.json            # Dependencies and scripts
 └── .env.example           # Environment template
 ```
+
+
+
+
+
+LastUpdate: 6/8/25 for v1.5.0
+Game:
+- Can now see the section
+- Its now connected the LevelUnlock Depends on the Sectiion
+- Removed Teacher's Portal
+- Removed Choose Rep
+- Compatibility in new Structure of Frebase
+
+Web: 
+- When adding a new section, users are now shown a warning: "Section name cannot be changed after creation."
+- When editing a section, the section name field is read-only and cannot be changed.
+- Section names are validated to only allow letters and numbers (no spaces or symbols) when creating a section

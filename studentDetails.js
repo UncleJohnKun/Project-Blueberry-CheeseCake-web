@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Detail elements
     const detailFullName = document.getElementById('detailFullName');
     const detailUsername = document.getElementById('detailUsername');
+    const detailPassword = document.getElementById('detailPassword');
     const detailStudentId = document.getElementById('detailStudentId');
     const detailTeacherId = document.getElementById('detailTeacherId');
     const detailSection = document.getElementById('detailSection');
@@ -78,6 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Populate basic information
             detailFullName.textContent = studentData.fullname || 'N/A';
             detailUsername.textContent = studentData.username || 'N/A';
+            detailPassword.textContent = studentData.password || 'N/A';
             detailStudentId.textContent = studentData.id || 'N/A';
             detailTeacherId.textContent = studentData.teacherID || 'N/A';
             detailSection.textContent = studentData.section || 'No Section';
