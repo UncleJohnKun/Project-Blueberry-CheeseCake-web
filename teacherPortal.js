@@ -2619,6 +2619,7 @@ async function initializeTeacherPortal() {
 
         // Populate form with section data
         editSectionNameInput.value = section.name;
+        editSectionNameInput.readOnly = true; // Make section name read-only again
         editSectionDescriptionInput.value = section.description;
         editSectionError.style.display = 'none';
 
@@ -2753,6 +2754,40 @@ async function initializeTeacherPortal() {
                 const errorText = await response.text();
                 throw new Error(`Failed to update section: ${response.status} - ${errorText}`);
             }
+
+            // --- Update all students with the old section name ---
+            const oldSection = sectionsData.find(s => s.id === currentEditingSectionId)?.name;
+            if (oldSection && oldSection !== name) {
+                // Find all students with the old section name
+                const studentsToUpdate = allStudentsData.filter(student => student.section === oldSection);
+                for (const student of studentsToUpdate) {
+                    // Prepare update payload
+                    const studentUpdate = {
+                        fields: {
+                            ...Object.keys(student).reduce((acc, key) => {
+                                if (key === 'section') {
+                                    acc.section = { stringValue: name };
+                                } else if (typeof student[key] === 'string') {
+                                    acc[key] = { stringValue: student[key] };
+                                } else if (typeof student[key] === 'number') {
+                                    acc[key] = { integerValue: student[key] };
+                                } else if (typeof student[key] === 'boolean') {
+                                    acc[key] = { booleanValue: student[key] };
+                                }
+                                return acc;
+                            }, {})
+                        }
+                    };
+                    // Patch student document
+                    const studentUrl = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents/studentData/${student.documentId}?key=${CONFIG.apiKey}`;
+                    await fetch(studentUrl, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(studentUpdate)
+                    });
+                }
+            }
+            // --- End update students ---
 
             console.log(`✅ Section updated: ${name}`);
 
