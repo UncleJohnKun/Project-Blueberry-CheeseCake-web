@@ -147,6 +147,7 @@ async function initializeTeacherPortal() {
     const loadingMessage = document.getElementById('loadingMessage');
     const searchStudentInput = document.getElementById('searchStudentInput');
     const exportExcelButton = document.getElementById('exportExcelButton');
+    const exportAccountButton = document.getElementById('exportAccountButton');
 
     // Check if essential elements exist
     if (!studentTableBody) {
@@ -1992,6 +1993,55 @@ async function initializeTeacherPortal() {
 
         // Initialize table sorting functionality
         initializeTableSorting();
+
+        // Initialize export account functionality
+        if (exportAccountButton) {
+            exportAccountButton.addEventListener('click', () => {
+                if (!allStudentsData || allStudentsData.length === 0) {
+                    alert('No student data available to export. Please load students first.');
+                    return;
+                }
+                try {
+                    exportAccountButton.disabled = true;
+                    exportAccountButton.textContent = '🔑 Generating...';
+                    // Prepare data
+                    const accountData = [
+                        ['Username', 'Password', 'Section', 'Full Name']
+                    ];
+                    allStudentsData.forEach(student => {
+                        accountData.push([
+                            student.username || 'N/A',
+                            student.password || 'N/A',
+                            student.section || 'N/A',
+                            student.fullname || 'N/A'
+                        ]);
+                    });
+                    // Create workbook
+                    const workbook = XLSX.utils.book_new();
+                    const worksheet = XLSX.utils.aoa_to_sheet(accountData);
+                    // Set column widths for better visibility
+                    worksheet['!cols'] = [
+                        { width: 20 }, // Username
+                        { width: 20 }, // Password
+                        { width: 18 }, // Section
+                        { width: 25 }  // Full Name
+                    ];
+                    XLSX.utils.book_append_sheet(workbook, worksheet, 'Accounts');
+                    // Generate filename
+                    const dateStr = new Date().toISOString().split('T')[0];
+                    const filename = `Accounts_${dateStr}.xlsx`;
+                    // Save the file
+                    XLSX.writeFile(workbook, filename);
+                    alert(`Account list exported successfully!\nFile: ${filename}\nTotal accounts: ${allStudentsData.length}`);
+                } catch (error) {
+                    console.error('Error exporting account list:', error);
+                    alert('Error exporting account list. Please try again.');
+                } finally {
+                    exportAccountButton.disabled = false;
+                    exportAccountButton.textContent = '🔑 Export Account';
+                }
+            });
+        }
     }
 
     function initializeTableSorting() {
