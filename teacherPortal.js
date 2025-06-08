@@ -2004,35 +2004,44 @@ async function initializeTeacherPortal() {
                 try {
                     exportAccountButton.disabled = true;
                     exportAccountButton.textContent = '🔑 Generating...';
-                    // Prepare data
-                    const accountData = [
-                        ['Username', 'Password', 'Section', 'Full Name']
-                    ];
+                    // Group students by section
+                    const studentsBySection = {};
                     allStudentsData.forEach(student => {
-                        accountData.push([
-                            student.username || 'N/A',
-                            student.password || 'N/A',
-                            student.section || 'N/A',
-                            student.fullname || 'N/A'
-                        ]);
+                        const section = student.section || 'No Section';
+                        if (!studentsBySection[section]) studentsBySection[section] = [];
+                        studentsBySection[section].push(student);
                     });
                     // Create workbook
                     const workbook = XLSX.utils.book_new();
-                    const worksheet = XLSX.utils.aoa_to_sheet(accountData);
-                    // Set column widths for better visibility
-                    worksheet['!cols'] = [
-                        { width: 20 }, // Username
-                        { width: 20 }, // Password
-                        { width: 18 }, // Section
-                        { width: 25 }  // Full Name
-                    ];
-                    XLSX.utils.book_append_sheet(workbook, worksheet, 'Accounts');
+                    Object.keys(studentsBySection).forEach(sectionName => {
+                        const accountData = [
+                            ['Username', 'Password', 'Section', 'Full Name']
+                        ];
+                        studentsBySection[sectionName].forEach(student => {
+                            accountData.push([
+                                student.username || 'N/A',
+                                student.password || 'N/A',
+                                student.section || 'N/A',
+                                student.fullname || 'N/A'
+                            ]);
+                        });
+                        const worksheet = XLSX.utils.aoa_to_sheet(accountData);
+                        worksheet['!cols'] = [
+                            { width: 20 }, // Username
+                            { width: 20 }, // Password
+                            { width: 18 }, // Section
+                            { width: 25 }  // Full Name
+                        ];
+                        // Sanitize sheet name (Excel limit: 31 chars, no special chars)
+                        const sanitizedSection = sectionName.replace(/[\\/:?*\[\]]/g, '_').substring(0, 31);
+                        XLSX.utils.book_append_sheet(workbook, worksheet, sanitizedSection);
+                    });
                     // Generate filename
                     const dateStr = new Date().toISOString().split('T')[0];
                     const filename = `Accounts_${dateStr}.xlsx`;
                     // Save the file
                     XLSX.writeFile(workbook, filename);
-                    alert(`Account list exported successfully!\nFile: ${filename}\nTotal accounts: ${allStudentsData.length}`);
+                    alert(`Account list exported successfully!\nFile: ${filename}\nTotal accounts: ${allStudentsData.length}\nSheets: ${Object.keys(studentsBySection).length}`);
                 } catch (error) {
                     console.error('Error exporting account list:', error);
                     alert('Error exporting account list. Please try again.');
