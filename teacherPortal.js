@@ -2647,6 +2647,13 @@ async function initializeTeacherPortal() {
         const name = sectionNameInput ? sectionNameInput.value.trim() : '';
         const description = sectionDescriptionInput ? sectionDescriptionInput.value.trim() : '';
 
+        // New validation: Only allow alphanumeric section names (no spaces or symbols)
+        const validSectionName = /^[A-Za-z0-9]+$/.test(name);
+        if (!validSectionName) {
+            showAddSectionError('Section name can only contain letters and numbers (no spaces or symbols).');
+            return;
+        }
+
         console.log("Section name:", name);
         console.log("Section description:", description);
 
@@ -2705,6 +2712,13 @@ async function initializeTeacherPortal() {
 
         const name = editSectionNameInput.value.trim();
         const description = editSectionDescriptionInput.value.trim();
+
+        // New validation: Only allow alphanumeric section names (no spaces or symbols)
+        const validSectionName = /^[A-Za-z0-9]+$/.test(name);
+        if (!validSectionName) {
+            showEditSectionError('Section name can only contain letters and numbers (no spaces or symbols).');
+            return;
+        }
 
         if (!name) {
             showEditSectionError('Section name is required');
