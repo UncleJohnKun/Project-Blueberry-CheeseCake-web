@@ -209,6 +209,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    function renderSearchResults(results) {
+        const container = document.getElementById('studentListContent');
+        container.innerHTML = ''; // Clear previous results
+
+        results.forEach(result => {
+            const item = document.createElement('div');
+            item.className = 'student-item';
+            item.innerHTML = `
+                <span>${result.name}</span>
+                <button class="edit-btn" data-id="${result.id}">Edit</button>
+            `;
+            container.appendChild(item);
+        });
+
+        // Re-attach event listeners to new Edit buttons
+        attachEditButtonListeners();
+    }
+
+    function attachEditButtonListeners() {
+        const editButtons = document.querySelectorAll('.edit-btn');
+        editButtons.forEach(btn => {
+            btn.onclick = function() {
+                const id = btn.getAttribute('data-id');
+                // Your edit logic here, e.g.:
+                openEditModal(id);
+            };
+        });
+    }
+
     loadTeacherInformation();
     if (backToHomeButton) {
         backToHomeButton.addEventListener('click', (e) => {
