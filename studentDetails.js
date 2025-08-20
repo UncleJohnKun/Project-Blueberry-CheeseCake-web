@@ -50,8 +50,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
         } catch (error) {
-            console.error('Error initializing student details:', error);
-            showError('Failed to load student details: ' + error.message);
+            // Instead of showing error, redirect to homepage
+            window.location.href = 'teacherPortal.html';
         }
     }
     

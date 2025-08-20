@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (logoutButton) {
         logoutButton.addEventListener('click', () => {
             sessionStorage.removeItem('isAdminLoggedIn');
-            alert('Admin logged out.');
+            alert('Successfully logged out.');
             window.location.href = 'index.html';
         });
     }

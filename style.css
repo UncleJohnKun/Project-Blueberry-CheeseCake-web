@@ -1978,10 +1978,7 @@ button.secondary:hover,
     margin: 0;
     color: var(--text-primary);
     font-weight: var(--font-weight-medium);
-    flex: 1;
-    min-width: 0;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
+    line-height: 1.2;
 }
 
 .detail-student-list .student-toggle-button {
@@ -2197,10 +2194,18 @@ button.secondary:hover,
     border: none;
     border-radius: var(--radius-md);
     padding: var(--space-1) var(--space-3);
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     font-weight: var(--font-weight-medium);
     cursor: pointer;
     transition: background 0.2s ease-out, transform 0.2s ease-out;
+    min-height: 32px;
+    min-width: 60px;
+    max-width: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    line-height: 1.2;
 }
 
 .add-student-close-btn:hover {
@@ -2506,11 +2511,10 @@ button.secondary:hover,
 }
 
 .student-edit-modal .form-actions {
-    display: flex;
-    gap: var(--space-3);
-    justify-content: center;
-    margin-top: var(--space-4);
-    width: 100%;
+    animation: fadeInUp 0.4s ease-out forwards;
+    animation-delay: 0.5s;
+    opacity: 0;
+    transform: translateY(20px);
 }
 
 .student-edit-modal .form-actions button {
@@ -2525,132 +2529,128 @@ button.secondary:hover,
     min-height: 40px;
 }
 
-.student-edit-modal h2 {
-    text-align: center;
-    margin-bottom: var(--space-6);
-    color: var(--text-primary);
-    font-size: 1.25rem;
-    font-weight: var(--font-weight-semibold);
+/* Ensure student-item in modal and detail lists are always clickable and visible */
+.modal-student-list .student-item,
+.detail-student-list .student-item {
+    pointer-events: auto !important;
+    opacity: 1 !important;
 }
 
-.settings-content {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-6);
+/* If any inline style sets opacity, still allow pointer events */
+.modal-student-list .student-item[style],
+.detail-student-list .student-item[style] {
+    pointer-events: auto !important;
+    opacity: 1 !important;
 }
 
-.settings-section {
-    border-bottom: 1px solid var(--border-light);
-    padding-bottom: var(--space-6);
+/* If any parent disables pointer events, force enable for student-item */
+.modal-student-list,
+.detail-student-list {
+    pointer-events: auto !important;
 }
 
-.settings-section:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
+/* If any ancestor disables pointer events, force enable for student-item */
+.modal-student-list *,
+.detail-student-list * {
+    pointer-events: auto !important;
+}
 }
 
-.settings-section h3 {
-    font-size: 1rem;
-    font-weight: var(--font-weight-semibold);
-    color: var(--text-primary);
-    margin: 0 0 var(--space-4) 0;
+/* Desktop alignment fix for settings modal close button */
+@media (min-width: 769px) {
+    .settings-modal .modal-close-btn {
+        top: 32px;
+        right: 32px;
+        min-width: 60px;
+        min-height: 32px;
+        font-size: 0.85rem;
+    }
 }
 
-.settings-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: var(--space-4);
-    padding: var(--space-4);
-    border-radius: var(--radius-md);
-    transition: all var(--transition);
+/* Mobile alignment fix for settings modal close button */
+@media (max-width: 768px) {
+    .settings-modal .modal-close-btn {
+        top: 16px;
+        right: 16px;
+        min-width: 55px;
+        min-height: 32px;
+        font-size: 0.8rem;
+        padding: 8px 12px;
+        max-width: 65px;
+    }
 }
 
-.settings-item:hover {
-    background: var(--primary-bg);
-}
-
-.settings-item-info {
-    flex: 0 0 70%;
-    width: 70%;
-}
-
-.settings-item-title {
-    font-size: 0.875rem;
-    font-weight: var(--font-weight-medium);
-    color: var(--text-primary);
-    margin-bottom: var(--space-1);
-}
-
-.settings-item-description {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    line-height: 1.4;
-}
-
-/* Settings Modal Close Button Specific Positioning */
-.settings-modal .modal-close-btn {
+/* Add Student Modal Close Button alignment fix */
+.add-student-close-btn {
     position: absolute;
     top: var(--space-4);
     right: var(--space-4);
-    z-index: 20;
     background: var(--btn-danger);
     color: white;
     border: none;
     border-radius: var(--radius-md);
     padding: var(--space-1) var(--space-3);
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     font-weight: var(--font-weight-medium);
     cursor: pointer;
-    transition: all var(--transition);
-    min-height: 28px;
-    min-width: 50px;
-    max-width: 60px;
+    transition: background 0.2s ease-out, transform 0.2s ease-out;
+    min-height: 32px;
+    min-width: 60px;
+    max-width: 70px;
     display: flex;
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
+    line-height: 1.2;
 }
 
-.settings-modal .modal-close-btn:hover {
-    background: var(--btn-danger-hover);
-    transform: translateY(-1px);
-}
-
-/* Settings Modal Header Spacing */
-.settings-modal h2 {
-    padding-right: 80px;
+/* Section Modal Close Button alignment fix */
+.section-modal-close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: var(--secondary-text);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    min-height: 32px;
     box-sizing: border-box;
-    word-wrap: break-word;
 }
 
-/* Settings Modal Logout Button - High Priority */
-.settings-modal #logoutButton,
-.settings-modal #settingsLogoutButton {
-    flex: 0 0 30%;
-    width: 30%;
-    padding: var(--space-3) var(--space-4) !important;
-    font-size: 0.875rem !important;
-    font-weight: var(--font-weight-semibold) !important;
-    border-radius: var(--radius-md) !important;
-    background: var(--btn-danger) !important;
-    color: white !important;
-    border: 1px solid var(--btn-danger) !important;
-    cursor: pointer !important;
-    transition: all var(--transition) !important;
+/* Modal Close Button alignment fix */
+.modal-close-btn {
+    position: absolute;
+    top: var(--space-6);
+    right: var(--space-6);
+    background: var(--btn-danger);
+    color: white;
+    border: none;
+    border-radius: var(--radius-lg);
+    padding: var(--space-2) var(--space-4);
+    font-size: 0.85rem;
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all var(--transition);
+    min-height: 36px;
+    min-width: 60px;
+    max-width: 70px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     box-sizing: border-box;
-    text-align: center;
-    display: inline-block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+    line-height: 1.2;
 }
 
-.settings-modal #logoutButton:hover,
-.settings-modal #settingsLogoutButton:hover {
-    background: var(--btn-danger-hover) !important;
-    border-color: var(--btn-danger-hover) !important;
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
+/* ...existing code... */
 }
 
 /* Force logout button visibility - Override any conflicting styles */

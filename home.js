@@ -1323,7 +1323,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 { key: 'password', label: 'Password', isPassword: true },
                 { key: 'id', label: 'Student ID' },
                 { key: 'timestamp', label: 'Registration Date' },
-                { key: 'teacherID', label: 'Teacher ID' }
+                { key: 'teacherID', label: 'Teacher ID' },
+                { key: 'section', label: 'Section' } // <-- Added section
             ];
 
             // Create student info grid container
