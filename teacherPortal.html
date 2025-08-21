@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Teacher Portal - Kamusta Po Guro</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Add pointer cursor for clickable table rows or action buttons */
+        .data-table tbody tr:hover,
+        .data-table .action-btn {
+            cursor: pointer;
+        }
+        /* Hide filtered rows with display: none */
+        .data-table tbody tr.filtered-out {
+            display: none !important;
+        }
+    </style>
     <!-- SheetJS library for Excel export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
@@ -289,5 +300,9 @@
 
     <script src="js/inputSanitizer.js"></script>
     <script src="teacherPortal.js"></script>
+    <script>
+        // Ensure event delegation for dynamic table rows
+        // Example: document.getElementById('studentTableBody').addEventListener('click', function(e) { ... });
+    </script>
 </body>
 </html>

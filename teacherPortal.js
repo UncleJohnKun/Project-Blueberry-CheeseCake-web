@@ -550,9 +550,11 @@ async function initializeTeacherPortal() {
             return;
         }
 
+        // Always clear table before rendering
+        studentTableBody.innerHTML = '';
+
         if (!students || students.length === 0) {
             loadingMessage.textContent = "No students found.";
-            studentTableBody.innerHTML = '';
             updatePaginationControls(0);
             return;
         }
@@ -567,9 +569,6 @@ async function initializeTeacherPortal() {
         const studentsToShow = students.slice(startIndex, endIndex);
 
         console.log(`Pagination: ${students.length} total students, ${totalPages} pages, showing ${studentsToShow.length} students on page ${currentPage}`);
-
-        // Clear table
-        studentTableBody.innerHTML = '';
 
         studentsToShow.forEach(student => {
             try {
@@ -590,7 +589,6 @@ async function initializeTeacherPortal() {
                         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
                     }[s]));
                 };
-
                 const safeStudentData = {
                     id: escapeHtml(student.id || ''),
                     fullname: escapeHtml(student.fullname || 'Unknown'),
@@ -598,8 +596,11 @@ async function initializeTeacherPortal() {
                     section: escapeHtml(student.section || 'No Section')
                 };
 
+                // Always clickable
+                const nameCellContent = `<a href="#" class="student-name-link" data-id="${safeStudentData.id}" data-student='${escapeHtml(JSON.stringify(student))}'>${safeStudentData.fullname}</a>`;
+
                 row.innerHTML = `
-                    <td><a href="#" class="student-name-link" data-id="${safeStudentData.id}" data-student='${escapeHtml(JSON.stringify(student))}'>${safeStudentData.fullname}</a></td>
+                    <td>${nameCellContent}</td>
                     <td>${safeStudentData.username}</td>
                     <td>${safeStudentData.section}</td>
                     <td>
@@ -615,6 +616,15 @@ async function initializeTeacherPortal() {
                     </td>
                 `;
 
+                // Always add event listener
+                const nameLink = row.querySelector('.student-name-link');
+                if (nameLink) {
+                    nameLink.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        viewStudentDetails(student.id, student);
+                    });
+                }
+
                 studentTableBody.appendChild(row);
             } catch (err) {
                 console.error("Error rendering student row:", err, student);
@@ -623,28 +633,39 @@ async function initializeTeacherPortal() {
 
         // Update pagination controls
         updatePaginationControls(totalPages);
-        
-        // Add event listeners to student name links
-        document.querySelectorAll('.student-name-link').forEach(link => {
-            link.addEventListener('click', (e) => {
+
+        // Scope event listeners to studentTableBody only
+        Array.from(studentTableBody.querySelectorAll('.student-name-link')).forEach(link => {
+            link.onclick = function(e) {
                 e.preventDefault();
-                const studentId = e.target.getAttribute('data-id');
-                const studentData = e.target.getAttribute('data-student');
+                const studentId = this.getAttribute('data-id');
+                const studentData = this.getAttribute('data-student');
                 if (studentId && studentData) {
-                    viewStudentDetails(studentId, JSON.parse(studentData.replace(/&apos;/g, "'")));
+                    let parsedData;
+                    try {
+                        const unescaped = studentData
+                            .replace(/&quot;/g, '"')
+                            .replace(/&#039;/g, "'")
+                            .replace(/&lt;/g, '<')
+                            .replace(/&gt;/g, '>')
+                            .replace(/&amp;/g, '&');
+                        parsedData = JSON.parse(unescaped);
+                    } catch (err) {
+                        parsedData = JSON.parse(studentData);
+                    }
+                    viewStudentDetails(studentId, parsedData);
                 }
-            });
+            };
         });
 
-        // Add event listeners to edit buttons
-        document.querySelectorAll('.edit-student').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const studentId = e.target.getAttribute('data-id');
-                const studentData = e.target.getAttribute('data-student');
+        Array.from(studentTableBody.querySelectorAll('.edit-student')).forEach(btn => {
+            btn.onclick = async function(e) {
+                const studentId = this.getAttribute('data-id');
+                const studentData = this.getAttribute('data-student');
                 if (studentId && studentData) {
                     await editStudentDetails(studentId, JSON.parse(studentData.replace(/&apos;/g, "'")));
                 }
-            });
+            };
         });
 
         // Add entrance animations to student rows (fixed)
@@ -1796,25 +1817,79 @@ async function initializeTeacherPortal() {
             });
         }
 
-        // Initialize search functionality
+
+        // Unified search functionality
         if (searchStudentInput) {
             searchStudentInput.addEventListener('input', () => {
-                const searchTerm = searchStudentInput.value.toLowerCase();
+                const searchTerm = searchStudentInput.value.trim().toLowerCase();
                 let searchResults = allStudentsData.filter(student => {
-                    return (student.fullname || '').toLowerCase().includes(searchTerm) ||
-                           (student.id || '').toLowerCase().includes(searchTerm);
+                    return (
+                        (student.fullname || '').toLowerCase().includes(searchTerm) ||
+                        (student.username || '').toLowerCase().includes(searchTerm) ||
+                        (student.section || '').toLowerCase().includes(searchTerm) ||
+                        (student.id || '').toLowerCase().includes(searchTerm)
+                    );
                 });
-
                 // Apply current sorting if any
                 if (currentSortField) {
                     searchResults = sortStudents(searchResults, currentSortField, currentSortDirection);
                 }
-
                 filteredStudents = searchResults;
-                currentPage = 1; // Reset to first page when searching
-                renderStudentList(searchResults);
+                currentPage = 1;
+                renderStudentList(filteredStudents);
             });
         }
+
+        // Event delegation for student name and action buttons
+        document.getElementById('studentTableBody').addEventListener('click', async function(e) {
+            // Student name click
+            if (e.target.matches('td:nth-child(1), td:nth-child(1) *')) {
+                const row = e.target.closest('tr');
+                if (row) {
+                    const nameLink = row.querySelector('.student-name-link');
+                    if (nameLink) {
+                        const studentId = nameLink.getAttribute('data-id');
+                        const studentData = nameLink.getAttribute('data-student');
+                        if (studentId && studentData) {
+                            let parsedData;
+                            try {
+                                const unescaped = studentData
+                                    .replace(/&quot;/g, '"')
+                                    .replace(/&#039;/g, "'")
+                                    .replace(/&lt;/g, '<')
+                                    .replace(/&gt;/g, '>')
+                                    .replace(/&amp;/g, '&');
+                                parsedData = JSON.parse(unescaped);
+                            } catch (err) {
+                                parsedData = JSON.parse(studentData);
+                            }
+                            viewStudentDetails(studentId, parsedData);
+                        }
+                    }
+                }
+            }
+            // Edit button click
+            if (e.target.classList.contains('edit-student')) {
+                const btn = e.target;
+                const studentId = btn.getAttribute('data-id');
+                const studentData = btn.getAttribute('data-student');
+                if (studentId && studentData) {
+                    let parsedData;
+                    try {
+                        const unescaped = studentData
+                            .replace(/&quot;/g, '"')
+                            .replace(/&#039;/g, "'")
+                            .replace(/&lt;/g, '<')
+                            .replace(/&gt;/g, '>')
+                            .replace(/&amp;/g, '&');
+                        parsedData = JSON.parse(unescaped);
+                    } catch (err) {
+                        parsedData = JSON.parse(studentData);
+                    }
+                    await editStudentDetails(studentId, parsedData);
+                }
+            }
+        });
 
         // Initialize navigation
         console.log("Setting up navigation event listeners...");
@@ -1918,12 +1993,6 @@ async function initializeTeacherPortal() {
             closeAddStudentButton.addEventListener('click', closeAddStudentModal);
         }
 
-        if (addStudentModal) {
-            addStudentModal.addEventListener('click', (event) => {
-                if (event.target === addStudentModal) closeAddStudentModal();
-            });
-        }
-
         if (createAccountsButton) {
             createAccountsButton.addEventListener('click', startAccountCreation);
         }
@@ -2020,6 +2089,7 @@ async function initializeTeacherPortal() {
                         studentsBySection[sectionName].forEach(student => {
                             accountData.push([
                                 student.username || 'N/A',
+
                                 student.password || 'N/A',
                                 student.section || 'N/A',
                                 student.fullname || 'N/A'
@@ -2082,6 +2152,7 @@ async function initializeTeacherPortal() {
 
     function closeSettingsModal() {
         if (settingsModal) {
+
             settingsModal.classList.remove('active');
             setTimeout(() => settingsModal.style.display = 'none', 300);
         }
@@ -3247,5 +3318,4 @@ async function initializeTeacherPortal() {
         }, 1000);
     }
 }
-
 
