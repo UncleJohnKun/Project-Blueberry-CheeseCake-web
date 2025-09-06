@@ -601,7 +601,7 @@ async function initializeTeacherPortal() {
 
                 row.innerHTML = `
                     <td>${nameCellContent}</td>
-                    <td>${safeStudentData.username}</td>
+                    <td style="display:none"></td>
                     <td>${safeStudentData.section}</td>
                     <td>
                         <div class="progress-display">
@@ -612,7 +612,14 @@ async function initializeTeacherPortal() {
                         </div>
                     </td>
                     <td>
-                        <button class="button small edit-student" data-id="${safeStudentData.id}" data-student='${escapeHtml(JSON.stringify(student))}'>Edit</button>
+                        <button 
+                            class="button small edit-student" 
+                            data-id="${safeStudentData.id}" 
+                            data-student='${escapeHtml(JSON.stringify(student))}' 
+                            style="margin-left:40px;margin-right:-60px;"
+                        >
+                            Edit
+                        </button>
                     </td>
                 `;
 

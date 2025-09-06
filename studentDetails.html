@@ -107,7 +107,18 @@
                                 </div>
                                 <div class="info-item">
                                     <span class="info-label">Password:</span>
-                                    <span class="info-value" id="detailPassword">-</span>
+                                    <span class="info-value" id="detailPassword">
+                                        <span id="passwordDots">••••••••</span>
+                                        <span id="passwordText" style="display:none;"></span>
+                                        <button id="togglePasswordBtn" style="background:none;border:none;cursor:pointer;padding:0;margin-left:8px;">
+                                            <span id="eyeIcon" aria-label="Show password" style="font-size:1.1em;">
+                                                <!-- Eye SVG (show) -->
+                                                <svg id="eyeShow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" style="vertical-align:middle;" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+                                                <!-- Eye-off SVG (hide), hidden by default -->
+                                                <svg id="eyeHide" xmlns="http://www.w3.org/2000/svg" width="20" height="20" style="vertical-align:middle;display:none;" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.07 21.07 0 0 1 5.06-7.06"/><path d="M1 1l22 22"/><path d="M9.53 9.53A3 3 0 0 0 12 15a3 3 0 0 0 2.47-5.47"/></svg>
+                                            </span>
+                                        </button>
+                                    </span>
                                 </div>
                                 <div class="info-item">
                                     <span class="info-label">Student ID:</span>
@@ -161,5 +172,27 @@
     </div>
 
     <script src="studentDetails.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ...existing code...
+        const passwordDots = document.getElementById('passwordDots');
+        const passwordText = document.getElementById('passwordText');
+        const togglePasswordBtn = document.getElementById('togglePasswordBtn');
+        const eyeShow = document.getElementById('eyeShow');
+        const eyeHide = document.getElementById('eyeHide');
+        let isPasswordVisible = false;
+        if (togglePasswordBtn) {
+            togglePasswordBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                isPasswordVisible = !isPasswordVisible;
+                passwordDots.style.display = isPasswordVisible ? 'none' : '';
+                passwordText.style.display = isPasswordVisible ? '' : 'none';
+                eyeShow.style.display = isPasswordVisible ? 'none' : '';
+                eyeHide.style.display = isPasswordVisible ? '' : 'none';
+            });
+        }
+        // ...existing code...
+    });
+    </script>
 </body>
 </html>

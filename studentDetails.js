@@ -79,7 +79,14 @@ document.addEventListener('DOMContentLoaded', function() {
             // Populate basic information
             detailFullName.textContent = studentData.fullname || 'N/A';
             detailUsername.textContent = studentData.username || 'N/A';
-            detailPassword.textContent = studentData.password || 'N/A';
+            // Password show/hide logic
+            const passwordDots = document.getElementById('passwordDots');
+            const passwordText = document.getElementById('passwordText');
+            if (passwordDots && passwordText) {
+                passwordText.textContent = studentData.password || '';
+                passwordDots.style.display = '';
+                passwordText.style.display = 'none';
+            }
             detailStudentId.textContent = studentData.id || 'N/A';
             detailTeacherId.textContent = studentData.teacherID || 'N/A';
             detailSection.textContent = studentData.section || 'No Section';
@@ -227,3 +234,4 @@ document.addEventListener('DOMContentLoaded', function() {
         sessionStorage.removeItem('selectedStudentData');
     });
 });
+
