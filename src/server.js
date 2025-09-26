@@ -46,7 +46,7 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use('/api', apiRateLimiter);
 
 // Serve static files with security headers
-app.use(express.static(path.join(__dirname), {
+app.use(express.static(path.join(__dirname, '../public'), {
     setHeaders: (res, path) => {
         // Add security headers for static files
         res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -77,11 +77,21 @@ app.get('/api/health', (req, res) => {
 
 // Serve HTML files with CSRF token injection
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, '../public/pages/index.html'));
 });
 
+// Handle specific route for /public/pages/index.html - redirect to main index
+app.get('/public/pages/index.html', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/pages/index.html'));
+});
+
+// Redirect old paths to new structure
 app.get('/home.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'home.html'));
+    res.redirect('/pages/dashboard.html');
+});
+
+app.get('/teacherPortal.html', (req, res) => {
+    res.redirect('/pages/teacher-portal.html');
 });
 
 app.get('/createAccount.html', (req, res) => {
@@ -106,7 +116,7 @@ app.use('/api/*', (req, res) => {
 
 // 404 handler for other routes
 app.use('*', (req, res) => {
-    res.status(404).sendFile(path.join(__dirname, 'index.html'));
+    res.status(404).sendFile(path.join(__dirname, '../public/pages/index.html'));
 });
 
 // Global error handler

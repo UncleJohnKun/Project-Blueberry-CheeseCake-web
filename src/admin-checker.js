@@ -177,9 +177,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // Redirect to appropriate portal
             setTimeout(() => {
                 if (result.isAdmin) {
-                    window.location.href = 'home.html';
+                    window.location.href = 'pages/dashboard.html';
                 } else {
-                    window.location.href = 'teacherPortal.html';
+                    window.location.href = 'pages/teacher-portal.html';
                 }
             }, 1000);
 

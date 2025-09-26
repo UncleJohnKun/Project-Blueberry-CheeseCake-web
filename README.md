@@ -107,7 +107,7 @@ cp .env.example .env
 
 3. **Migrate existing passwords (one-time only):**
 ```bash
-node scripts/migrate-passwords.js
+node src/scripts/migrate-passwords.js
 ```
 
 4. **Start the secure server:**
@@ -122,25 +122,30 @@ npm start
 
 ## 📁 Project Structure
 
+**🎉 REORGANIZED FOR BETTER MAINTAINABILITY!**
+
 ```
-├── config/
-│   └── security.js          # Security configuration
-├── middleware/
-│   └── security.js          # Security middleware
-├── routes/
-│   ├── auth.js             # Authentication endpoints
-│   ├── teachers.js         # Teacher management
-│   └── admin.js            # Admin operations
-├── scripts/
-│   └── migrate-passwords.js # Password migration utility
-├── shared/
-│   └── teacherUtils.js     # Secure client utilities
-├── utils/
-│   └── auth.js             # Authentication utilities
-├── server.js               # Main server file
-├── package.json            # Dependencies and scripts
-└── .env.example           # Environment template
+├── docs/                   # 📚 Documentation files
+├── public/                 # 🌐 Static frontend files
+│   ├── assets/            # CSS, JS, images
+│   │   ├── css/           # Stylesheets
+│   │   └── js/            # Client-side JavaScript
+│   ├── pages/             # HTML pages
+│   └── index.html         # Main login page
+├── src/                   # ⚙️ Server-side source code
+│   ├── components/        # Reusable components
+│   ├── config/            # Configuration files
+│   ├── middleware/        # Express middleware
+│   ├── routes/            # API route handlers
+│   ├── scripts/           # Utility scripts
+│   ├── shared/            # Shared utilities
+│   ├── utils/             # General utilities
+│   └── server.js          # Main server file
+├── package.json           # Dependencies and scripts
+└── .env.example          # Environment template
 ```
+
+> 📖 **Detailed Structure**: See [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md) for complete file organization details and naming conventions.
 
 
 
