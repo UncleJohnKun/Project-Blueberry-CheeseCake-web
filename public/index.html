@@ -1122,6 +1122,14 @@
 
         // Download Game Function
         function downloadGame(platform) {
+            const downloadUrls = {
+                'windows': 'downloads/CapstoneProject-Windows.zip',
+                'mac': 'downloads/CapstoneProject-macOS.zip',
+                'linux': 'downloads/CapstoneProject-Linux.zip',
+                'android': 'downloads/CapstoneProject-Android.apk',
+                'ios': '#' // iOS not available yet
+            };
+            
             const platformNames = {
                 'windows': 'Windows',
                 'mac': 'macOS',
@@ -1132,25 +1140,14 @@
             
             const platformName = platformNames[platform] || platform;
             
-            // You can implement actual download logic here
-            alert(`${platformName} game download will be implemented soon! Please check back later.`);
-            
-            // Example of how you might implement actual downloads:
-            // const downloadUrls = {
-            //     'windows': '/downloads/game-windows.exe',
-            //     'mac': '/downloads/game-mac.dmg',
-            //     'linux': '/downloads/game-linux.AppImage',
-            //     'android': '/downloads/game-android.apk',
-            //     'ios': 'https://apps.apple.com/app/your-game-id'
-            // };
-            // 
-            // if (downloadUrls[platform]) {
-            //     if (platform === 'ios') {
-            //         window.open(downloadUrls[platform], '_blank');
-            //     } else {
-            //         window.location.href = downloadUrls[platform];
-            //     }
-            // }
+            if (downloadUrls[platform] && downloadUrls[platform] !== '#') {
+                // Force direct download without opening new tab
+                window.location.href = downloadUrls[platform];
+            } else if (platform === 'ios') {
+                alert(`${platformName} version is not available yet. Please check back later.`);
+            } else {
+                alert(`${platformName} download is not available.`);
+            }
         }
 
         // Add fade-in animation on page load
