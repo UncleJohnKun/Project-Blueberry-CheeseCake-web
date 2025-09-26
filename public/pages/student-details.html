@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Details - Teacher Portal</title>
+    <link rel="stylesheet" href="../assets/css/main.css">
+</head>
+<body>
+    <!-- Mobile Sidebar Toggle -->
+    <button class="mobile-sidebar-toggle" id="mobileSidebarToggle">☰</button>
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="admin-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">📚</div>
+                <div class="sidebar-title">Teacher Portal</div>
+                <button class="mobile-sidebar-close" id="mobileSidebarClose">✕</button>
+            </div>
+            <nav>
+                <ul class="sidebar-nav">
+                    <li class="sidebar-nav-item">
+                        <a href="teacher-portal.html#students" class="sidebar-nav-link active">
+                            <span class="sidebar-nav-icon">👥</span>
+                            My Students
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="teacher-portal.html#addstudent" class="sidebar-nav-link">
+                            <span class="sidebar-nav-icon">➕</span>
+                            Add Student
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="teacher-portal.html#questions" class="sidebar-nav-link">
+                            <span class="sidebar-nav-icon">❓</span>
+                            Questions
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="teacher-portal.html#levels" class="sidebar-nav-link">
+                            <span class="sidebar-nav-icon">🏆</span>
+                            Levels
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="teacher-portal.html#sections" class="sidebar-nav-link">
+                            <span class="sidebar-nav-icon">📋</span>
+                            Sections
+                        </a>
+                    </li>
+                    <li class="sidebar-nav-item">
+                        <a href="teacher-portal.html#settings" class="sidebar-nav-link">
+                            <span class="sidebar-nav-icon">⚙️</span>
+                            Settings
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Student Details View -->
+            <div id="studentDetailsView" class="content-view active">
+                <header class="admin-header">
+                    <div class="header-content">
+                        <h1 class="header-title">Student Details</h1>
+                        <div class="header-actions">
+                            <a href="teacher-portal.html" class="button secondary">← Back to Students</a>
+                            <button id="logoutButton" class="button danger">Logout</button>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="content-container">
+                    <div id="loadingMessage" class="loading-message">Loading student details...</div>
+
+                    <div id="studentDetailsContent" class="student-details-content" style="display: none;">
+                        <!-- Student Header Card -->
+                        <div class="student-header-card">
+                            <div class="student-avatar">
+                                <span class="avatar-icon">👤</span>
+                            </div>
+                            <div class="student-info">
+                                <h2 id="studentName" class="student-name">Student Name</h2>
+                                <p id="studentId" class="student-id">Student ID: </p>
+                            </div>
+                        </div>
+
+                    <!-- Details Grid -->
+                    <div class="details-grid">
+                        <div class="info-card">
+                            <h3 class="card-title">Basic Information</h3>
+                            <div class="info-list">
+                                <div class="info-item">
+                                    <span class="info-label">Full Name:</span>
+                                    <span class="info-value" id="detailFullName">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Username:</span>
+                                    <span class="info-value" id="detailUsername">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Password:</span>
+                                    <span class="info-value" id="detailPassword">
+                                        <span id="passwordDots">••••••••</span>
+                                        <span id="passwordText" style="display:none;"></span>
+                                        <button id="togglePasswordBtn" style="background:none;border:none;cursor:pointer;padding:0;margin-left:8px;">
+                                            <span id="eyeIcon" aria-label="Show password" style="font-size:1.1em;">
+                                                <!-- Eye SVG (show) -->
+                                                <svg id="eyeShow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" style="vertical-align:middle;" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+                                                <!-- Eye-off SVG (hide), hidden by default -->
+                                                <svg id="eyeHide" xmlns="http://www.w3.org/2000/svg" width="20" height="20" style="vertical-align:middle;display:none;" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.07 21.07 0 0 1 5.06-7.06"/><path d="M1 1l22 22"/><path d="M9.53 9.53A3 3 0 0 0 12 15a3 3 0 0 0 2.47-5.47"/></svg>
+                                            </span>
+                                        </button>
+                                    </span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Student ID:</span>
+                                    <span class="info-value" id="detailStudentId">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Teacher ID:</span>
+                                    <span class="info-value" id="detailTeacherId">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Section:</span>
+                                    <span class="info-value" id="detailSection">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-card">
+                            <h3 class="card-title">Progress Summary</h3>
+                            <div class="info-list">
+                                <div class="info-item">
+                                    <span class="info-label">Overall Progress:</span>
+                                    <span class="info-value" id="detailProgress">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Levels Completed:</span>
+                                    <span class="info-value" id="detailLevelsCompleted">-</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Total Levels:</span>
+                                    <span class="info-value" id="detailTotalLevels">12</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Level Progress Card -->
+                    <div class="info-card">
+                        <h3 class="card-title">Level Progress</h3>
+                        <div class="progress-levels" id="progressLevels">
+                            <!-- Level cards will be populated here -->
+                        </div>
+                    </div>
+                    </div>
+
+                    <div id="errorMessage" class="error-message" style="display: none;">
+                        Error loading student details. Please try again.
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../assets/js/student-details.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ...existing code...
+        const passwordDots = document.getElementById('passwordDots');
+        const passwordText = document.getElementById('passwordText');
+        const togglePasswordBtn = document.getElementById('togglePasswordBtn');
+        const eyeShow = document.getElementById('eyeShow');
+        const eyeHide = document.getElementById('eyeHide');
+        let isPasswordVisible = false;
+        if (togglePasswordBtn) {
+            togglePasswordBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                isPasswordVisible = !isPasswordVisible;
+                passwordDots.style.display = isPasswordVisible ? 'none' : '';
+                passwordText.style.display = isPasswordVisible ? '' : 'none';
+                eyeShow.style.display = isPasswordVisible ? 'none' : '';
+                eyeHide.style.display = isPasswordVisible ? '' : 'none';
+            });
+        }
+        // ...existing code...
+    });
+    </script>
+</body>
+</html>

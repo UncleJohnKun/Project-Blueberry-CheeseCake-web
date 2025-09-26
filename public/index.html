@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kamusta Po Guro - Educational Platform</title>
+    <link rel="stylesheet" href="assets/css/main.css?v=3.0">
+    <style>
+        /* Global Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Clean Liquid Glass Landing Page Styles */
+        .landing-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg, 
+                #1a1a2e 0%, 
+                #16213e 25%, 
+                #0f3460 50%, 
+                #533483 75%, 
+                #7209b7 100%);
+            position: relative;
+            overflow: hidden;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        /* Clean background overlay */
+        .landing-page::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, 
+                rgba(255, 255, 255, 0.03) 0%, 
+                rgba(120, 119, 198, 0.08) 25%,
+                rgba(255, 119, 198, 0.06) 50%,
+                rgba(119, 198, 255, 0.08) 75%,
+                rgba(255, 255, 255, 0.03) 100%);
+        }
+
+        .landing-page::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(-45deg, 
+                transparent 0%, 
+                rgba(173, 216, 230, 0.04) 25%,
+                rgba(221, 160, 221, 0.06) 50%,
+                rgba(255, 182, 193, 0.04) 75%,
+                transparent 100%);
+        }
+
+
+
+        /* Liquid Glass Header */
+        .landing-header {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 1rem 2rem;
+            z-index: 1000;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Header hover animation removed - only button hover remains */
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .login-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-login {
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-login:hover::before {
+            left: 100%;
+        }
+
+        .btn-login:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 
+                0 10px 25px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        /* Liquid Glass Login Popup */
+        .login-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0);
+            backdrop-filter: blur(0px) saturate(100%);
+            z-index: 2000;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .login-popup.show {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 1;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(12px) saturate(150%);
+        }
+
+        .login-popup-content {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 3rem 2.5rem;
+            max-width: 420px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.25),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+            transform: scale(0.7) translateY(100px) rotateX(15deg);
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            opacity: 0;
+            filter: blur(10px);
+        }
+
+        .login-popup-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.1) 0%, 
+                rgba(255, 255, 255, 0.05) 100%);
+            border-radius: 25px;
+            pointer-events: none;
+        }
+
+        .login-popup.show .login-popup-content {
+            transform: scale(1) translateY(0) rotateX(0deg);
+            opacity: 1;
+            filter: blur(0px);
+        }
+
+        .login-popup-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-popup-logo {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .login-popup h1 {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.5px;
+        }
+
+        .login-popup h2 {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .login-description {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+            box-sizing: border-box;
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 
+                0 0 0 3px rgba(255, 255, 255, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .login-button:hover::before {
+            left: 100%;
+        }
+
+        .login-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 
+                0 10px 25px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .close-popup {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 2;
+        }
+
+        .close-popup:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Liquid Glass Main Content */
+        .landing-content {
+            padding-top: 140px;
+            padding-bottom: 4rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-section {
+            max-width: 900px;
+            margin: 0 auto 2rem;
+            padding: 0 2rem;
+            position: relative;
+        }
+
+        .hero-title {
+            font-size: 4.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, 
+                rgb(255, 255, 255) 0%, 
+                rgb(255, 215, 221) 25%,
+                rgba(173, 216, 230, 0.9) 50%,
+                rgba(255, 223, 255, 0.9) 75%,
+                rgba(255, 255, 255, 0.95) 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            0% {
+                filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+            }
+            100% {
+                filter: drop-shadow(0 0 30px rgba(255, 182, 193, 0.4));
+            }
+        }
+
+        @keyframes subtitleGlow {
+            0% {
+                text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3), 0 0 20px rgba(173, 216, 230, 0.2);
+            }
+            100% {
+                text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3), 0 0 30px rgba(173, 216, 230, 0.4);
+            }
+        }
+
+        @keyframes downloadTitleGlow {
+            0% {
+                text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 0 25px rgba(221, 160, 221, 0.3);
+            }
+            100% {
+                text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 0 35px rgba(221, 160, 221, 0.5);
+            }
+        }
+
+        @keyframes descriptionGlow {
+            0% {
+                text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 15px rgba(255, 182, 193, 0.2);
+            }
+            100% {
+                text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 25px rgba(255, 182, 193, 0.4);
+            }
+        }
+
+        @keyframes iconGlow {
+            0% {
+                filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2)) drop-shadow(0 0 15px rgba(119, 198, 255, 0.2));
+            }
+            100% {
+                filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2)) drop-shadow(0 0 25px rgba(119, 198, 255, 0.4));
+            }
+        }
+
+        @keyframes featureTitleGlow {
+            0% {
+                text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3), 0 0 20px rgba(198, 255, 119, 0.2);
+            }
+            100% {
+                text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3), 0 0 30px rgba(198, 255, 119, 0.4);
+            }
+        }
+
+        @keyframes featureDescGlow {
+            0% {
+                text-shadow: 0 1px 5px rgba(0, 0, 0, 0.2), 0 0 10px rgba(120, 119, 198, 0.2);
+            }
+            100% {
+                text-shadow: 0 1px 5px rgba(0, 0, 0, 0.2), 0 0 20px rgba(120, 119, 198, 0.4);
+            }
+        }
+
+        @keyframes buttonGlow {
+            0% {
+                box-shadow: 
+                    0 25px 50px rgba(0, 0, 0, 0.15),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                    inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+                    0 0 20px rgba(255, 255, 255, 0.1);
+            }
+            100% {
+                box-shadow: 
+                    0 25px 50px rgba(0, 0, 0, 0.2),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                    inset 0 -1px 0 rgba(255, 255, 255, 0.15),
+                    0 0 30px rgba(255, 255, 255, 0.2);
+            }
+        }
+
+        @keyframes downloadSectionGlow {
+            0% {
+                box-shadow: 
+                    0 25px 50px rgba(0, 0, 0, 0.25),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                    inset 0 -1px 0 rgba(255, 255, 255, 0.15),
+                    0 0 30px rgba(255, 182, 193, 0.2);
+                border-color: rgba(255, 255, 255, 0.4);
+            }
+            100% {
+                box-shadow: 
+                    0 30px 60px rgba(0, 0, 0, 0.3),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+                    inset 0 -1px 0 rgba(255, 255, 255, 0.2),
+                    0 0 40px rgba(255, 182, 193, 0.4);
+                border-color: rgba(255, 255, 255, 0.5);
+            }
+        }
+
+        @keyframes downloadIconGlow {
+            0% {
+                filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2)) drop-shadow(0 0 10px rgba(65, 105, 225, 0.6));
+                color: rgba(255, 255, 255, 0.9);
+            }
+            50% {
+                filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2)) drop-shadow(0 0 15px rgba(147, 0, 211, 0.8));
+                color: rgba(255, 255, 255, 1);
+            }
+            100% {
+                filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2)) drop-shadow(0 0 12px rgba(255, 20, 147, 0.7));
+                color: rgba(255, 255, 255, 0.95);
+            }
+        }
+
+        .hero-subtitle {
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.7;
+            font-weight: 400;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            animation: subtitleGlow 4s ease-in-out infinite alternate;
+        }
+
+        /* Liquid Glass Download Section */
+        .download-section {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(25px) saturate(180%);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 30px;
+            padding: 3rem 2.5rem;
+            margin: 1.5rem auto;
+            max-width: 800px;
+            width: calc(100% - 4rem);
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.25),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                inset 0 -1px 0 rgba(255, 255, 255, 0.15);
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+            display: block !important;
+            visibility: visible !important;
+        }
+
+        .download-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.15) 0%, 
+                rgba(255, 255, 255, 0.08) 100%);
+            border-radius: 30px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .download-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: rgba(255, 255, 255, 0.98);
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            animation: downloadTitleGlow 3.5s ease-in-out infinite alternate;
+        }
+
+        .download-description {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            animation: descriptionGlow 4.5s ease-in-out infinite alternate;
+        }
+
+        .download-buttons-container {
+            max-width: 700px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .download-buttons-row {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .download-buttons-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .mobile-row {
+            justify-content: center;
+            max-width: 320px;
+            margin: 1.5rem auto 0;
+        }
+
+        .download-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1.5rem 1rem;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.95);
+            text-decoration: none;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: 120px;
+            width: 140px;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            z-index: 2;
+            flex-shrink: 0;
+            animation: buttonGlow 7s ease-in-out infinite alternate;
+        }
+
+        .download-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .download-btn:hover::before {
+            left: 100%;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-5px) scale(1.02);
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        .download-btn.windows:hover {
+            box-shadow: 
+                0 15px 35px rgba(59, 130, 246, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .download-btn.mac:hover {
+            box-shadow: 
+                0 15px 35px rgba(107, 114, 128, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .download-btn.linux:hover {
+            box-shadow: 
+                0 15px 35px rgba(249, 115, 22, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .download-btn.android:hover {
+            box-shadow: 
+                0 15px 35px rgba(16, 185, 129, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .download-btn.ios:hover {
+            box-shadow: 
+                0 15px 35px rgba(156, 163, 175, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .download-icon {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+            animation: downloadIconGlow 6s ease-in-out infinite alternate;
+        }
+
+        .download-icon svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        /* Liquid Glass Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2.5rem;
+            margin: 3rem 2rem;
+            max-width: 1200px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.1) 0%, 
+                rgba(255, 255, 255, 0.05) 100%);
+            border-radius: 25px;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .feature-card:hover::before {
+            opacity: 0.8;
+        }
+
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            display: block;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+            position: relative;
+            z-index: 1;
+            animation: iconGlow 5s ease-in-out infinite alternate;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: rgba(255, 255, 255, 0.95);
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 1;
+            animation: featureTitleGlow 4s ease-in-out infinite alternate;
+        }
+
+        .feature-description {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            font-size: 1.1rem;
+            position: relative;
+            z-index: 1;
+            animation: featureDescGlow 6s ease-in-out infinite alternate;
+        }
+
+        /* Responsive Liquid Glass Design */
+        @media (max-width: 768px) {
+            .landing-header {
+                top: 10px;
+                left: 10px;
+                right: 10px;
+                padding: 0.75rem 1.5rem;
+            }
+
+            .header-content {
+                gap: 1rem;
+            }
+
+            .logo {
+                font-size: 1.25rem;
+            }
+
+            .btn-login {
+                padding: 0.5rem 1rem;
+                font-size: 0.85rem;
+            }
+
+            .hero-title {
+                font-size: 3rem;
+                margin-bottom: 1rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem;
+                margin-bottom: 2rem;
+            }
+
+            .download-section {
+                margin: 2rem 1rem;
+                padding: 2.5rem 2rem;
+                border-radius: 25px;
+            }
+
+            .download-title {
+                font-size: 2rem;
+            }
+
+            .download-buttons-row {
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+
+            .mobile-row {
+                max-width: 280px;
+            }
+
+            .download-btn {
+                padding: 1.25rem 0.75rem;
+                font-size: 0.9rem;
+                min-height: 100px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                margin: 3rem 1rem;
+                gap: 2rem;
+            }
+
+            .feature-card {
+                padding: 2.5rem 1.5rem;
+            }
+
+            .login-popup-content {
+                padding: 2rem 1.5rem;
+                margin: 1rem;
+                border-radius: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 2.2rem;
+            }
+
+            .download-buttons-row {
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .mobile-row {
+                max-width: 100%;
+                flex-direction: row;
+                justify-content: center;
+            }
+            
+            .download-btn {
+                min-height: 90px;
+                padding: 1rem;
+            }
+
+            .landing-header {
+                padding: 0.5rem 1rem;
+            }
+
+            .logo {
+                font-size: 1rem;
+            }
+
+            .btn-login {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Enhanced Liquid Glass Animations */
+        .fade-in {
+            opacity: 0;
+            animation: liquidFadeIn 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .fade-in-delay-1 {
+            animation-delay: 0.3s;
+        }
+
+        .fade-in-delay-2 {
+            animation-delay: 0.6s;
+        }
+
+        .fade-in-delay-3 {
+            animation-delay: 0.9s;
+        }
+
+        @keyframes liquidFadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(40px) scale(0.95);
+                filter: blur(10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0px);
+            }
+        }
+
+        /* Additional liquid effects */
+        .feature-card, .login-popup-content {
+            animation: glassShimmer 4s ease-in-out infinite;
+        }
+
+        @keyframes glassShimmer {
+            0%, 100% {
+                box-shadow: 
+                    0 25px 50px rgba(0, 0, 0, 0.15),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                    inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+            }
+            50% {
+                box-shadow: 
+                    0 25px 50px rgba(0, 0, 0, 0.2),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                    inset 0 -1px 0 rgba(255, 255, 255, 0.15);
+            }
+        }
+
+        /* Floating particles effect */
+        .landing-page::after {
+            animation-delay: -10s;
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Custom scrollbar for webkit browsers */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="landing-page">
+        <!-- Header with Login Buttons -->
+        <header class="landing-header">
+            <div class="header-content">
+                <div class="logo">
+                    <span>"Wala pang name"</span>
+                </div>
+                <div class="login-buttons">
+                    <button class="btn-login" onclick="openLoginPopup()">🔐 Teacher/Administrator</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Login Popup -->
+        <div id="loginPopup" class="login-popup" onclick="closeLoginPopup(event)">
+            <div class="login-popup-content" onclick="event.stopPropagation()">
+                <button class="close-popup" onclick="closeLoginPopup()">&times;</button>
+                <div class="login-popup-header">
+                    <div class="login-popup-logo">📚</div>
+                    <h1>SIGN-IN PORTAL</h1>
+                </div>
+
+                <div class="login-form-container"> 
+                    <h2>Sign In</h2>
+                    <p id="subTitle" class="login-description">Please enter your credentials to continue</p>
+
+                    <form id="adminLoginForm" class="login-form">
+                        <div class="form-group">
+                            <label for="adminUsername">Username</label>
+                            <input type="text" id="adminUsername" placeholder="Enter your username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="adminPassword">Password</label>
+                            <input type="password" id="adminPassword" placeholder="Enter your password" required>
+                        </div>
+
+                        <button type="submit" id="adminLoginButton" class="btn-primary btn-lg login-button">
+                            Sign In
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="landing-content">
+            <!-- Hero Section -->
+            <section class="hero-section fade-in">
+                <h1 class="hero-title">Welcome to "Wala pang name"</h1>
+                <p class="hero-subtitle">
+                    An innovative educational platform designed to enhance learning experiences 
+                    through interactive games and comprehensive teacher-student management tools.
+                </p>
+            </section>
+
+            <!-- Download Game Section -->
+            <section class="download-section fade-in fade-in-delay-1" style="display: block !important; visibility: visible !important;">
+                <h2 class="download-title">Download "Wala pang name"</h2>
+                <p class="download-description">
+                    Experience our interactive educational game designed to make learning fun and engaging. 
+                    Perfect for students of all ages to reinforce classroom learning through play.
+                </p>
+                <div class="download-buttons-container">
+                    <div class="download-buttons-row">
+                        <a href="#download-windows" class="download-btn windows" onclick="downloadGame('windows')">
+                            <span class="download-icon">
+                                <svg width="32" height="32" viewBox="0 0 88 88" fill="currentColor">
+                                    <path d="M0 12.402l35.687-4.86.016 34.423-35.67.203zm35.67 33.529l.028 34.453L.028 75.48.026 45.7zm4.326-39.025L87.314 0v41.527l-47.318.376zm47.329 39.349v41.527L40.028 81.441l.014-34.367z"/>
+                                </svg>
+                            </span>
+                            <span>Windows</span>
+                        </a>
+                        <a href="#download-mac" class="download-btn mac" onclick="downloadGame('mac')">
+                            <span class="download-icon">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.37-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                                </svg>
+                            </span>
+                            <span>macOS</span>
+                        </a>
+                        <a href="#download-linux" class="download-btn linux" onclick="downloadGame('linux')">
+                            <span class="download-icon">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M20.581 19.049c-.55-.446-.336-1.431-.907-1.917.553-3.365-.997-6.331-2.845-8.232-1.551-1.595-1.051-3.147-1.051-4.49 0-2.146-.881-4.41-3.55-4.41-2.669 0-3.55 2.264-3.55 4.41 0 1.343.5 2.895-1.051 4.49-1.848 1.901-3.398 4.867-2.845 8.232-.571.486-.357 1.471-.907 1.917C2.322 20.398 2.28 21 2.28 21h19.44s-.042-.602-.596-1.951zM12 2.013c-.708 0-1.279.571-1.279 1.279s.571 1.279 1.279 1.279 1.279-.571 1.279-1.279-.571-1.279-1.279-1.279zM12 9.982c-.708 0-1.279-.571-1.279-1.279s.571-1.279 1.279-1.279 1.279.571 1.279 1.279-.571 1.279-1.279 1.279z"/>
+                                </svg>
+                            </span>
+                            <span>Linux</span>
+                        </a>
+                    </div>
+                    <div class="download-buttons-row mobile-row">
+                        <a href="#download-android" class="download-btn android" onclick="downloadGame('android')">
+                            <span class="download-icon">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M6 18c0 .55.45 1 1 1h1v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h2v3.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V19h1c.55 0 1-.45 1-1V8H6v10zM3.5 8C2.67 8 2 8.67 2 9.5v7c0 .83.67 1.5 1.5 1.5S5 17.33 5 16.5v-7C5 8.67 4.33 8 3.5 8zm17 0c-.83 0-1.5.67-1.5 1.5v7c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-7c0-.83-.67-1.5-1.5-1.5zm-4.97-5.84l1.3-1.3c.2-.2.2-.51 0-.71-.2-.2-.51-.2-.71 0l-1.48 1.48C13.85 1.23 12.95 1 12 1c-.96 0-1.86.23-2.66.63L7.85.15c-.2-.2-.51-.2-.71 0-.2.2-.2.51 0 .71l1.31 1.31C6.97 3.26 6 5.01 6 7h12c0-1.99-.97-3.75-2.47-4.84zM10 5H9V4h1v1zm5 0h-1V4h1v1z"/>
+                                </svg>
+                            </span>
+                            <span>Android</span>
+                        </a>
+                        <a href="#download-ios" class="download-btn ios" onclick="downloadGame('ios')">
+                            <span class="download-icon">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.37-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                            </svg>
+                            </span>
+                            <span>iOS</span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Features Grid -->
+            <section class="features-grid fade-in fade-in-delay-2">
+                <div class="feature-card">
+                    <span class="feature-icon">👨‍🏫</span>
+                    <h3 class="feature-title">Teacher Portal</h3>
+                    <p class="feature-description">
+                        Manage students, track progress, and access comprehensive teaching tools.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">👨‍💼</span>
+                    <h3 class="feature-title">Admin Dashboard</h3>
+                    <p class="feature-description">
+                        Complete system administration with user management and analytics.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🎮</span>
+                    <h3 class="feature-title">Interactive Learning Game</h3>
+                    <p class="feature-description">
+                        Jump into fun educational adventures! Solve puzzles, complete challenges, and unlock achievements while learning new skills through exciting gameplay.
+                    </p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="assets/js/inputSanitizer.js"></script>
+    <script src="assets/js/admin-auth.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script>
+        // Login Popup Functions
+        function openLoginPopup() {
+            const popup = document.getElementById('loginPopup');
+            popup.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLoginPopup(event) {
+            if (event && event.target !== event.currentTarget) return;
+            const popup = document.getElementById('loginPopup');
+            popup.classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close popup with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeLoginPopup();
+            }
+        });
+
+        // Download Game Function
+        function downloadGame(platform) {
+            const platformNames = {
+                'windows': 'Windows',
+                'mac': 'macOS',
+                'linux': 'Linux',
+                'android': 'Android',
+                'ios': 'iOS'
+            };
+            
+            const platformName = platformNames[platform] || platform;
+            
+            // You can implement actual download logic here
+            alert(`${platformName} game download will be implemented soon! Please check back later.`);
+            
+            // Example of how you might implement actual downloads:
+            // const downloadUrls = {
+            //     'windows': '/downloads/game-windows.exe',
+            //     'mac': '/downloads/game-mac.dmg',
+            //     'linux': '/downloads/game-linux.AppImage',
+            //     'android': '/downloads/game-android.apk',
+            //     'ios': 'https://apps.apple.com/app/your-game-id'
+            // };
+            // 
+            // if (downloadUrls[platform]) {
+            //     if (platform === 'ios') {
+            //         window.open(downloadUrls[platform], '_blank');
+            //     } else {
+            //         window.location.href = downloadUrls[platform];
+            //     }
+            // }
+        }
+
+        // Add fade-in animation on page load
+        window.addEventListener('load', function() {
+            document.body.style.opacity = '1';
+        });
+    </script>
+</body>
+</html>
