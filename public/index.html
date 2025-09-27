@@ -13,9 +13,21 @@
             box-sizing: border-box;
         }
 
+        html, body {
+            height: 100%;
+            background: linear-gradient(135deg, 
+                #1a1a2e 0%, 
+                #16213e 25%, 
+                #0f3460 50%, 
+                #533483 75%, 
+                #7209b7 100%);
+        }
+
         /* Clean Liquid Glass Landing Page Styles */
         .landing-page {
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
             background: linear-gradient(135deg, 
                 #1a1a2e 0%, 
                 #16213e 25%, 
@@ -23,7 +35,6 @@
                 #533483 75%, 
                 #7209b7 100%);
             position: relative;
-            overflow: hidden;
             font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
@@ -97,6 +108,49 @@
             font-size: 1.5rem;
             font-weight: 700;
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin: 0 2rem;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.85);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .nav-link:hover::before {
+            left: 100%;
+        }
+
+        .nav-link:hover {
+            color: rgba(255, 255, 255, 1);
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
         .login-buttons {
@@ -339,7 +393,7 @@
 
         /* Liquid Glass Main Content */
         .landing-content {
-            padding-top: 140px;
+            padding-top: 120px;
             padding-bottom: 4rem;
             min-height: 100vh;
             display: flex;
@@ -352,29 +406,58 @@
         }
 
         .hero-section {
-            max-width: 900px;
-            margin: 0 auto 2rem;
-            padding: 0 2rem;
+            width: 100%;
+            max-width: 100vw;
+            margin: 0;
+            padding: 4rem 2rem;
             position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(173, 216, 230, 0.2) 0%, transparent 50%),
+                linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.05) 50%, transparent 100%);
+            border-radius: 0;
+            backdrop-filter: blur(20px) saturate(150%);
+            border: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>'),
+                radial-gradient(circle at 30% 70%, rgba(255, 182, 193, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 70% 30%, rgba(173, 216, 230, 0.15) 0%, transparent 40%);
+            border-radius: 0;
+            opacity: 0.6;
+            pointer-events: none;
         }
 
         .hero-title {
-            font-size: 4.5rem;
-            font-weight: 800;
-            margin-bottom: 1.5rem;
-            background: linear-gradient(135deg, 
-                rgb(255, 255, 255) 0%, 
-                rgb(255, 215, 221) 25%,
-                rgba(173, 216, 230, 0.9) 50%,
-                rgba(255, 223, 255, 0.9) 75%,
-                rgba(255, 255, 255, 0.95) 100%);
-            background-clip: text;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            line-height: 1.1;
-            letter-spacing: -0.02em;
-            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            font-size: 5.5rem;
+            font-weight: 900;
+            margin-bottom: 2rem;
+            color: rgba(255, 255, 255, 0.98);
+            line-height: 0.9;
+            letter-spacing: 0.05em;
+            text-shadow: 0 6px 25px rgba(0, 0, 0, 0.5);
             animation: titleGlow 3s ease-in-out infinite alternate;
+            text-align: center;
+            text-transform: uppercase;
         }
 
         @keyframes titleGlow {
@@ -492,16 +575,188 @@
         }
 
         .hero-subtitle {
-            font-size: 1.4rem;
-            margin-bottom: 1.5rem;
-            color: rgba(255, 255, 255, 0.8);
-            line-height: 1.7;
-            font-weight: 400;
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            color: rgba(255, 255, 255, 0.85);
+            line-height: 1.4;
+            font-weight: 600;
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-            max-width: 700px;
+            max-width: 800px;
             margin-left: auto;
             margin-right: auto;
             animation: subtitleGlow 4s ease-in-out infinite alternate;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* Screenshots Carousel Section */
+        .screenshots-section {
+            width: 100%;
+            max-width: 100vw;
+            margin: 4rem 0;
+            padding: 0 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .screenshots-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 3rem;
+            color: rgba(255, 255, 255, 0.95);
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            animation: downloadTitleGlow 3.5s ease-in-out infinite alternate;
+        }
+
+        .carousel-container {
+            position: relative;
+            background: rgba(255, 255, 255, 0);
+            backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0);
+            border-radius: 25px;
+            overflow: hidden;
+            width: 100%;
+            max-width: 1900px;
+            max-height: auto;
+            margin: 0 auto;
+        }
+
+        .carousel-track {
+            position: relative;
+            width: 100%;
+            height: 40%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 2rem 1rem;
+            gap: 0.5rem;
+        }
+
+        .screenshot-slide {
+            flex: 1;
+            min-height: 200px;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            aspect-ratio: 16/9;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            transform: scale(1.0);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .screenshot-slide:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        }
+
+        .screenshot-slide.center {
+            flex: 1.2;
+        }
+
+        .screenshot-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            display: block;
+        }
+
+        .screenshot-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+            padding: 2rem 1.5rem 1.5rem;
+            color: white;
+            text-align: center;
+            transform: translateY(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 0 0 15px 15px;
+        }
+
+        .screenshot-slide:hover .screenshot-overlay {
+            transform: translateY(0);
+        }
+
+        .screenshot-overlay h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            color: white !important;
+        }
+
+        .screenshot-overlay p {
+            font-size: 1rem;
+            opacity: 0.9;
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+            color: white !important;
+        }
+
+
+
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .screenshots-section {
+                margin: 3rem 0;
+                padding: 0 1rem;
+            }
+
+            .screenshots-title {
+                font-size: 2rem;
+                margin-bottom: 2rem;
+            }
+
+            .carousel-track {
+                padding: 1rem;
+                gap: 0.5rem;
+                flex-direction: column;
+                height: auto;
+            }
+
+            .screenshot-slide {
+                width: 100%;
+                margin-bottom: 1rem;
+                transform: scale(1.0);
+            }
+
+            .screenshot-slide:hover {
+                transform: scale(1.05);
+            }
+
+            .screenshot-slide.center {
+                flex: 1;
+            }
+
+            .carousel-container {
+                aspect-ratio: 16/9;
+                height: auto;
+                max-width: 100%;
+            }
+
+            .screenshot-overlay {
+                padding: 1.5rem 1rem 1rem;
+            }
+
+            .screenshot-overlay h3 {
+                font-size: 1.1rem;
+            }
+
+            .screenshot-overlay p {
+                font-size: 0.85rem;
+            }
+
+
         }
 
         /* Liquid Glass Download Section */
@@ -778,10 +1033,24 @@
 
             .header-content {
                 gap: 1rem;
+                flex-wrap: wrap;
             }
 
             .logo {
                 font-size: 1.25rem;
+            }
+
+            .nav-menu {
+                order: 3;
+                width: 100%;
+                justify-content: center;
+                margin: 0.5rem 0 0 0;
+                gap: 1rem;
+            }
+
+            .nav-link {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.8rem;
             }
 
             .btn-login {
@@ -790,13 +1059,20 @@
             }
 
             .hero-title {
-                font-size: 3rem;
-                margin-bottom: 1rem;
+                font-size: 3.5rem;
+                margin-bottom: 1.5rem;
+                line-height: 0.95;
             }
 
             .hero-subtitle {
-                font-size: 1.1rem;
-                margin-bottom: 2rem;
+                font-size: 1rem;
+                margin-bottom: 2.5rem;
+                padding: 0 1rem;
+            }
+
+            .hero-section {
+                min-height: 50vh;
+                padding: 0 1rem;
             }
 
             .download-section {
@@ -955,18 +1231,109 @@
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.5);
         }
+
+        /* Main content area */
+        .landing-content {
+            flex: 1;
+        }
+
+        /* Footer Section */
+        .footer {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px);
+            padding: 3rem 2rem 2rem;
+            margin-top: auto;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-logo-text {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .footer-copyright {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .footer-link {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .footer-link:hover {
+            color: rgba(255, 255, 255, 1);
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .footer {
+                padding: 2rem 1rem 1.5rem;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .footer-link {
+                font-size: 0.8rem;
+            }
+
+            .footer-copyright {
+                font-size: 0.8rem;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="landing-page">
-        <!-- Header with Login Buttons -->
+        <!-- Header with Logo and Navigation -->
         <header class="landing-header">
             <div class="header-content">
-                <div class="logo">
-                    <span>"Wala pang name"</span>
+                <div class="logo" onclick="scrollToTop()" style="cursor: pointer;">
+                    <span>QUIZTORIÃ</span>
                 </div>
+                <nav class="nav-menu">
+                    <a href="#screenshots" class="nav-link" onclick="scrollToSection('screenshots')">Screenshots</a>
+                    <a href="#download" class="nav-link" onclick="scrollToSection('download')">Download</a>
+                    <a href="#about" class="nav-link" onclick="scrollToSection('about')">About</a>
+                </nav>
                 <div class="login-buttons">
-                    <button class="btn-login" onclick="openLoginPopup()">🔐 Teacher/Administrator</button>
+                    <button class="btn-login" onclick="openLoginPopup()">🔐 TEACHER LOGIN</button>
+                    <button class="btn-login" onclick="openLoginPopup()">👨‍💼 ADMIN PANEL</button>
                 </div>
             </div>
         </header>
@@ -1006,15 +1373,71 @@
         <main class="landing-content">
             <!-- Hero Section -->
             <section class="hero-section fade-in">
-                <h1 class="hero-title">Welcome to "Wala pang name"</h1>
+                <h1 class="hero-title">QUIZTORIÃ</h1>
                 <p class="hero-subtitle">
-                    An innovative educational platform designed to enhance learning experiences 
-                    through interactive games and comprehensive teacher-student management tools.
+                    AN INNOVATIVE EDUCATIONAL PLATFORM FEATURING INTERACTIVE LEARNING WITH COMPREHENSIVE MANAGEMENT
                 </p>
+                
+                <!-- Main Call-to-Action Button -->
+                <div style="margin: 3rem auto; text-align: center;">
+                    <button onclick="scrollToDownload()" style="
+                        background: rgba(255, 82, 82, 0.9);
+                        backdrop-filter: blur(15px);
+                        border: 2px solid rgba(255, 255, 255, 0.3);
+                        color: white;
+                        padding: 1.5rem 4rem;
+                        font-size: 1.4rem;
+                        font-weight: 800;
+                        text-transform: uppercase;
+                        border-radius: 0;
+                        cursor: pointer;
+                        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                        letter-spacing: 1px;
+                        position: relative;
+                        overflow: hidden;
+                        min-width: 280px;
+                        box-shadow: 0 10px 30px rgba(255, 82, 82, 0.3);
+                    " 
+                    onmouseover="this.style.transform='translateY(-3px) scale(1.05)'; this.style.boxShadow='0 15px 40px rgba(255, 82, 82, 0.4)'; this.style.background='rgba(255, 82, 82, 1)';"
+                    onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 10px 30px rgba(255, 82, 82, 0.3)'; this.style.background='rgba(255, 82, 82, 0.9)';">
+                        START LEARNING NOW
+                    </button>
+                </div>
+            </section>
+
+            <!-- Game Screenshots Carousel -->
+            <section id="screenshots" class="screenshots-section fade-in fade-in-delay-1">
+                <h2 class="screenshots-title">GAME SCREENSHOTS</h2>
+                <div class="carousel-container">
+                    <div class="carousel-track">
+                        <div class="screenshot-slide">
+                            <img src="https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=1920&h=1080&fit=crop&crop=center&ar=16:9" alt="Main Menu Screenshot">
+                            <div class="screenshot-overlay">
+                                <h3>MAIN MENU</h3>
+                                <p>Navigate through our intuitive interface</p>
+                            </div>
+                        </div>
+                        <div class="screenshot-slide center">
+                            <img src="https://images.unsplash.com/photo-1580894894513-541e068a3e2b?w=1920&h=1080&fit=crop&crop=center&ar=16:9" alt="Gameplay Screenshot">
+                            <div class="screenshot-overlay">
+                                <h3>INTERACTIVE GAMEPLAY</h3>
+                                <p>Engage in educational challenges</p>
+                            </div>
+                        </div>
+                        <div class="screenshot-slide">
+                            <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1920&h=1080&fit=crop&crop=center&ar=16:9" alt="Progress Tracking Screenshot">
+                            <div class="screenshot-overlay">
+                                <h3>PROGRESS TRACKING</h3>
+                                <p>Monitor student achievements and growth</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </section>
 
             <!-- Download Game Section -->
-            <section class="download-section fade-in fade-in-delay-1" style="display: block !important; visibility: visible !important;">
+            <section id="download" class="download-section fade-in fade-in-delay-1" style="display: block !important; visibility: visible !important;">
                 <h2 class="download-title">Download "Wala pang name"</h2>
                 <p class="download-description">
                     Experience our interactive educational game designed to make learning fun and engaging. 
@@ -1068,8 +1491,8 @@
                 </div>
             </section>
 
-            <!-- Features Grid -->
-            <section class="features-grid fade-in fade-in-delay-2">
+            <!-- Features Grid / About -->
+            <section id="about" class="features-grid fade-in fade-in-delay-2">
                 <div class="feature-card">
                     <span class="feature-icon">👨‍🏫</span>
                     <h3 class="feature-title">Teacher Portal</h3>
@@ -1093,6 +1516,22 @@
                 </div>
             </section>
         </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-logo" onclick="scrollToTop()" style="cursor: pointer;">
+                <span>📚</span>
+                <span class="footer-logo-text">QUIZTORÍA</span>
+            </div>
+            <div class="footer-copyright">
+                © 2020-2025 Quiztoría Team. QUIZTORÍA, EDUCATIONAL PLATFORM and any associated logos are trademarks, service marks, and/or registered trademarks of Quiztoría Team.
+            </div>
+            <div class="footer-links">
+                <a href="#privacy" class="footer-link">Privacy Notice</a>
+                <a href="#terms" class="footer-link">Terms of Service</a>
+                <a href="#cookies" class="footer-link">Cookie Preferences</a>
+            </div>
+        </footer>
     </div>
 
     <script src="assets/js/inputSanitizer.js"></script>
@@ -1119,6 +1558,53 @@
                 closeLoginPopup();
             }
         });
+
+        // Scroll to download section
+        function scrollToDownload() {
+            const downloadSection = document.querySelector('.download-section');
+            if (downloadSection) {
+                downloadSection.scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+            }
+        }
+
+        // Generic scroll to section function
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            if (section) {
+                // Use getBoundingClientRect for more accurate positioning
+                const headerOffset = 320; // Fixed offset to account for header
+                const rect = section.getBoundingClientRect();
+                const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
+                const targetPosition = rect.top + currentScroll - headerOffset;
+                
+                window.scrollTo({
+                    top: Math.max(0, targetPosition),
+                    behavior: 'smooth'
+                });
+            }
+        }
+
+        // Scroll to top function
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // Scroll to top function
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // Screenshot Gallery Functionality
+
 
         // Download Game Function
         function downloadGame(platform) {
