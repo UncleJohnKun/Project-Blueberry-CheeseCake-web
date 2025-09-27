@@ -910,9 +910,11 @@ async function initializeTeacherPortal() {
         sectionSelectorContainer.innerHTML = `
             <div class="section-selector-header">
                 <h3>Select Section for Level Management</h3>
-                <select id="levelManagementSectionSelect" class="section-select">
-                    <option value="">Select a section...</option>
-                </select>
+                <div class="section-select-wrapper">
+                    <select id="levelManagementSectionSelect" class="section-select">
+                        <option value="">Select a section...</option>
+                    </select>
+                </div>
             </div>
         `;
         // Insert at the very beginning of the container
@@ -1829,7 +1831,18 @@ async function initializeTeacherPortal() {
         if (searchStudentInput) {
             searchStudentInput.addEventListener('input', () => {
                 const searchTerm = searchStudentInput.value.trim().toLowerCase();
-                let searchResults = allStudentsData.filter(student => {
+                
+                // Get the currently selected section
+                const selectedSection = sectionFilter ? sectionFilter.value : '';
+                
+                // Start with all students, then apply section filter if needed
+                let studentsToSearch = allStudentsData;
+                if (selectedSection && selectedSection.trim() !== '') {
+                    studentsToSearch = allStudentsData.filter(student => student.section === selectedSection);
+                }
+                
+                // Apply search filter to the section-filtered students
+                let searchResults = studentsToSearch.filter(student => {
                     return (
                         (student.fullname || '').toLowerCase().includes(searchTerm) ||
                         (student.username || '').toLowerCase().includes(searchTerm) ||
@@ -1837,6 +1850,7 @@ async function initializeTeacherPortal() {
                         (student.id || '').toLowerCase().includes(searchTerm)
                     );
                 });
+                
                 // Apply current sorting if any
                 if (currentSortField) {
                     searchResults = sortStudents(searchResults, currentSortField, currentSortDirection);
@@ -2189,6 +2203,11 @@ async function initializeTeacherPortal() {
 
         if (sectionName && sectionName.trim() !== '') {
             studentsToShow = allStudentsData.filter(student => student.section === sectionName);
+        }
+
+        // Clear search input when changing sections to avoid confusion
+        if (searchStudentInput) {
+            searchStudentInput.value = '';
         }
 
         // Apply current sorting if any
