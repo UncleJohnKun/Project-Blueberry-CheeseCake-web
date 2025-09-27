@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookie Preferences - Quiztoría Educational Platform</title>
+    <link rel="stylesheet" href="../assets/css/cookie-preferences.css">
+    <style>
+        /* Global Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            background: linear-gradient(135deg, 
+                #1a1a2e 0%, 
+                #16213e 25%, 
+                #0f3460 50%, 
+                #533483 75%, 
+                #7209b7 100%);
+            background-attachment: fixed;
+            background-size: cover;
+            background-repeat: no-repeat;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+        }
+
+        /* Page Container */
+        .page-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 1rem 2rem;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.95);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .back-button {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.9);
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-top: 120px;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .content-wrapper {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #ffffff 0%, #e8f4fd 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-subtitle {
+            text-align: center;
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 3rem;
+        }
+
+        /* Cookie Preferences Container */
+        .cookie-preferences-container {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .preferences-section {
+            margin-bottom: 2rem;
+        }
+
+        .preferences-section h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 1rem;
+        }
+
+        .preferences-section p {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        /* Cookie Category Cards */
+        .cookie-category-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .cookie-category-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .category-info h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 0.5rem;
+        }
+
+        .category-info p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .category-toggle {
+            display: flex;
+            align-items: center;
+        }
+
+        .category-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-left: 1rem;
+        }
+
+        .category-status.enabled {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .category-status.disabled {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .category-status.required {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .cookie-list {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .cookie-list h5 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 0.5rem;
+        }
+
+        .cookie-list ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .cookie-list li {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+            padding: 0.25rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .cookie-list li:last-child {
+            border-bottom: none;
+        }
+
+        /* Action Buttons */
+        .preferences-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .action-button {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.9);
+            padding: 0.875rem 1.75rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .action-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        .action-button.primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border-color: #3b82f6;
+            color: #ffffff;
+        }
+
+        .action-button.primary:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            border-color: #2563eb;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header {
+                top: 10px;
+                left: 10px;
+                right: 10px;
+                padding: 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .main-content {
+                margin-top: 140px;
+                padding: 1rem;
+            }
+
+            .cookie-preferences-container {
+                padding: 1.5rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .category-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .preferences-actions {
+                flex-direction: column;
+            }
+
+            .action-button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-title {
+                font-size: 1.75rem;
+            }
+
+            .cookie-preferences-container {
+                padding: 1rem;
+            }
+
+            .cookie-category-card {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <!-- Header -->
+        <header class="header">
+            <a href="../index.html" class="header-brand">QUIZTORÍA</a>
+            <a href="../index.html" class="back-button">← Back to Home</a>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-wrapper">
+                <h1 class="page-title">Cookie Preferences</h1>
+                <p class="page-subtitle">Manage your cookie preferences to customize your experience on our platform</p>
+
+                <div class="cookie-preferences-container">
+                    <div class="preferences-section">
+                        <h3>About Cookies</h3>
+                        <p>Cookies are small text files that are stored on your device when you visit our website. They help us provide you with a better experience by remembering your preferences and analyzing how you use our platform.</p>
+                    </div>
+
+                    <div class="preferences-section">
+                        <h3>Cookie Categories</h3>
+                        <p>Below you can see the different categories of cookies we use and manage your preferences for each:</p>
+
+                        <div id="cookie-categories-display">
+                            <!-- Cookie categories will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="preferences-actions">
+                        <button onclick="window.cookiePreferences?.openPreferences()" class="action-button primary">
+                            Manage Cookie Preferences
+                        </button>
+                        <button onclick="acceptAllCookiesPage()" class="action-button">
+                            Accept All Cookies
+                        </button>
+                        <button onclick="rejectOptionalCookiesPage()" class="action-button">
+                            Reject Optional Cookies
+                        </button>
+                    </div>
+                </div>
+
+                <div class="cookie-preferences-container">
+                    <div class="preferences-section">
+                        <h3>Additional Information</h3>
+                        <p>For more information about how we use your data and your privacy rights, please visit our <a href="privacy-notice.html" style="color: #64b5f6; text-decoration: underline;">Privacy Notice</a>.</p>
+                        <p>If you have any questions about our cookie policy, please contact us at <a href="mailto:privacy@quiztoria.edu" style="color: #64b5f6; text-decoration: underline;">privacy@quiztoria.edu</a>.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../assets/js/cookie-preferences.js"></script>
+    <script>
+        // Page-specific functions
+        function acceptAllCookiesPage() {
+            if (window.cookiePreferences) {
+                window.cookiePreferences.acceptAllCookies();
+                showPageNotification('All cookies have been enabled.');
+            }
+        }
+
+        function rejectOptionalCookiesPage() {
+            if (window.cookiePreferences) {
+                window.cookiePreferences.rejectOptionalCookies();
+                showPageNotification('Optional cookies have been disabled.');
+            }
+        }
+
+        function showPageNotification(message) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: rgba(16, 185, 129, 0.9);
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                z-index: 10000;
+                backdrop-filter: blur(10px);
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            // Show notification
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+
+            // Hide notification
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Populate cookie categories display when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                if (window.cookiePreferences) {
+                    populateCookieCategories();
+                }
+            }, 500);
+        });
+
+        function populateCookieCategories() {
+            const container = document.getElementById('cookie-categories-display');
+            const categories = window.cookiePreferences.cookieCategories;
+            const preferences = window.cookiePreferences.getPreferences();
+
+            let html = '';
+            Object.entries(categories).forEach(([key, category]) => {
+                const isEnabled = preferences[key];
+                const statusClass = category.required ? 'required' : (isEnabled ? 'enabled' : 'disabled');
+                const statusText = category.required ? 'Required' : (isEnabled ? 'Enabled' : 'Disabled');
+
+                html += `
+                    <div class="cookie-category-card">
+                        <div class="category-header">
+                            <div class="category-info">
+                                <h4>${category.name}</h4>
+                                <p>${category.description}</p>
+                            </div>
+                            <div class="category-toggle">
+                                <span class="category-status ${statusClass}">${statusText}</span>
+                            </div>
+                        </div>
+                        <div class="cookie-list">
+                            <h5>Cookies used:</h5>
+                            <ul>
+                                ${category.cookies.map(cookie => `<li>${cookie}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

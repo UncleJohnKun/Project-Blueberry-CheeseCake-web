@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Notice - Quiztoría Educational Platform</title>
+    <link rel="stylesheet" href="../assets/css/cookie-preferences.css">
+    <style>
+        /* Global Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            background: linear-gradient(135deg, 
+                #1a1a2e 0%, 
+                #16213e 25%, 
+                #0f3460 50%, 
+                #533483 75%, 
+                #7209b7 100%);
+            background-attachment: fixed;
+            background-size: cover;
+            background-repeat: no-repeat;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+        }
+
+        /* Page Container */
+        .page-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 1rem 2rem;
+            z-index: 1000;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            text-decoration: none;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            border-radius: 15px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding-top: 140px;
+            padding-bottom: 4rem;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+            padding-left: 2rem;
+            padding-right: 2rem;
+        }
+
+        .content-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 3rem;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.25),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .page-title {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            color: rgba(255, 255, 255, 0.98);
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .last-updated {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 3rem;
+            font-style: italic;
+        }
+
+        .section {
+            margin-bottom: 2.5rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.95);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .section-content {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 1rem;
+        }
+
+        .section-content ul {
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .section-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .contact-info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header {
+                top: 10px;
+                left: 10px;
+                right: 10px;
+                padding: 0.75rem 1.5rem;
+            }
+
+            .logo {
+                font-size: 1.25rem;
+            }
+
+            .main-content {
+                padding-top: 120px;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .content-card {
+                padding: 2rem 1.5rem;
+                border-radius: 20px;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-content {
+                gap: 1rem;
+            }
+
+            .back-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+
+            .page-title {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <a href="../index.html" class="logo">📚 QUIZTORÍA</a>
+                <a href="../index.html" class="back-btn">← Back to Home</a>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-card">
+                <h1 class="page-title">Privacy Notice</h1>
+                <p class="last-updated">Last updated: September 27, 2025</p>
+
+                <div class="section">
+                    <h2 class="section-title">1. Information We Collect</h2>
+                    <div class="section-content">
+                        <p>We collect information you provide directly to us, such as when you:</p>
+                        <ul>
+                            <li>Create an account or use our educational platform</li>
+                            <li>Submit assignments, quizzes, or other educational content</li>
+                            <li>Communicate with us via contact forms or email</li>
+                            <li>Participate in surveys or feedback sessions</li>
+                        </ul>
+                        <p>This may include your name, email address, educational institution, grade level, and learning progress data.</p>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">2. How We Use Your Information</h2>
+                    <div class="section-content">
+                        <p>We use the information we collect to:</p>
+                        <ul>
+                            <li>Provide, maintain, and improve our educational services</li>
+                            <li>Track learning progress and provide personalized educational content</li>
+                            <li>Communicate with you about your account and our services</li>
+                            <li>Comply with legal obligations and protect our rights</li>
+                            <li>Analyze usage patterns to enhance user experience</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">3. Information Sharing and Disclosure</h2>
+                    <div class="section-content">
+                        <p>We do not sell, trade, or otherwise transfer your personal information to third parties except:</p>
+                        <ul>
+                            <li>With your explicit consent</li>
+                            <li>To authorized school administrators and teachers (for student accounts)</li>
+                            <li>To comply with legal requirements or protect our rights</li>
+                            <li>To service providers who assist in operating our platform</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">4. Data Security</h2>
+                    <div class="section-content">
+                        <p>We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction. However, no method of transmission over the internet is 100% secure.</p>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">5. Student Privacy (COPPA & FERPA Compliance)</h2>
+                    <div class="section-content">
+                        <p>We are committed to protecting student privacy and comply with applicable laws including:</p>
+                        <ul>
+                            <li>Children's Online Privacy Protection Act (COPPA)</li>
+                            <li>Family Educational Rights and Privacy Act (FERPA)</li>
+                            <li>We do not collect personal information from children under 13 without parental consent</li>
+                            <li>Educational records are protected and only shared with authorized personnel</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">6. Your Rights and Choices</h2>
+                    <div class="section-content">
+                        <p>You have the right to:</p>
+                        <ul>
+                            <li>Access, update, or delete your personal information</li>
+                            <li>Opt-out of certain communications</li>
+                            <li>Request a copy of your data</li>
+                            <li>Withdraw consent (where applicable)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">7. Cookies and Tracking Technologies</h2>
+                    <div class="section-content">
+                        <p>We use cookies and similar technologies to enhance your experience, analyze usage, and provide personalized content. Our platform uses the following types of cookies:</p>
+                        <ul>
+                            <li><strong>Essential Cookies:</strong> Necessary for the website to function properly, including authentication and security features.</li>
+                            <li><strong>Functional Cookies:</strong> Enable enhanced functionality such as language preferences and dashboard layout customization.</li>
+                            <li><strong>Analytics Cookies:</strong> Help us understand how visitors interact with our website to improve our services.</li>
+                            <li><strong>Marketing Cookies:</strong> Used to track visitors and display relevant advertisements (if applicable).</li>
+                        </ul>
+                        <p>You have full control over your cookie preferences. You can:</p>
+                        <ul>
+                            <li>Manage your cookie preferences through our <a href="javascript:void(0)" onclick="window.cookiePreferences?.openPreferences()" style="color: #64b5f6; text-decoration: underline;">Cookie Preferences Center</a></li>
+                            <li>Control cookies through your browser settings</li>
+                            <li>Opt out of analytics and marketing cookies while keeping essential functionality</li>
+                        </ul>
+                        <p><strong>Note:</strong> Disabling certain cookies may impact the functionality of our platform.</p>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">8. Changes to This Privacy Notice</h2>
+                    <div class="section-content">
+                        <p>We may update this Privacy Notice from time to time. We will notify you of any changes by posting the new Privacy Notice on this page and updating the "Last updated" date.</p>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2 class="section-title">9. Contact Us</h2>
+                    <div class="section-content">
+                        <p>If you have any questions about this Privacy Notice, please contact us:</p>
+                        <div class="contact-info">
+                            <p><strong>Email:</strong> privacy@quiztoria.edu</p>
+                            <p><strong>Address:</strong> Quiztoría Educational Platform<br>
+                            123 Education Street<br>
+                            Learning City, LC 12345</p>
+                            <p><strong>Phone:</strong> +1 (555) 123-4567</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="../assets/js/cookie-preferences.js"></script>
+</body>
+</html>

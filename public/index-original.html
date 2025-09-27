@@ -1320,9 +1320,9 @@
     </style>
 </head>
 <body>
-    <div class="landing-page">
-        <!-- Header with Logo and Navigation -->
-        <header class="landing-header">
+    <div class="cookie-page-container">
+        <!-- Cookie Preferences will be displayed here -->
+        <div id="cookie-preferences-main"></div>
             <div class="header-content">
                 <div class="logo" onclick="scrollToTop()" style="cursor: pointer;">
                     <span>QUIZTORIÃ</span>
@@ -1667,21 +1667,5 @@
     
     <!-- Cookie Preferences System -->
     <script src="assets/js/cookie-preferences.js"></script>
-    
-    <script>
-        // Handle cookie preferences link in footer
-        document.addEventListener('DOMContentLoaded', function() {
-            const cookieLink = document.querySelector('a[href="pages/cookie-preferences.html"]');
-            if (cookieLink) {
-                cookieLink.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    if (window.cookiePreferences) {
-                        window.cookiePreferences.openPreferences();
-                    }
-                });
-            }
-
-        });
-    </script>
 </body>
 </html>
