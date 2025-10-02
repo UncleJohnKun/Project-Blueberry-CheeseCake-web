@@ -17,11 +17,11 @@
         html, body {
             height: 100%;
             background: linear-gradient(135deg, 
-                #1a1a2e 0%, 
-                #16213e 25%, 
-                #0f3460 50%, 
-                #533483 75%, 
-                #7209b7 100%);
+                #3d3229 0%, 
+                #4a3d32 25%, 
+                #5a4d3f 50%, 
+                #6b5d4d 75%, 
+                #7d6f5d 100%);
         }
 
         /* Clean Liquid Glass Landing Page Styles */
@@ -418,34 +418,16 @@
             justify-content: center;
             min-height: 60vh;
             background: 
-                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(173, 216, 230, 0.2) 0%, transparent 50%),
-                linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.05) 50%, transparent 100%);
+                linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
+                url('assets/images/main.png') center/cover no-repeat;
             border-radius: 0;
-            backdrop-filter: blur(20px) saturate(150%);
+            backdrop-filter: blur(5px);
             border: none;
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: 
                 0 20px 40px rgba(0, 0, 0, 0.2),
                 inset 0 1px 0 rgba(255, 255, 255, 0.2);
-        }
-
-        .hero-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>'),
-                radial-gradient(circle at 30% 70%, rgba(255, 182, 193, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 70% 30%, rgba(173, 216, 230, 0.15) 0%, transparent 40%);
-            border-radius: 0;
-            opacity: 0.6;
-            pointer-events: none;
         }
 
         .hero-title {
@@ -762,9 +744,9 @@
 
         /* Liquid Glass Download Section */
         .download-section {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(125, 111, 93, 0.15);
             backdrop-filter: blur(25px) saturate(180%);
-            border: 2px solid rgba(255, 255, 255, 0.4);
+            border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 30px;
             padding: 3rem 2.5rem;
             margin: 1.5rem auto;
@@ -1411,21 +1393,21 @@
                 <div class="carousel-container">
                     <div class="carousel-track">
                         <div class="screenshot-slide">
-                            <img src="https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=1920&h=1080&fit=crop&crop=center&ar=16:9" alt="Main Menu Screenshot">
+                            <img src="assets/images/1.png" alt="Main Menu Screenshot">
                             <div class="screenshot-overlay">
                                 <h3>MAIN MENU</h3>
                                 <p>Navigate through our intuitive interface</p>
                             </div>
                         </div>
                         <div class="screenshot-slide center">
-                            <img src="https://images.unsplash.com/photo-1580894894513-541e068a3e2b?w=1920&h=1080&fit=crop&crop=center&ar=16:9" alt="Gameplay Screenshot">
+                            <img src="assets/images/2.png" alt="Gameplay Screenshot">
                             <div class="screenshot-overlay">
                                 <h3>INTERACTIVE GAMEPLAY</h3>
                                 <p>Engage in educational challenges</p>
                             </div>
                         </div>
                         <div class="screenshot-slide">
-                            <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1920&h=1080&fit=crop&crop=center&ar=16:9" alt="Progress Tracking Screenshot">
+                            <img src="assets/images/3.png" alt="Progress Tracking Screenshot">
                             <div class="screenshot-overlay">
                                 <h3>PROGRESS TRACKING</h3>
                                 <p>Monitor student achievements and growth</p>
