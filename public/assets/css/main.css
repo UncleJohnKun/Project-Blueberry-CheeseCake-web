@@ -85,6 +85,8 @@ html {
     font-size: 16px;
     line-height: 1.6;
     scroll-behavior: smooth;
+    overflow-x: hidden;
+    width: 100%;
 }
 
 body {
@@ -98,6 +100,8 @@ body {
     margin: 0;
     padding: 0;
     opacity: 0;
+    overflow-x: hidden;
+    width: 100%;
     animation: fadeIn 0.2s ease-out forwards;
 }
 
@@ -168,7 +172,9 @@ select:not(.section-filter)::after {
     background: var(--primary-bg);
     position: relative;
     width: 100%;
+    max-width: 100vw;
     box-sizing: border-box;
+    overflow-x: hidden;
 }
 
 /* === Sidebar === */
@@ -1443,6 +1449,10 @@ button.secondary:hover,
 /* === Content Views === */
 .content-view {
     display: none;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
 }
 
 .content-view.active {
@@ -1501,6 +1511,10 @@ button.secondary:hover,
     margin-bottom: var(--space-4);
     border: 1px solid var(--border-light);
     box-shadow: var(--shadow-sm);
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
 }
 
 .detail-card h2 {
@@ -1572,6 +1586,9 @@ button.secondary:hover,
 .detail-info-grid {
     display: grid;
     gap: var(--space-3);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .detail-info-grid p {
@@ -1584,6 +1601,10 @@ button.secondary:hover,
     border: 1px solid var(--border-light);
     margin: 0;
     font-size: 0.8125rem;
+    max-width: 100%;
+    box-sizing: border-box;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .detail-info-grid p strong {
@@ -1591,6 +1612,8 @@ button.secondary:hover,
     font-weight: var(--font-weight-medium);
     min-width: 100px;
     font-size: 0.8125rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 /* Compact Teacher Info Grid */
@@ -1599,6 +1622,8 @@ button.secondary:hover,
     grid-template-columns: 1fr 1fr;
     gap: var(--space-2);
     width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .teacher-info-compact .detail-info-grid p {
@@ -1608,12 +1633,17 @@ button.secondary:hover,
     display: flex;
     justify-content: space-between;
     align-items: center;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 .teacher-info-compact .detail-info-grid p strong {
     min-width: 80px;
     font-size: 0.8rem;
     flex-shrink: 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 /* Password field styling in compact view */
@@ -4008,8 +4038,7 @@ button.secondary:hover,
 }
 
 .mobile-sidebar-toggle:hover {
-    background: #fbbf24;
-    color: #1e293b;
+    background: var(--sidebar-hover);
     transform: scale(1.1);
 }
 
@@ -4596,6 +4625,177 @@ button.secondary:hover,
     .search-container {
         margin-bottom: var(--space-4);
         padding: 0 var(--space-2);
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .search-container input {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Detail cards mobile fixes */
+    .detail-card {
+        padding: var(--space-3);
+        margin-bottom: var(--space-3);
+        border-radius: var(--radius-md);
+        overflow-x: hidden;
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .detail-card h2 {
+        font-size: 0.95rem;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    .detail-info-grid {
+        display: flex !important;
+        flex-direction: column;
+        gap: var(--space-3);
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .detail-info-item {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow-x: hidden;
+    }
+
+    .detail-info-item label,
+    .detail-info-item .detail-info-value {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
+    .detail-student-list {
+        grid-template-columns: 1fr !important;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+        padding: 0;
+    }
+
+    /* Teacher info compact mobile fixes */
+    .teacher-info-compact .detail-info-grid {
+        grid-template-columns: 1fr !important;
+        gap: var(--space-2);
+    }
+
+    .teacher-info-compact .detail-info-grid p {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-1);
+        padding: var(--space-2);
+    }
+
+    .teacher-info-compact .detail-info-grid p strong {
+        min-width: auto;
+        width: 100%;
+    }
+
+    .teacher-info-compact .password-container {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .teacher-info-compact .password-value,
+    .teacher-info-compact .password-dots {
+        flex: 1;
+        text-align: left;
+        max-width: calc(100% - 60px);
+    }
+
+    /* Student item mobile fixes */
+    .student-item {
+        padding: var(--space-4);
+        margin-bottom: var(--space-3);
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow-x: hidden;
+    }
+
+    .student-item h4 {
+        font-size: 1rem;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        margin-bottom: var(--space-2);
+    }
+
+    .student-item p {
+        font-size: 0.85rem;
+        margin-bottom: var(--space-1);
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        max-width: 100%;
+    }
+
+    .student-item p strong {
+        display: inline-block;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    /* Button mobile fixes */
+    button,
+    .button,
+    .nav-button,
+    .btn {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        white-space: normal;
+        text-align: center;
+        min-height: 44px;
+        padding: var(--space-3) var(--space-3);
+    }
+
+    .buttons {
+        flex-direction: column;
+        width: 100%;
+        gap: var(--space-2);
+    }
+
+    /* Header button fixes */
+    .header-actions button {
+        width: 100%;
+    }
+
+    /* Content container and view fixes */
+    .content-view {
+        overflow-x: hidden;
+        max-width: 100%;
+    }
+
+    .content-container {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow-x: hidden;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    /* Section filter mobile fixes */
+    .section-filter-wrapper,
+    .select-wrapper {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .section-filter {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
     }
 
     .search-container input {
