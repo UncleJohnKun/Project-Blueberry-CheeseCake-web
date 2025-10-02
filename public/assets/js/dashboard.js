@@ -184,6 +184,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Excel Export button (for teacher list)
+    const exportExcelButton = document.getElementById('exportExcelButton');
+    if (exportExcelButton) {
+        exportExcelButton.addEventListener('click', () => {
+            exportTeachersToExcel();
+        });
+    }
+
     // Teacher info toggle functionality
     if (teacherInfoToggle) {
         teacherInfoToggle.addEventListener('click', () => {
@@ -989,6 +997,11 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // Hide loading message
+        if (loadingMessage) {
+            loadingMessage.style.display = 'none';
+        }
+
         // Clear existing rows
         teacherTableBody.innerHTML = '';
 
@@ -1095,6 +1108,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("home.js: Teacher table body or loading message not found for fetchAllTeachers.");
             return;
         }
+        
+        console.log("Fetching teachers from:", TEACHER_COLLECTION);
         loadingMessage.textContent = `Fetching teachers from "${TEACHER_COLLECTION}"...`;
         loadingMessage.style.display = 'block';
 
@@ -1102,34 +1117,53 @@ document.addEventListener('DOMContentLoaded', () => {
         teacherTableBody.innerHTML = `
             <tr>
                 <td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-muted);">
-                    <span id="loadingMessage">Loading teachers...</span>
+                    <span>Loading teachers...</span>
                 </td>
             </tr>
         `;
 
         try {
-            if (!CONFIG) throw new Error("Configuration not loaded. Please refresh the page.");
+            if (!CONFIG) {
+                throw new Error("Configuration not loaded. Please refresh the page.");
+            }
+            
+            console.log("CONFIG loaded:", { projectId: CONFIG.projectId });
+            
             const url = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents/${TEACHER_COLLECTION}?key=${CONFIG.apiKey}&pageSize=300`;
+            console.log("Fetching from URL:", url.replace(CONFIG.apiKey, 'API_KEY_HIDDEN'));
+            
             const response = await fetch(url);
+            console.log("Response status:", response.status);
+            
             if (!response.ok) {
                 const errorData = await response.json().catch(()=>({ error: { message: "Failed to parse error JSON."} }));
                 throw new Error(`Failed to fetch teachers (${response.status}): ${errorData.error?.message || response.statusText}`);
             }
+            
             const data = await response.json();
+            console.log("Data received:", data);
+            
             if (data.documents && data.documents.length > 0) {
                 allTeachersData = data.documents.filter(doc => doc && doc.fields && doc.name);
-                filterAndDisplayTeachers(); // This will replace the loading message
+                console.log(`Loaded ${allTeachersData.length} teachers`);
+                filterAndDisplayTeachers(); // This will hide loading and show teachers
             } else {
                 allTeachersData = [];
+                console.log("No teachers found in collection");
                 loadingMessage.textContent = `No teachers found in the "${TEACHER_COLLECTION}" collection.`;
-                // Keep loading message if no teachers, or call renderTeacherList([]) which also handles empty.
+                renderTeacherList([]); // This will hide the loading message
             }
         } catch (error) {
             console.error("home.js: Exception in fetchAllTeachers:", error);
             allTeachersData = [];
+            
+            // Clear table loading row
+            teacherTableBody.innerHTML = '';
+            
             if (loadingMessage) {
                 loadingMessage.textContent = `Error loading teachers: ${error.message}`;
                 loadingMessage.style.color = 'red';
+                loadingMessage.style.display = 'block';
             }
         }
     }
@@ -1688,6 +1722,69 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize download functionality
     initializeDownloadGame();
+
+    // === EXPORT TEACHERS TO EXCEL ===
+    function exportTeachersToExcel() {
+        if (!allTeachersData || allTeachersData.length === 0) {
+            alert('No teacher data available to export.');
+            return;
+        }
+
+        try {
+            // Check if XLSX library is loaded
+            if (typeof XLSX === 'undefined') {
+                alert('Excel export library not loaded. Please refresh the page and try again.');
+                console.error('XLSX library is not loaded');
+                return;
+            }
+
+            // Prepare data for Excel
+            const exportData = allTeachersData.map(teacherDoc => {
+                const fields = teacherDoc.fields || {};
+                
+                return {
+                    'Full Name': fields.fullname?.stringValue || 'N/A',
+                    'Username': fields.username?.stringValue || 'N/A',
+                    'Email': fields.email?.stringValue || 'N/A',
+                    'Teacher ID': fields.id?.stringValue || 'N/A',
+                    'Registration Date': fields.timestamp?.timestampValue 
+                        ? new Date(fields.timestamp.timestampValue).toLocaleDateString() 
+                        : 'N/A'
+                };
+            });
+
+            // Create workbook and worksheet
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(exportData);
+
+            // Set column widths
+            ws['!cols'] = [
+                { wch: 25 }, // Full Name
+                { wch: 20 }, // Username
+                { wch: 30 }, // Email
+                { wch: 15 }, // Teacher ID
+                { wch: 18 }  // Registration Date
+            ];
+
+            // Add worksheet to workbook
+            XLSX.utils.book_append_sheet(wb, ws, "Teachers");
+
+            // Generate filename with timestamp
+            const timestamp = new Date().toISOString().split('T')[0];
+            const filename = `Teachers_Export_${timestamp}.xlsx`;
+
+            // Save file
+            XLSX.writeFile(wb, filename);
+
+            // Show success message
+            console.log(`Teachers exported successfully: ${filename}`);
+            alert(`Teachers exported successfully!\nFile: ${filename}\nTotal teachers: ${allTeachersData.length}`);
+
+        } catch (error) {
+            console.error('Error exporting teachers to Excel:', error);
+            alert('Error exporting teacher data. Please try again.');
+        }
+    }
 
     // === CSV EXPORT FUNCTIONALITY ===
     function exportStudentDataToCSV() {
