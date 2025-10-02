@@ -523,7 +523,6 @@ select:not(.section-filter)::after {
     width: 80px;
     padding: var(--space-6) var(--space-3);
 }
-}
 
 /* === Header === */
 .admin-header {
@@ -2332,13 +2331,292 @@ button.secondary:hover,
 .settings-container h2 {
     color: var(--text-primary);
     margin: 0 0 var(--space-6) 0;
-    font-size: 1.375rem;
-    font-weight: var(--font-weight-medium);
+    font-size: 1.5rem;
+    font-weight: var(--font-weight-semibold);
     padding-bottom: var(--space-6);
     padding-right: 80px;
-    border-bottom: 1px solid var(--border-light);
+    border-bottom: 2px solid var(--border-light);
     line-height: 1.3;
     box-sizing: border-box;
+}
+
+.settings-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    max-height: 480px;
+    overflow-y: auto;
+    padding: var(--space-2) 0;
+}
+
+.settings-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.settings-content::-webkit-scrollbar-track {
+    background: var(--bg-tertiary);
+    border-radius: 3px;
+}
+
+.settings-content::-webkit-scrollbar-thumb {
+    background: var(--border-medium);
+    border-radius: 3px;
+}
+
+.settings-content::-webkit-scrollbar-thumb:hover {
+    background: var(--border-dark);
+}
+
+.settings-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.settings-section-title {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+    padding: 0 var(--space-2);
+}
+
+.settings-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    transition: all 0.2s ease;
+}
+
+.settings-item-clickable {
+    cursor: pointer;
+}
+
+.settings-item-clickable:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-medium);
+    transform: translateX(2px);
+}
+
+.settings-item-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex: 1;
+    min-width: 0;
+}
+
+.settings-item-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent-yellow-light);
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+}
+
+.settings-item-icon svg {
+    width: 20px;
+    height: 20px;
+    color: var(--accent-yellow-dark);
+}
+
+.settings-item-icon-danger {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.settings-item-icon-danger svg {
+    color: var(--btn-danger);
+}
+
+.settings-item-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+}
+
+.settings-item-title {
+    color: var(--text-primary);
+    font-size: 0.9375rem;
+    font-weight: var(--font-weight-medium);
+    line-height: 1.3;
+}
+
+.settings-item-description {
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.settings-item-control {
+    flex-shrink: 0;
+    margin-left: var(--space-3);
+}
+
+.settings-item-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    margin-left: var(--space-2);
+}
+
+.settings-item-arrow svg {
+    width: 16px;
+    height: 16px;
+    color: var(--text-tertiary);
+    transition: transform 0.2s ease;
+}
+
+.settings-item-clickable:hover .settings-item-arrow svg {
+    transform: translateX(2px);
+    color: var(--text-secondary);
+}
+
+.settings-select {
+    padding: var(--space-2) var(--space-3);
+    background: var(--bg-primary);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 100px;
+}
+
+.settings-select:hover {
+    border-color: var(--accent-yellow);
+    background: var(--bg-hover);
+}
+
+.settings-select:focus {
+    outline: none;
+    border-color: var(--accent-yellow);
+    box-shadow: 0 0 0 3px var(--accent-yellow-light);
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 26px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--border-medium);
+    transition: 0.3s;
+    border-radius: 26px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background-color: var(--accent-yellow);
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+    transform: translateX(22px);
+}
+
+.toggle-switch input:focus + .toggle-slider {
+    box-shadow: 0 0 0 3px var(--accent-yellow-light);
+}
+
+.btn-logout {
+    padding: var(--space-2) var(--space-4);
+    background: var(--btn-danger);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.btn-logout:hover {
+    background: var(--btn-danger-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+}
+
+.btn-logout:active {
+    transform: translateY(0);
+}
+
+/* Responsive adjustments for settings */
+@media (max-width: 768px) {
+    .settings-container {
+        width: 95%;
+        max-width: 95%;
+        padding: var(--space-6);
+        max-height: 85vh;
+    }
+
+    .settings-content {
+        max-height: calc(85vh - 120px);
+    }
+
+    .settings-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-3);
+    }
+
+    .settings-item-control,
+    .btn-logout {
+        width: 100%;
+        margin-left: 0;
+        margin-top: var(--space-2);
+    }
+
+    .settings-select {
+        width: 100%;
+    }
+
+    .settings-item-description {
+        white-space: normal;
+    }
 }
 
 /* === Add Student Modal - Completely Isolated === */
@@ -2816,7 +3094,6 @@ button.secondary:hover,
 .detail-student-list * {
     pointer-events: auto !important;
 }
-}
 
 /* Desktop alignment fix for settings modal close button */
 @media (min-width: 769px) {
@@ -2910,9 +3187,6 @@ button.secondary:hover,
     justify-content: center;
     box-sizing: border-box;
     line-height: 1.2;
-}
-
-/* ...existing code... */
 }
 
 /* Force logout button visibility - Override any conflicting styles */

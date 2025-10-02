@@ -2159,6 +2159,9 @@ async function initializeTeacherPortal() {
     // --- SETTINGS MODAL FUNCTIONS ---
     function openSettingsModal() {
         if (settingsModal) {
+            // Load teacher data when opening settings
+            loadTeacherDataForSettings();
+            
             // Show modal immediately
             settingsModal.style.display = 'flex';
 
@@ -2168,6 +2171,63 @@ async function initializeTeacherPortal() {
             });
         } else {
             console.error("teacherPortal.js: settingsModal element not found.");
+        }
+    }
+
+    function loadTeacherDataForSettings() {
+        const teacherNameElement = document.getElementById('teacherName');
+        const teacherIdElement = document.getElementById('teacherId');
+        
+        if (teacherNameElement && teacherIdElement) {
+            const teacherId = sessionStorage.getItem('teacherId');
+            if (teacherId) {
+                // Show loading state
+                teacherNameElement.textContent = 'Loading...';
+                teacherIdElement.textContent = 'Loading...';
+                
+                // Fetch teacher data directly from Firestore
+                getSecureConfig().then(config => {
+                    const url = `https://firestore.googleapis.com/v1/projects/${config.projectId}/databases/(default)/documents/teacherData/${teacherId}`;
+                    
+                    return fetch(url);
+                }).then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch teacher data');
+                    }
+                    return response.json();
+                })
+                .then(doc => {
+                    console.log('Teacher document:', doc); // Debug log
+                    
+                    if (doc.fields) {
+                        const fullname = doc.fields.fullname?.stringValue;
+                        const name = doc.fields.name?.stringValue;
+                        const username = doc.fields.username?.stringValue;
+                        
+                        if (fullname) {
+                            teacherNameElement.textContent = fullname;
+                        } else if (name) {
+                            teacherNameElement.textContent = name;
+                        } else if (username) {
+                            teacherNameElement.textContent = username;
+                        } else {
+                            teacherNameElement.textContent = 'Teacher Account';
+                        }
+                        teacherIdElement.textContent = `Teacher ID: ${teacherId}`;
+                    } else {
+                        teacherNameElement.textContent = 'Teacher Account';
+                        teacherIdElement.textContent = `Teacher ID: ${teacherId}`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching teacher info:', error);
+                    teacherNameElement.textContent = 'Teacher Account';
+                    teacherIdElement.textContent = `Teacher ID: ${teacherId}`;
+                });
+            } else {
+                teacherNameElement.textContent = 'Not logged in';
+                teacherIdElement.textContent = 'No ID available';
+            }
         }
     }
 
