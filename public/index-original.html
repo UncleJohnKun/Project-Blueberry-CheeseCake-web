@@ -1310,9 +1310,9 @@
                     <span>QUIZTORIÃ</span>
                 </div>
                 <nav class="nav-menu">
-                    <a href="#screenshots" class="nav-link" onclick="scrollToSection('screenshots')">Screenshots</a>
-                    <a href="#download" class="nav-link" onclick="scrollToSection('download')">Download</a>
-                    <a href="#about" class="nav-link" onclick="scrollToSection('about')">About</a>
+                    <a href="javascript:void(0);" class="nav-link" onclick="scrollToSection('screenshots'); return false;">Screenshots</a>
+                    <a href="javascript:void(0);" class="nav-link" onclick="scrollToSection('download'); return false;">Download</a>
+                    <a href="javascript:void(0);" class="nav-link" onclick="scrollToSection('about'); return false;">About</a>
                 </nav>
                 <div class="login-buttons">
                     <button class="btn-login" onclick="openLoginPopup()">🔐 TEACHER/ADMINISTRATOR LOGIN</button>
@@ -1556,46 +1556,14 @@
         function scrollToSection(sectionId) {
             const section = document.getElementById(sectionId);
             if (section) {
-                // Force multiple layout recalculations for maximum reliability
-                document.body.offsetHeight;
-                section.offsetHeight;
-                
-                // Add a small delay to ensure DOM is fully calculated
-                setTimeout(() => {
-                    // Calculate the target position first
-                    const rect = section.getBoundingClientRect();
-                    const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
-                    let targetPosition = rect.top + currentScroll - 150;
-                    
-                    // Fallback to offsetTop if getBoundingClientRect fails
-                    if (!rect.top || isNaN(targetPosition)) {
-                        targetPosition = section.offsetTop - 150;
-                    }
-                    
-                    // Ensure we don't scroll above the top of the page
-                    const finalPosition = Math.max(0, targetPosition);
-                    
-                    // Check if we're already close to the target position (within 50px tolerance)
-                    const currentPosition = currentScroll;
-                    const tolerance = 50;
-                    
-                    if (Math.abs(currentPosition - finalPosition) <= tolerance) {
-                        // We're already at or very close to the target, don't scroll
-                        return;
-                    }
-                    
-                    // Force scroll with both modern and legacy methods
-                    if (window.scrollTo) {
-                        window.scrollTo({
-                            top: finalPosition,
-                            behavior: 'smooth'
-                        });
-                    } else {
-                        // Fallback for older browsers
-                        document.documentElement.scrollTop = finalPosition;
-                        document.body.scrollTop = finalPosition;
-                    }
-                }, 10);
+                const headerOffset = 120; // Offset for fixed header
+                const elementPosition = section.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
             }
         }
 
