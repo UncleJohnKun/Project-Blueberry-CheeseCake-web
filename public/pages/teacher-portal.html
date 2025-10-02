@@ -34,7 +34,7 @@
                 <div class="sidebar-logo">TP</div>
                 <div class="sidebar-title">Teacher Portal</div>
                 <button class="sidebar-toggle" id="sidebarToggle">‹</button>
-                <button class="mobile-sidebar-close" id="mobileSidebarClose">✕</button>
+                <button class="mobile-sidebar-close" id="mobileSidebarClose"></button>
             </div>
             <nav>
                 <ul class="sidebar-nav">
@@ -118,8 +118,22 @@
                                     <option value="">All Sections</option>
                                 </select>
                             </div>
-                            <button id="exportExcelButton" class="button secondary">Export Excel Report</button>
-                            <button id="exportAccountButton" class="button secondary">Export Account</button>
+                            <button id="exportExcelButton" class="button secondary" title="Export Excel Report">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                <span>Export Excel</span>
+                            </button>
+                            <button id="exportAccountButton" class="button secondary" title="Export Account">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                <span>Export Account</span>
+                            </button>
                         </div>
                     </div>
                 </header>
