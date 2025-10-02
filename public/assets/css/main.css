@@ -3695,30 +3695,33 @@ button.secondary:hover,
 .mobile-sidebar-toggle {
     display: none;
     position: fixed;
-    top: var(--space-4);
-    left: var(--space-4);
+    top: 16px;
+    left: 16px;
     z-index: 300;
     background: var(--sidebar-bg);
     color: var(--text-white);
     border: none;
-    border-radius: var(--radius-md);
+    border-radius: 12px;
     padding: 0;
     cursor: pointer;
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     width: 44px;
     height: 44px;
     align-items: center;
     justify-content: center;
     font-size: 1.2rem;
     box-sizing: border-box;
-    transition: all var(--transition);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(4px);
 }
 
 .mobile-sidebar-toggle:hover {
-    background: var(--accent-yellow);
-    color: var(--text-primary);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-xl);
+    background: var(--sidebar-hover);
+    transform: scale(1.1);
+}
+
+.mobile-sidebar-toggle:active {
+    transform: scale(0.95);
 }
 
 /* Mobile Sidebar Close Button */
@@ -3788,13 +3791,16 @@ button.secondary:hover,
 
 /* Mobile landscape and tablet portrait */
 @media (max-width: 768px) {
+    /* Reset base layout for mobile */
+    body {
+        overflow-x: hidden;
+    }
+
     /* Show mobile sidebar toggle */
     .mobile-sidebar-toggle {
         display: flex !important;
         align-items: center;
         justify-content: center;
-        background: var(--sidebar-bg) !important;
-        color: var(--text-white) !important;
     }
 
     /* Show mobile sidebar close button */
@@ -3804,18 +3810,23 @@ button.secondary:hover,
         justify-content: center;
     }
 
-    /* Hide sidebar by default on mobile */
+    /* Improve sidebar for mobile */
     .sidebar {
+        position: fixed;
         transform: translateX(-100%);
-        transition: transform var(--transition);
-        width: 100%;
+        transition: transform 0.3s ease;
+        width: 280px;
+        max-width: 80vw;
         height: 100vh;
         z-index: 160;
         top: 0;
         left: 0;
-        padding: var(--space-6);
+        padding: 20px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
+    .sidebar.active,
     .sidebar.mobile-open {
         transform: translateX(0);
         z-index: 200;
@@ -3826,36 +3837,44 @@ button.secondary:hover,
     }
 
     /* Adjust main content for mobile */
+    .admin-layout {
+        display: block;
+    }
+
     .main-content {
         margin-left: 0;
-        padding: var(--space-4);
+        padding: 60px 16px 16px 16px; /* Top padding for mobile toggle */
         width: 100%;
+        min-height: 100vh;
         box-sizing: border-box;
     }
 
     /* Stack header elements on mobile */
     .admin-header {
-        padding: var(--space-4);
+        padding: 16px;
+        margin-bottom: 16px;
     }
 
     .header-content {
         flex-direction: column;
-        gap: var(--space-3);
+        gap: 12px;
         align-items: stretch;
     }
 
     .header-title {
         font-size: 1.25rem;
-        text-align: center;
+        text-align: left;
+        margin-bottom: 8px;
     }
 
     .header-search-wide {
         max-width: none;
+        width: 100%;
     }
 
     .header-actions {
         flex-direction: column;
-        gap: var(--space-2);
+        gap: 8px;
         align-items: stretch;
     }
 
@@ -3866,30 +3885,149 @@ button.secondary:hover,
     .header-actions .button {
         width: 100%;
         justify-content: center;
+        padding: 12px 16px;
+        font-size: 0.9rem;
     }
 
-    /* Make table responsive */
+    /* Enhanced table responsiveness */
     .data-table-container {
         overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 0 -16px;
+        padding: 0 16px;
+        border-radius: 0;
     }
 
     .data-table {
-        min-width: 600px;
+        min-width: 700px;
+        font-size: 0.85rem;
     }
 
     .data-table th,
     .data-table td {
-        padding: var(--space-2) var(--space-3);
-        font-size: 0.8125rem;
+        padding: 12px 8px;
+        font-size: 0.8rem;
+        white-space: nowrap;
+    }
+
+    .data-table th:first-child,
+    .data-table td:first-child {
+        padding-left: 16px;
+        min-width: 120px;
+    }
+
+    .data-table th:last-child,
+    .data-table td:last-child {
+        padding-right: 16px;
+        min-width: 100px;
     }
 
     .table-actions {
-        gap: var(--space-1);
+        gap: 4px;
     }
 
     .table-action-btn {
-        width: 28px;
-        height: 28px;
+        width: 32px;
+        height: 32px;
+        font-size: 0.75rem;
+    }
+
+    .student-name-link {
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .progress-bar {
+        min-width: 60px;
+    }
+
+    /* Mobile modal improvements */
+    .student-details-modal .student-modal-content {
+        width: 95vw;
+        max-width: 95vw;
+        margin: 20px auto;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .student-modal-header {
+        padding: 16px;
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+
+    .student-modal-header h3 {
+        font-size: 1.1rem;
+        text-align: center;
+    }
+
+    .student-modal-body {
+        padding: 16px;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-group label {
+        font-size: 0.9rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        font-size: 16px; /* Prevent zoom on iOS */
+        padding: 12px;
+    }
+
+    /* Add student modal improvements */
+    .add-student-modal-content {
+        width: 95vw;
+        max-width: 95vw;
+        margin: 20px auto;
+    }
+
+    .add-student-form {
+        padding: 16px;
+    }
+
+    .input-wrapper {
+        margin-bottom: 16px;
+    }
+
+    .input-wrapper input,
+    .input-wrapper select {
+        font-size: 16px;
+        padding: 12px;
+    }
+
+    /* Progress modal improvements */
+    .creating-accounts-modal .modal-content {
+        width: 95vw;
+        max-width: 95vw;
+        margin: 20px auto;
+    }
+
+    .progress-container {
+        margin: 16px 0;
+    }
+
+    .progress-text {
+        font-size: 0.9rem;
+    }
+
+    /* Pagination improvements */
+    .pagination {
+        flex-wrap: wrap;
+        gap: 4px;
+        justify-content: center;
+    }
+
+    .pagination button {
+        min-width: 40px;
+        padding: 8px 12px;
+        font-size: 0.85rem;
     }
 
     /* Container adjustments for legacy pages */
@@ -7344,32 +7482,188 @@ button:focus, .nav-button:focus, input:focus, .student-toggle-button:focus {
 }
 
 @media (max-width: 480px) {
+    /* Extra small screens */
+    .mobile-sidebar-toggle {
+        width: 40px;
+        height: 40px;
+        font-size: 1.1rem;
+        top: 12px;
+        left: 12px;
+    }
+
+    .main-content {
+        padding: 56px 12px 12px 12px;
+    }
+
+    .admin-header {
+        padding: 12px;
+    }
+
+    .header-title {
+        font-size: 1.1rem;
+    }
+
+    .data-table-container {
+        margin: 0 -12px;
+        padding: 0 12px;
+    }
+
+    .data-table {
+        min-width: 600px;
+        font-size: 0.75rem;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 8px 6px;
+        font-size: 0.75rem;
+    }
+
+    .table-action-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+    }
+
+    /* Modal improvements for small screens */
+    .student-details-modal .student-modal-content,
+    .add-student-modal-content,
+    .creating-accounts-modal .modal-content {
+        width: 98vw;
+        max-width: 98vw;
+        margin: 10px auto;
+    }
+
+    .student-modal-header,
+    .student-modal-body,
+    .add-student-form {
+        padding: 12px;
+    }
+
+    .form-group,
+    .input-wrapper {
+        margin-bottom: 12px;
+    }
+
+    .button {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+    }
+
+    /* Section selector improvements */
     .section-selector-container {
-        padding: 16px 12px;
+        padding: 14px;
         margin-bottom: 16px;
+        border-radius: 12px;
     }
 
     .section-selector-header h3 {
         font-size: 1rem;
+        margin-bottom: 12px;
     }
 
     .section-select {
-        padding: 14px 50px 14px 18px;
-        font-size: 0.95rem;
-        border-radius: 12px;
+        padding: 12px 50px 12px 16px;
+        font-size: 0.9rem;
+        border-radius: 10px;
     }
 
     .section-select-wrapper::after {
-        right: 14px;
-        background-size: 16px;
+        right: 12px;
+        background-size: 14px;
     }
 
+    /* Levels grid improvements */
     .levels-grid {
         padding: 12px;
         gap: 12px;
+        grid-template-columns: 1fr;
     }
 
     .level-card {
-        padding: 14px;
+        padding: 12px;
+        border-radius: 8px;
+    }
+
+    .level-card-title {
+        font-size: 1rem;
+    }
+
+    .loading-message {
+        padding: 24px 16px;
+        font-size: 0.9rem;
+    }
+
+    .loading-message::before {
+        font-size: 1.2rem;
+    }
+
+    /* Pagination for small screens */
+    .pagination button {
+        min-width: 36px;
+        padding: 6px 8px;
+        font-size: 0.8rem;
+    }
+
+    .pagination .page-info {
+        font-size: 0.8rem;
+        padding: 6px 8px;
+    }
+}
+
+/* Landscape orientation fixes for mobile devices */
+@media (max-height: 500px) and (orientation: landscape) {
+    .sidebar {
+        width: 240px;
+        max-width: 60vw;
+    }
+
+    .main-content {
+        padding-top: 56px;
+    }
+
+    .admin-header {
+        padding: 8px 16px;
+    }
+
+    .header-content {
+        flex-direction: row;
+        gap: 16px;
+        align-items: center;
+    }
+
+    .header-actions {
+        flex-direction: row;
+        gap: 8px;
+    }
+
+    .student-details-modal .student-modal-content {
+        max-height: 85vh;
+        width: 90vw;
+    }
+
+    .mobile-sidebar-toggle {
+        width: 36px;
+        height: 36px;
+        top: 8px;
+        left: 8px;
+    }
+
+    .data-table-container {
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+}
+
+/* Fix for iOS Safari viewport units */
+@supports (-webkit-appearance: none) {
+    @media (max-width: 768px) {
+        .main-content {
+            min-height: -webkit-fill-available;
+        }
+        
+        .sidebar {
+            height: -webkit-fill-available;
+        }
     }
 }
