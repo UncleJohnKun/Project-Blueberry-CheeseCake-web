@@ -6462,7 +6462,7 @@ button.secondary:hover,
 
 /* Student Name Link Styling */
 .student-name-link {
-    color: var(--accent-yellow);
+    color: #f59e0b;
     text-decoration: none;
     font-weight: var(--font-weight-medium);
     transition: all var(--transition);
