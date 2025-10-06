@@ -77,12 +77,12 @@ app.get('/api/health', (req, res) => {
 
 // Serve HTML files with CSRF token injection
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/pages/index.html'));
+    res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
-// Handle specific route for /public/pages/index.html - redirect to main index
-app.get('/public/pages/index.html', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/pages/index.html'));
+// Handle specific route for /public/index.html - redirect to main index
+app.get('/public/index.html', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 // Redirect old paths to new structure
@@ -116,7 +116,7 @@ app.use('/api/*', (req, res) => {
 
 // 404 handler for other routes
 app.use('*', (req, res) => {
-    res.status(404).sendFile(path.join(__dirname, '../public/pages/index.html'));
+    res.status(404).sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 // Global error handler

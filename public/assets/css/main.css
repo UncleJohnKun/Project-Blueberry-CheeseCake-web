@@ -2446,12 +2446,6 @@ button.secondary:hover,
     cursor: pointer;
 }
 
-.settings-item-clickable:hover {
-    background: var(--bg-hover);
-    border-color: var(--border-medium);
-    transform: translateX(2px);
-}
-
 .settings-item-info {
     display: flex;
     align-items: center;
@@ -2530,10 +2524,7 @@ button.secondary:hover,
     transition: transform 0.2s ease;
 }
 
-.settings-item-clickable:hover .settings-item-arrow svg {
-    transform: translateX(2px);
-    color: var(--text-secondary);
-}
+/* Hover animation removed as requested */
 
 .settings-select {
     padding: var(--space-2) var(--space-3);

@@ -7,8 +7,8 @@ const PORT = process.env.PORT || 3000;
 // Serve static files from public directory
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Handle specific route for /public/pages/index.html - redirect to main index
-app.get('/public/pages/index.html', (req, res) => {
+// Handle specific route for /public/index.html - redirect to main index
+app.get('/public/index.html', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
@@ -26,7 +26,7 @@ app.use('*', (req, res) => {
 const server = app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`🌐 Local access: http://localhost:${PORT}`);
-    console.log(`✅ Route /public/pages/index.html should now work`);
+    console.log(`✅ Route /public/index.html should now work`);
 });
 
 module.exports = app;

@@ -427,7 +427,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Logout handler function
     function handleLogout(e) {
-        e.preventDefault();
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
         console.log('Logout button clicked');
 
         if (confirm('Are you sure you want to logout?')) {
@@ -440,6 +443,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Session data cleared, redirecting to login');
             alert('Admin logged out successfully.');
             window.location.href = '../index.html';
+        } else {
+            console.log('Logout cancelled');
         }
     }
 
@@ -1973,3 +1978,42 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- INITIALIZATION ---
     initializeApp();
 });
+
+// Global function for logout (accessible from inline onclick)
+window.performLogout = function() {
+    console.log('Global performLogout called');
+    
+    // Prevent any default behavior
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const confirmLogout = confirm('Are you sure you want to logout?');
+    console.log('Logout confirmation result:', confirmLogout);
+    
+    if (confirmLogout) {
+        console.log('Logout confirmed, clearing session data');
+        
+        try {
+            // Clear all session data
+            sessionStorage.clear();
+            localStorage.clear();
+            
+            console.log('Session data cleared successfully');
+            
+            // Show success message
+            alert('You have been logged out successfully.');
+            
+            console.log('Redirecting to login page');
+            // Use absolute path for redirect
+            window.location.replace('/index.html');
+        } catch (error) {
+            console.error('Error during logout:', error);
+            alert('Logout completed. Redirecting to login page.');
+            window.location.replace('/index.html');
+        }
+    } else {
+        console.log('Logout cancelled by user');
+    }
+    
+    return false;
+};
