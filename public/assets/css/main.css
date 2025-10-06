@@ -2688,12 +2688,33 @@ button.secondary:hover,
     width: 95%;
     max-width: 540px;
     min-width: 480px;
+    max-height: 85vh;
+    overflow-y: auto;
     padding: var(--space-10) var(--space-8);
     position: relative;
     text-align: left;
     transform: scale(0.9) translateY(20px);
     transition: transform 0.3s ease-out;
     border: 1px solid var(--border-light);
+}
+
+/* Scrollbar for modal container */
+.add-student-container::-webkit-scrollbar {
+    width: 10px;
+}
+
+.add-student-container::-webkit-scrollbar-track {
+    background: var(--border-light);
+    border-radius: 5px;
+}
+
+.add-student-container::-webkit-scrollbar-thumb {
+    background: var(--accent-yellow);
+    border-radius: 5px;
+}
+
+.add-student-container::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-yellow-dark);
 }
 
 .add-student-overlay.active .add-student-container {
@@ -2871,7 +2892,8 @@ button.secondary:hover,
 /* Student Names Container Styles */
 .student-names-container {
     width: 100%;
-    margin-top: var(--space-4);
+    margin-top: var(--space-3);
+    margin-bottom: var(--space-3);
     animation: slideDown 0.3s ease-out;
 }
 
@@ -2887,12 +2909,12 @@ button.secondary:hover,
 }
 
 .names-header {
-    margin-bottom: var(--space-4);
+    margin-bottom: var(--space-3);
     text-align: center;
 }
 
 .names-header h3 {
-    font-size: 1.125rem;
+    font-size: 1rem;
     font-weight: var(--font-weight-semibold);
     color: var(--text-primary);
     margin-bottom: var(--space-2);
@@ -2906,11 +2928,11 @@ button.secondary:hover,
 
 .student-name-fields {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: var(--space-4);
-    max-height: 400px;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--space-3);
+    max-height: 280px;
     overflow-y: auto;
-    padding: var(--space-4);
+    padding: var(--space-3);
     background: var(--primary-bg);
     border-radius: var(--radius-md);
     border: 2px solid var(--border-light);
@@ -2937,21 +2959,21 @@ button.secondary:hover,
 .name-field-wrapper {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
+    gap: var(--space-1);
 }
 
 .name-field-wrapper label {
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     font-weight: var(--font-weight-medium);
     color: var(--text-secondary);
 }
 
 .name-field-wrapper input {
     width: 100%;
-    padding: var(--space-3) var(--space-3);
+    padding: var(--space-2) var(--space-3);
     border: 2px solid var(--border-light);
     border-radius: var(--radius-md);
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     background: var(--secondary-bg);
     color: var(--text-primary);
     transition: all var(--transition);

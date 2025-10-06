@@ -584,6 +584,15 @@ async function initializeTeacherPortal() {
                 // Calculate progress percentage (handle missing data gracefully)
                 const progress = student.progress || 0;
                 const progressPercent = Math.round(progress * 100);
+                
+                // Calculate total score from all levels
+                let totalScore = 0;
+                for (let i = 1; i <= 12; i++) {
+                    const levelScore = student[`level${i}Score`];
+                    if (levelScore !== undefined && levelScore !== null) {
+                        totalScore += Number(levelScore);
+                    }
+                }
 
                 // Sanitize student data for safe display (with fallback)
                 const escapeHtml = (text) => {
@@ -608,7 +617,7 @@ async function initializeTeacherPortal() {
                     <td>${safeStudentData.section}</td>
                     <td>
                         <div class="progress-display">
-                            <div class="progress-percentage">${progressPercent}%</div>
+                            <div class="progress-percentage">${progressPercent}% - Total Score: ${totalScore}</div>
                             <div class="progress-bar">
                                 <div class="progress-fill" style="width: ${progressPercent}%"></div>
                             </div>
@@ -2018,10 +2027,7 @@ async function initializeTeacherPortal() {
         }
 
         if (generateFieldsButton) {
-            console.log('✅ Generate Fields Button found and listener attached');
             generateFieldsButton.addEventListener('click', generateStudentNameFields);
-        } else {
-            console.error('❌ Generate Fields Button not found!');
         }
 
         if (createAccountsButton) {
@@ -2389,11 +2395,6 @@ async function initializeTeacherPortal() {
     }
 
     function generateStudentNameFields() {
-        console.log('🔵 generateStudentNameFields called');
-        console.log('Input value:', studentCountInput?.value);
-        console.log('Container:', studentNamesContainer);
-        console.log('Fields:', studentNameFields);
-        
         const inputValue = studentCountInput.value.trim();
 
         // Validate input
