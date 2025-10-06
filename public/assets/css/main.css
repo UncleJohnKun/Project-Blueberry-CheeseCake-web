@@ -9061,3 +9061,474 @@ body.dark-mode .settings-item-description {
 body.dark-mode .settings-section-title {
     color: var(--text-primary);
 }
+
+/* === Progress Display Alignment Fixes for Dark Mode === */
+
+/* Ensure progress bar has proper background in dark mode */
+body.dark-mode .progress-bar {
+    background: var(--secondary-bg);
+}
+
+/* Make sure progress text is visible and aligned */
+body.dark-mode .progress-percentage {
+    color: var(--text-primary);
+}
+
+body.dark-mode .progress-text {
+    color: var(--text-primary);
+}
+
+/* Table cell alignment for progress */
+body.dark-mode .data-table td .progress-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 6px;
+}
+
+/* Ensure progress bar container is properly sized */
+body.dark-mode .progress-bar-container {
+    background: var(--secondary-bg);
+    border-color: var(--border-light);
+}
+
+/* Progress section styling */
+body.dark-mode .progress-section {
+    background: var(--card-bg);
+    border-color: var(--border-light);
+}
+
+body.dark-mode .progress-header h4 {
+    color: var(--text-primary);
+}
+
+body.dark-mode .progress-stats {
+    color: var(--text-secondary);
+}
+
+/* Progress overlay/modal */
+body.dark-mode .progress-overlay {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+body.dark-mode .progress-container {
+    background: var(--card-bg);
+    border-color: var(--border-light);
+    color: var(--text-primary);
+}
+
+/* === Table Cell Content Alignment for Dark Mode === */
+
+/* Ensure all table cells maintain proper alignment */
+body.dark-mode .data-table td {
+    vertical-align: middle;
+    text-align: left;
+}
+
+/* Center align specific columns that should be centered */
+body.dark-mode .data-table td:has(.progress-display) {
+    text-align: center;
+}
+
+/* Actions column alignment */
+body.dark-mode .data-table td:last-child {
+    text-align: center;
+}
+
+/* Ensure table headers are aligned properly */
+body.dark-mode .data-table th {
+    vertical-align: middle;
+}
+
+/* Fix for section dropdown in dark mode */
+body.dark-mode .section-select,
+body.dark-mode select.section-select {
+    background: var(--secondary-bg);
+    color: var(--text-primary);
+    border-color: var(--border-light);
+}
+
+/* Ensure buttons in table cells are properly styled */
+body.dark-mode .data-table .action-btn,
+body.dark-mode .data-table .btn-edit,
+body.dark-mode .data-table .btn-view {
+    background: var(--btn-secondary);
+    color: var(--text-primary);
+    border-color: var(--border-light);
+}
+
+body.dark-mode .data-table .action-btn:hover,
+body.dark-mode .data-table .btn-edit:hover,
+body.dark-mode .data-table .btn-view:hover {
+    background: var(--btn-secondary-hover);
+}
+
+/* Export buttons styling in dark mode */
+body.dark-mode .button.export,
+body.dark-mode .export-btn {
+    background: var(--secondary-bg);
+    color: var(--text-primary);
+    border-color: var(--border-light);
+}
+
+body.dark-mode .button.export:hover,
+body.dark-mode .export-btn:hover {
+    background: var(--btn-secondary-hover);
+}
+
+/* Header actions area */
+body.dark-mode .header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+/* Ensure text in progress cells is centered */
+body.dark-mode td .progress-display {
+    margin: 0 auto;
+}
+
+/* Fix any text that might be off-center */
+body.dark-mode .progress-display .progress-percentage,
+body.dark-mode .progress-display .progress-text {
+    text-align: center;
+    width: 100%;
+}
+
+/* === Actions Column Right Alignment === */
+
+/* Right-align the Actions column header */
+.data-table th:last-child {
+    text-align: right;
+}
+
+/* Right-align the Actions column content */
+.data-table td:last-child {
+    text-align: right;
+}
+
+/* Ensure action buttons are properly aligned to the right */
+.data-table td:last-child .action-btn,
+.data-table td:last-child .btn-edit,
+.data-table td:last-child .btn-view,
+.data-table td:last-child button {
+    margin-left: auto;
+}
+
+/* Dark mode override for right alignment */
+body.dark-mode .data-table th:last-child {
+    text-align: right;
+}
+
+body.dark-mode .data-table td:last-child {
+    text-align: right;
+}
+
+/* Make sure action buttons in dark mode are right-aligned */
+body.dark-mode .data-table td:last-child .action-btn,
+body.dark-mode .data-table td:last-child .btn-edit,
+body.dark-mode .data-table td:last-child .btn-view,
+body.dark-mode .data-table td:last-child button {
+    margin-left: auto;
+}
+
+/* === Fix Actions Column Button Display === */
+
+/* Ensure Actions column has enough padding for buttons */
+.data-table th:last-child,
+.data-table td:last-child {
+    padding-right: var(--space-6);
+    min-width: 120px;
+}
+
+/* Prevent button text from being cut off */
+.data-table td:last-child button,
+.data-table td:last-child .action-btn,
+.data-table td:last-child .btn-edit,
+.data-table td:last-child .btn-view {
+    white-space: nowrap;
+    overflow: visible;
+    min-width: 80px;
+    padding: var(--space-2) var(--space-4);
+}
+
+/* Dark mode specific fixes */
+body.dark-mode .data-table th:last-child,
+body.dark-mode .data-table td:last-child {
+    padding-right: var(--space-6);
+    min-width: 120px;
+}
+
+body.dark-mode .data-table td:last-child button,
+body.dark-mode .data-table td:last-child .action-btn,
+body.dark-mode .data-table td:last-child .btn-edit,
+body.dark-mode .data-table td:last-child .btn-view {
+    white-space: nowrap;
+    overflow: visible;
+    min-width: 80px;
+    padding: var(--space-2) var(--space-4);
+}
+
+/* Ensure table doesn't cut off content */
+.data-table-container {
+    overflow-x: auto;
+    overflow-y: visible;
+}
+
+.data-table {
+    min-width: 100%;
+    table-layout: auto;
+}
+
+/* === Additional Fixes for Actions Column Button Visibility === */
+
+/* Increase Actions column width significantly */
+.data-table th:last-child,
+.data-table td:last-child {
+    min-width: 150px !important;
+    width: 150px;
+    max-width: 150px;
+    padding-right: 24px !important;
+    padding-left: 16px !important;
+}
+
+/* Ensure buttons have full width and are not cut off */
+.data-table td:last-child button,
+.data-table td:last-child .action-btn,
+.data-table td:last-child .btn-edit {
+    display: inline-block;
+    width: auto;
+    min-width: 90px;
+    max-width: none;
+    padding: 8px 16px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    box-sizing: border-box;
+}
+
+/* Override any conflicting styles in dark mode */
+body.dark-mode .data-table th:last-child,
+body.dark-mode .data-table td:last-child {
+    min-width: 150px !important;
+    width: 150px;
+    max-width: 150px;
+    padding-right: 24px !important;
+    padding-left: 16px !important;
+}
+
+body.dark-mode .data-table td:last-child button,
+body.dark-mode .data-table td:last-child .action-btn,
+body.dark-mode .data-table td:last-child .btn-edit {
+    display: inline-block;
+    width: auto;
+    min-width: 90px;
+    max-width: none;
+    padding: 8px 16px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    box-sizing: border-box;
+}
+
+/* Ensure table container doesn't clip content */
+.data-table-wrapper,
+.table-responsive {
+    overflow: visible !important;
+}
+
+/* Fix table layout to accommodate full button width */
+.data-table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.data-table th:not(:last-child),
+.data-table td:not(:last-child) {
+    width: auto;
+}
+
+/* === Critical Fix for Actions Column Button Cutoff === */
+
+/* Force remove any overflow restrictions on table cells */
+.data-table td,
+.data-table th {
+    overflow: visible !important;
+}
+
+/* Force full button visibility in Actions column */
+.data-table th:last-child,
+.data-table td:last-child {
+    overflow: visible !important;
+    position: relative;
+    min-width: 180px !important;
+    width: 180px !important;
+    padding-right: 32px !important;
+    padding-left: 20px !important;
+}
+
+/* Ensure buttons are fully visible and styled properly */
+.data-table td:last-child button,
+.data-table td:last-child .action-btn,
+.data-table td:last-child .btn-edit,
+.data-table td:last-child .button {
+    position: relative !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 100px !important;
+    width: auto !important;
+    padding: 10px 20px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    clip-path: none !important;
+    border-radius: 6px !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+}
+
+/* Dark mode overrides */
+body.dark-mode .data-table td,
+body.dark-mode .data-table th {
+    overflow: visible !important;
+}
+
+body.dark-mode .data-table th:last-child,
+body.dark-mode .data-table td:last-child {
+    overflow: visible !important;
+    position: relative;
+    min-width: 180px !important;
+    width: 180px !important;
+    padding-right: 32px !important;
+    padding-left: 20px !important;
+}
+
+body.dark-mode .data-table td:last-child button,
+body.dark-mode .data-table td:last-child .action-btn,
+body.dark-mode .data-table td:last-child .btn-edit,
+body.dark-mode .data-table td:last-child .button {
+    position: relative !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 100px !important;
+    width: auto !important;
+    padding: 10px 20px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    clip-path: none !important;
+    border-radius: 6px !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+}
+
+/* Remove overflow from main content and table container */
+.main-content,
+.content-view,
+.data-table-container,
+.table-wrapper {
+    overflow-x: visible !important;
+}
+
+/* Ensure table itself doesn't clip */
+.data-table {
+    overflow: visible !important;
+}
+
+.data-table tbody,
+.data-table tbody tr {
+    overflow: visible !important;
+}
+
+/* === Final Fix: Move Actions Column Content Left to Prevent Cutoff === */
+
+/* Adjust Actions column to move content away from edge */
+.data-table th:last-child,
+.data-table td:last-child {
+    padding-right: 40px !important;
+    padding-left: 12px !important;
+    text-align: right !important;
+}
+
+/* Move button slightly left with margin */
+.data-table td:last-child button,
+.data-table td:last-child .action-btn,
+.data-table td:last-child .btn-edit,
+.data-table td:last-child .button {
+    margin-right: 8px !important;
+    margin-left: 0 !important;
+}
+
+/* Dark mode overrides with same adjustments */
+body.dark-mode .data-table th:last-child,
+body.dark-mode .data-table td:last-child {
+    padding-right: 40px !important;
+    padding-left: 12px !important;
+    text-align: right !important;
+}
+
+body.dark-mode .data-table td:last-child button,
+body.dark-mode .data-table td:last-child .action-btn,
+body.dark-mode .data-table td:last-child .btn-edit,
+body.dark-mode .data-table td:last-child .button {
+    margin-right: 8px !important;
+    margin-left: 0 !important;
+}
+
+/* === Enhanced Progress Bar Visibility in Dark Mode === */
+
+/* Make progress bar background more visible in dark mode */
+body.dark-mode .progress-bar {
+    background: #1a2332 !important;
+    border: 1px solid var(--border-light);
+}
+
+/* Make progress fill stand out more in dark mode */
+body.dark-mode .progress-fill {
+    background: linear-gradient(90deg, #d4b671, #c6b06e) !important;
+    box-shadow: 0 0 10px rgba(198, 176, 110, 0.3);
+}
+
+/* Enhanced progress display styling in dark mode */
+body.dark-mode .progress-display {
+    background: transparent;
+}
+
+/* Make progress percentage text more visible */
+body.dark-mode .progress-percentage {
+    color: #f1f5f9 !important;
+    font-weight: 600 !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Make progress text stand out */
+body.dark-mode .progress-text {
+    color: var(--text-secondary) !important;
+}
+
+/* Ensure progress container has good contrast */
+body.dark-mode .progress-bar-container {
+    background: #1e293b !important;
+    border: 1px solid #334155 !important;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+/* Add subtle glow effect to progress bars in dark mode */
+body.dark-mode .progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
