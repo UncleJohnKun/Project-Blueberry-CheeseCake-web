@@ -202,6 +202,9 @@ async function initializeTeacherPortal() {
     const sectionSelectInput = document.getElementById('sectionSelectInput');
     const createAccountsButton = document.getElementById('createAccountsButton');
     const addStudentError = document.getElementById('addStudentError');
+    const generateFieldsButton = document.getElementById('generateFieldsButton');
+    const studentNamesContainer = document.getElementById('studentNamesContainer');
+    const studentNameFields = document.getElementById('studentNameFields');
 
     // Creating Accounts modal elements
     const creatingAccountsModal = document.getElementById('creatingAccountsModal');
@@ -2014,6 +2017,13 @@ async function initializeTeacherPortal() {
             closeAddStudentButton.addEventListener('click', closeAddStudentModal);
         }
 
+        if (generateFieldsButton) {
+            console.log('✅ Generate Fields Button found and listener attached');
+            generateFieldsButton.addEventListener('click', generateStudentNameFields);
+        } else {
+            console.error('❌ Generate Fields Button not found!');
+        }
+
         if (createAccountsButton) {
             createAccountsButton.addEventListener('click', startAccountCreation);
         }
@@ -2317,6 +2327,13 @@ async function initializeTeacherPortal() {
             addStudentModal.classList.remove('active');
             setTimeout(() => {
                 addStudentModal.style.display = 'none';
+                // Reset the form
+                if (studentCountInput) studentCountInput.value = '';
+                if (sectionSelectInput) sectionSelectInput.value = '';
+                if (studentNameFields) studentNameFields.innerHTML = '';
+                if (studentNamesContainer) studentNamesContainer.style.display = 'none';
+                if (createAccountsButton) createAccountsButton.style.display = 'none';
+                if (addStudentError) addStudentError.style.display = 'none';
             }, 300);
         }
     }
@@ -2342,6 +2359,13 @@ async function initializeTeacherPortal() {
             return;
         }
 
+        // Collect student names from the input fields
+        const studentNames = [];
+        const nameInputs = studentNameFields.querySelectorAll('.student-name-input');
+        nameInputs.forEach(input => {
+            studentNames.push(input.value.trim());
+        });
+
         // Initialize creation state - start from next available number
         const nextAvailableNumber = findNextAvailableStudentNumber();
         accountCreationState = {
@@ -2350,7 +2374,8 @@ async function initializeTeacherPortal() {
             createdCount: 0,
             isCreating: true,
             isCancelled: false,
-            selectedSection: selectedSection
+            selectedSection: selectedSection,
+            studentNames: studentNames // Store the names
         };
 
         // Close add student modal and show progress modal
@@ -2361,6 +2386,63 @@ async function initializeTeacherPortal() {
         setTimeout(() => {
             checkNextStudentAccount();
         }, 500);
+    }
+
+    function generateStudentNameFields() {
+        console.log('🔵 generateStudentNameFields called');
+        console.log('Input value:', studentCountInput?.value);
+        console.log('Container:', studentNamesContainer);
+        console.log('Fields:', studentNameFields);
+        
+        const inputValue = studentCountInput.value.trim();
+
+        // Validate input
+        if (!inputValue || isNaN(inputValue)) {
+            showAddStudentError('Please enter a valid number first.');
+            return;
+        }
+
+        const accountCount = parseInt(inputValue);
+
+        if (accountCount < 1 || accountCount > 50) {
+            showAddStudentError('Number must be between 1 and 50!');
+            return;
+        }
+
+        // Clear any existing error
+        addStudentError.style.display = 'none';
+
+        // Clear previous fields
+        studentNameFields.innerHTML = '';
+
+        // Generate name input fields
+        for (let i = 1; i <= accountCount; i++) {
+            const fieldWrapper = document.createElement('div');
+            fieldWrapper.className = 'name-field-wrapper';
+            
+            const label = document.createElement('label');
+            label.textContent = `Student ${i}`;
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'student-name-input';
+            input.placeholder = 'Enter name (optional)';
+            input.maxLength = 100;
+            input.setAttribute('data-index', i - 1);
+            
+            fieldWrapper.appendChild(label);
+            fieldWrapper.appendChild(input);
+            studentNameFields.appendChild(fieldWrapper);
+        }
+
+        // Show the container and create button
+        studentNamesContainer.style.display = 'block';
+        createAccountsButton.style.display = 'flex';
+
+        // Scroll to the names section
+        setTimeout(() => {
+            studentNamesContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
     }
 
     function showAddStudentError(message) {
@@ -2533,10 +2615,16 @@ async function initializeTeacherPortal() {
         const randomUsername = Math.floor(Math.random() * 900) + 100;
         const timestamp = new Date().toISOString();
 
+        // Get the student name from the stored names array
+        const studentIndex = accountCreationState.createdCount;
+        const studentName = accountCreationState.studentNames && accountCreationState.studentNames[studentIndex] 
+            ? accountCreationState.studentNames[studentIndex] 
+            : "";
+
         // Firestore document format
         const firestoreDocument = {
             fields: {
-                fullname: { stringValue: "" },
+                fullname: { stringValue: studentName },
                 id: { stringValue: teacherId },
                 password: { stringValue: `${teacherId}${accountCreationState.studentNumber}${randomPassword}` },
                 username: { stringValue: `${teacherId}${accountCreationState.studentNumber}${randomUsername}` },
@@ -2584,7 +2672,8 @@ async function initializeTeacherPortal() {
                 throw new Error(`Failed to create student account: ${response.status} - ${errorText}`);
             }
 
-            console.log(`✅ Student account created: ${studentId}`);
+            const logName = studentName || "Unnamed";
+            console.log(`✅ Student account created: ${studentId} (${logName})`);
             return true;
         } catch (error) {
             console.error('Error creating student account:', error);

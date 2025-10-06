@@ -292,9 +292,17 @@
                 </div>
                 <div class="input-wrapper">
                     <label for="studentCountInput">Number of Accounts:</label>
-                    <input type="number" id="studentCountInput" placeholder="Input Number" min="1" max="50" />
+                    <input type="number" id="studentCountInput" placeholder="Enter number (1-50)" min="1" max="50" />
+                    <button id="generateFieldsButton" class="secondary-btn" style="margin-top: 10px;">Generate Name Fields</button>
                 </div>
-                <button id="createAccountsButton" class="create-btn">Create</button>
+                <div id="studentNamesContainer" class="student-names-container" style="display: none;">
+                    <div class="names-header">
+                        <h3>Enter Student Names</h3>
+                        <p class="helper-text">You can leave names empty and add them later if needed</p>
+                    </div>
+                    <div id="studentNameFields" class="student-name-fields"></div>
+                </div>
+                <button id="createAccountsButton" class="create-btn" style="display: none;">Create Accounts</button>
                 <div id="addStudentError" class="add-student-error" style="display: none;"></div>
             </div>
         </div>
@@ -364,7 +372,7 @@
     </div>
 
     <script src="../assets/js/inputSanitizer.js"></script>
-    <script src="../assets/js/teacher-portal.js"></script>
+    <script src="../assets/js/teacher-portal.js?v=2.0"></script>
     <script>
         // Ensure event delegation for dynamic table rows
         // Example: document.getElementById('studentTableBody').addEventListener('click', function(e) { ... });
