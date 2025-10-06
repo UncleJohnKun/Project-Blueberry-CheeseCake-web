@@ -6,11 +6,11 @@
     /* Main Color Palette */
     --primary-bg: #f8fafc;
     --secondary-bg: #ffffff;
-    --sidebar-bg: #1e293b;
+    --sidebar-bg: #4a3d32;
     --card-bg: #ffffff;
-    --accent-yellow: #fbbf24;
-    --accent-yellow-light: #fde68a;
-    --accent-yellow-dark: #f59e0b;
+    --accent-yellow: #c6b06e;
+    --accent-yellow-light: #dcc88c;
+    --accent-yellow-dark: #b49d5a;
 
     /* Text Colors */
     --text-primary: #0f172a;
@@ -20,8 +20,8 @@
     --text-link: #3b82f6;
 
     /* Action Colors */
-    --btn-primary: #fbbf24;
-    --btn-primary-hover: #f59e0b;
+    --btn-primary: #c6b06e;
+    --btn-primary-hover: #dcc88c;
     --btn-secondary: #f1f5f9;
     --btn-secondary-hover: #e2e8f0;
     --btn-danger: #ef4444;
@@ -32,7 +32,7 @@
     /* Borders */
     --border-light: #e2e8f0;
     --border-medium: #cbd5e1;
-    --border-focus: #3b82f6;
+    --border-focus: #f3f322;
 
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
