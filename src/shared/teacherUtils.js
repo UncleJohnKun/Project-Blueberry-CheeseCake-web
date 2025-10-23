@@ -79,7 +79,7 @@ export const SecurityUtils = {
                 } else {
                     // Redirect to login
                     this.clearAuthData();
-                    window.location.href = '/index.html';
+                    window.location.href = '/public/index.html';
                     return null;
                 }
             }

@@ -208,7 +208,7 @@ class SecureAuth {
             const success = await this.refreshToken();
             if (!success) {
                 // Redirect to login if refresh fails
-                window.location.href = 'index.html';
+                window.location.href = '/public/index.html';
             }
         }, refreshTime);
     }

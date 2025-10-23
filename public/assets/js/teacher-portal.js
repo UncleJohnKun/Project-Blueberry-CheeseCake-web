@@ -117,7 +117,7 @@ async function initializeTeacherPortal() {
         if (!isLoggedIn) {
             console.log("User not authenticated, redirecting to login");
             alert("Please log in to access the teacher portal.");
-            window.location.href = 'index.html';
+            window.location.href = '/public/index.html';
             return;
         }
 
@@ -171,7 +171,7 @@ async function initializeTeacherPortal() {
             if (confirm('Are you sure you want to logout?')) {
                 // Clear session data
                 sessionStorage.clear();
-                window.location.href = 'index.html';
+                window.location.href = '/public/index.html';
             }
         });
         console.log("Logout functionality added");
@@ -999,24 +999,22 @@ async function initializeTeacherPortal() {
                     ${isUnlocked ? `Students in section "${sectionName}" can access this level and its questions.` : `Students in section "${sectionName}" cannot access this level yet.`}
                 </div>
                 <div class="level-card-toggle">
-                    <label class="toggle-switch" for="level${i}_${sectionName.replace(/\s+/g, '')}">
+                    <label class="simple-toggle" for="level${i}_${sectionName.replace(/\s+/g, '')}">
                         <input type="checkbox" id="level${i}_${sectionName.replace(/\s+/g, '')}"
                                data-level="${level}"
                                data-section="${sectionName}"
                                ${isUnlocked ? 'checked' : ''}>
-                        <span class="toggle-slider"></span>
+                        <span class="simple-slider" aria-hidden="true"></span>
                     </label>
-                    <span class="toggle-label">
-                        ${isUnlocked ? 'Enabled' : 'Disabled'}
-                    </span>
+                    <span class="toggle-label">${isUnlocked ? 'Enabled' : 'Disabled'}</span>
                 </div>
             `;
 
             levelUnlockGrid.appendChild(levelCard);
         }
 
-        // Add event listeners to toggle switches for dynamic updates
-        const toggleInputs = levelUnlockGrid.querySelectorAll('.toggle-switch input');
+    // Add event listeners to toggle checkboxes for dynamic updates
+    const toggleInputs = levelUnlockGrid.querySelectorAll('.level-card-toggle input[type="checkbox"]');
 
         toggleInputs.forEach((input) => {
             // Add change event listener for toggle functionality
@@ -1038,11 +1036,14 @@ async function initializeTeacherPortal() {
                 statusElement.innerHTML = '🔓 Unlocked';
                 labelElement.textContent = 'Enabled';
                 descriptionElement.textContent = `Students in section "${sectionName}" can access this level and its questions.`;
+                // Mark card enabled for CSS styling
+                levelCard.classList.add('enabled');
             } else {
                 statusElement.className = 'level-card-status locked';
                 statusElement.innerHTML = '🔒 Locked';
                 labelElement.textContent = 'Disabled';
                 descriptionElement.textContent = `Students in section "${sectionName}" cannot access this level yet.`;
+                levelCard.classList.remove('enabled');
             }
         }
 
@@ -1665,7 +1666,7 @@ async function initializeTeacherPortal() {
                 throw new Error("Section name not provided");
             }
 
-            const levelToggles = document.querySelectorAll('.toggle-switch input');
+            const levelToggles = document.querySelectorAll('.level-card-toggle input[type="checkbox"]');
             const updatedLevelUnlocks = {};
 
             levelToggles.forEach(toggle => {
@@ -2086,7 +2087,7 @@ async function initializeTeacherPortal() {
                 sessionStorage.removeItem('isTeacherLoggedIn');
                 sessionStorage.removeItem('teacherId');
                 alert('Logged out.');
-                window.location.href = 'index.html';
+                window.location.href = '/public/index.html';
             });
         }
 
@@ -3489,7 +3490,7 @@ async function initializeTeacherPortal() {
         // Don't redirect immediately, let user see the error
         setTimeout(() => {
             if (confirm("Would you like to return to the login page?")) {
-                window.location.href = 'index.html';
+                window.location.href = '/public/index.html';
             }
         }, 1000);
     }

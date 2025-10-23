@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- ADMIN LOGIN CHECK ---
     if (sessionStorage.getItem('isAdminLoggedIn') !== 'true') {
         alert("Admin access required. Please log in as admin first.");
-        window.location.href = '../index.html';
+        window.location.href = '../public/index.html';
         return;
     }
 
@@ -442,7 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             console.log('Session data cleared, redirecting to login');
             alert('Admin logged out successfully.');
-            window.location.href = '../index.html';
+            window.location.href = '../public/index.html';
         } else {
             console.log('Logout cancelled');
         }
@@ -1971,7 +1971,7 @@ document.addEventListener('DOMContentLoaded', () => {
             sessionStorage.clear();
             
             // Redirect to login page
-            window.location.href = '../index.html';
+            window.location.href = '../public/index.html';
         });
     }
 
@@ -2005,11 +2005,11 @@ window.performLogout = function() {
             
             console.log('Redirecting to login page');
             // Use absolute path for redirect
-            window.location.replace('/index.html');
+            window.location.replace('/public/index.html');
         } catch (error) {
             console.error('Error during logout:', error);
             alert('Logout completed. Redirecting to login page.');
-            window.location.replace('/index.html');
+            window.location.replace('/public/index.html');
         }
     } else {
         console.log('Logout cancelled by user');

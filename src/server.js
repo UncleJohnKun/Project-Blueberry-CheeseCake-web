@@ -77,12 +77,12 @@ app.get('/api/health', (req, res) => {
 
 // Serve HTML files with CSRF token injection
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/index.html'));
+    res.sendFile(path.join(__dirname, '../index.html'));
 });
 
 // Handle specific route for /public/index.html - redirect to main index
 app.get('/public/index.html', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/index.html'));
+    res.sendFile(path.join(__dirname, '../index.html'));
 });
 
 // Redirect old paths to new structure

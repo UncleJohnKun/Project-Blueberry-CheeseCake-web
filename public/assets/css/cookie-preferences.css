@@ -252,7 +252,7 @@
 }
 
 .toggle-switch:focus-within {
-    outline: 2px solid #3b82f6;
+    outline: 2px solid #2f384700;
     outline-offset: 2px;
 }
 
@@ -268,9 +268,6 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.cookie-toggle input[type="checkbox"]:checked + .toggle-switch {
-    background: #10b981;
-}
 
 .cookie-toggle input[type="checkbox"]:checked + .toggle-switch .toggle-slider {
     transform: translateX(24px);
