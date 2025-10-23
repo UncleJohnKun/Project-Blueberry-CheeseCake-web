@@ -1314,9 +1314,9 @@ async function initializeTeacherPortal() {
         console.log("showAddQuestionModal called for level:", level);
         const questions = teacherData?.rizal_questions?.[level] || [];
 
-        // Check if level has reached maximum of 10 questions
-        if (questions.length >= 10) {
-            alert(`Level ${level.replace('level', '')} already has the maximum of 10 questions.`);
+        // Check if level has reached maximum of 9999 questions
+        if (questions.length >= 9999) {
+            alert(`Level ${level.replace('level', '')} already has the maximum of 9999 questions.`);
             return;
         }
 
