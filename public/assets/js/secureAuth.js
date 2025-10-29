@@ -267,7 +267,7 @@ class SecureAuth {
                     return await fetch(url, config);
                 } else {
                     // Refresh failed, redirect to login
-                    window.location.href = 'index.html';
+                    window.location.href = '/public/index.html';
                     return null;
                 }
             }
