@@ -1971,7 +1971,7 @@ document.addEventListener('DOMContentLoaded', () => {
             sessionStorage.clear();
             
             // Redirect to login page
-            window.location.href = '../public/index.html';
+            window.location.href = 'https://unclejohnkun.github.io/Project-Blueberry-CheeseCake-web/public/index.html';
         });
     }
 
