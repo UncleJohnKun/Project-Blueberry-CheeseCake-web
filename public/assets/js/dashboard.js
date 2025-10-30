@@ -1980,40 +1980,51 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Global function for logout (accessible from inline onclick)
-window.performLogout = function() {
+// Global function for logout (accessible from inline onclick)
+window.performLogout = function(event) {
     console.log('Global performLogout called');
-    
-    // Prevent any default behavior
-    event.preventDefault();
-    event.stopPropagation();
-    
+
+    // If an event was provided, prevent default behavior safely
+    if (event && typeof event.preventDefault === 'function') {
+        try { event.preventDefault(); } catch (e) { /* ignore */ }
+        try { event.stopPropagation(); } catch (e) { /* ignore */ }
+    }
+
     const confirmLogout = confirm('Are you sure you want to logout?');
     console.log('Logout confirmation result:', confirmLogout);
-    
-    if (confirmLogout) {
-        console.log('Logout confirmed, clearing session data');
-        
-        try {
-            // Clear all session data
-            sessionStorage.clear();
-            localStorage.clear();
-            
-            console.log('Session data cleared successfully');
-            
-            // Show success message
-            alert('You have been logged out successfully.');
-            
-            console.log('Redirecting to login page');
-            // Use absolute path for redirect
-            window.location.replace('/public/index.html');
-        } catch (error) {
-            console.error('Error during logout:', error);
-            alert('Logout completed. Redirecting to login page.');
-            window.location.replace('/public/index.html');
-        }
-    } else {
+
+    if (!confirmLogout) {
         console.log('Logout cancelled by user');
+        return false;
     }
-    
+
+    console.log('Logout confirmed, clearing session data');
+    try {
+        // Clear all session data
+        try { sessionStorage.clear(); } catch(e) { console.warn('sessionStorage.clear failed', e); }
+        try { localStorage.clear(); } catch(e) { console.warn('localStorage.clear failed', e); }
+
+        console.log('Session data cleared successfully');
+
+        // Show success message
+        // Use a short, non-blocking notification – alert is kept for compatibility
+        alert('You have been logged out successfully. Redirecting to the login page...');
+
+        console.log('Redirecting to login page');
+        // Prefer location.replace to avoid leaving a stale entry in history
+        // Try a relative redirect first; fall back to known absolute GitHub Pages URL if necessary
+        try {
+            console.warn('Relative redirect failed, falling back to absolute URL', err);
+            window.location.replace('https://unclejohnkun.github.io/Project-Blueberry-CheeseCake-web/public/index.html');
+        } catch (err) {
+            console.warn('Relative redirect failed, falling back to absolute URL', err);
+            window.location.replace('https://unclejohnkun.github.io/Project-Blueberry-CheeseCake-web/public/index.html');
+        }
+    } catch (error) {
+        console.error('Error during logout:', error);
+        alert('Logout completed. Redirecting to login page.');
+        window.location.replace('https://unclejohnkun.github.io/Project-Blueberry-CheeseCake-web/public/index.html');
+    }
+
     return false;
 };
