@@ -522,10 +522,11 @@ select:not(.section-filter)::after {
 .main-content {
     flex: 1;
     margin-left: 280px;
-    padding: var(--space-6);
+    padding: var(--space-4);
     background: var(--primary-bg);
     min-height: 100vh;
     width: calc(100% - 280px);
+    max-width: calc(100vw - 280px);
     box-sizing: border-box;
     position: relative;
     opacity: 0;
@@ -548,10 +549,10 @@ select:not(.section-filter)::after {
 /* === Header === */
 .admin-header {
     background: var(--secondary-bg);
-    padding: var(--space-5) var(--space-6);
+    padding: var(--space-4) var(--space-5);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
-    margin-bottom: var(--space-6);
+    margin-bottom: var(--space-5);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -567,25 +568,25 @@ select:not(.section-filter)::after {
 .header-content {
     display: flex;
     align-items: center;
-    gap: var(--space-6);
+    gap: var(--space-4);
     width: 100%;
     flex-wrap: wrap;
 }
 
 .header-title {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: var(--font-weight-semibold);
     color: var(--text-primary);
     margin: 0;
     flex-shrink: 0;
-    min-width: 150px;
+    min-width: 120px;
 }
 
 .header-search-wide {
     position: relative;
     flex: 1;
-    max-width: 600px;
-    min-width: 200px;
+    max-width: 500px;
+    min-width: 180px;
 }
 
 .header-search input,
@@ -610,7 +611,7 @@ select:not(.section-filter)::after {
 .header-actions {
     display: flex;
     align-items: center;
-    gap: var(--space-3);
+    gap: var(--space-2);
     flex-shrink: 0;
     flex-wrap: wrap;
 }
@@ -1269,7 +1270,7 @@ button.secondary:hover,
 
 /* === Content Container === */
 .content-container {
-    padding-top: var(--space-6);
+    padding-top: var(--space-4);
     animation: fadeIn 0.3s ease-out;
 }
 
@@ -1294,7 +1295,7 @@ button.secondary:hover,
     overflow: hidden;
     width: 100%;
     box-sizing: border-box;
-    overflow-x: auto;
+    overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
 }
 
@@ -1326,30 +1327,37 @@ button.secondary:hover,
     border-collapse: collapse;
     font-size: 0.875rem;
     font-family: var(--font-primary);
+    table-layout: fixed;
 }
 
 .data-table th {
     background: var(--primary-bg);
-    padding: var(--space-4) var(--space-6);
+    padding: var(--space-3) var(--space-4);
     text-align: left;
     font-weight: var(--font-weight-semibold);
     color: var(--text-secondary);
     border-bottom: 1px solid var(--border-light);
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     vertical-align: middle;
     font-family: var(--font-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .data-table td {
-    padding: var(--space-4) var(--space-6);
+    padding: var(--space-3) var(--space-4);
     border-bottom: 1px solid var(--border-light);
     color: var(--text-primary);
     vertical-align: middle;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     font-family: var(--font-primary);
-    line-height: 1.5;
+    line-height: 1.4;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 0;
 }
 
 .data-table tbody tr {
@@ -1441,23 +1449,27 @@ button.secondary:hover,
 
 .table-actions {
     display: flex;
-    gap: var(--space-2);
+    gap: var(--space-1);
     align-items: center;
+    justify-content: center;
+    flex-wrap: nowrap;
 }
 
 .table-action-btn {
-    padding: var(--space-2);
+    padding: var(--space-1);
     border: none;
     background: none;
     color: var(--text-muted);
     cursor: pointer;
     border-radius: var(--radius-sm);
     transition: all var(--transition);
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
+    font-size: 1rem;
+    flex-shrink: 0;
 }
 
 .table-action-btn:hover {
@@ -1473,6 +1485,39 @@ button.secondary:hover,
 .table-action-btn.delete:hover {
     background: rgba(239, 68, 68, 0.1);
     color: var(--btn-danger);
+}
+
+/* Compact table column widths */
+.data-table th:nth-child(1),
+.data-table td:nth-child(1) {
+    width: 30%;
+}
+
+.data-table th:nth-child(2),
+.data-table td:nth-child(2) {
+    width: 22%;
+}
+
+.data-table th:nth-child(3),
+.data-table td:nth-child(3) {
+    width: 35%;
+}
+
+.data-table th:nth-child(4),
+.data-table td:nth-child(4) {
+    width: 13%;
+    text-align: center;
+    padding-left: var(--space-2);
+    padding-right: var(--space-2);
+}
+
+/* Ensure text doesn't overflow */
+.table-cell-primary,
+.table-cell-secondary {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
 }
 
 /* === Content Views === */
@@ -5881,12 +5926,12 @@ button.secondary:hover,
     gap: var(--space-2);
     background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
     color: #1e293b;
-    padding: var(--space-3) var(--space-4);
+    padding: var(--space-2) var(--space-3);
     border: none;
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
     text-decoration: none;
     font-weight: var(--font-weight-semibold);
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     transition: all var(--transition);
     box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3), 0 1px 3px rgba(0, 0, 0, 0.1);
     position: relative;
@@ -5896,8 +5941,8 @@ button.secondary:hover,
 }
 
 .button.secondary svg {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     flex-shrink: 0;
     stroke: currentColor;
 }

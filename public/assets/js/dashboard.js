@@ -161,7 +161,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (searchTeacherInput) {
         searchTeacherInput.addEventListener('input', (event) => {
             const searchTerm = event.target.value.toLowerCase();
-            filterAndDisplayTeachers(searchTerm);
+            // Use sorting function if sort is active, otherwise use normal filter
+            if (currentSortColumn) {
+                sortAndDisplayTeachers();
+            } else {
+                filterAndDisplayTeachers(searchTerm);
+            }
         });
     }
     if (searchStudentInput) {
@@ -170,6 +175,98 @@ document.addEventListener('DOMContentLoaded', () => {
             filterAndDisplayStudents(searchTerm);
         });
     }
+
+    // Sorting functionality for teacher table
+    let currentSortColumn = null;
+    let currentSortDirection = 'asc';
+    
+    function setupTableSorting() {
+        const sortableHeaders = document.querySelectorAll('.data-table th.sortable');
+        
+        sortableHeaders.forEach(header => {
+            header.style.cursor = 'pointer';
+            header.addEventListener('click', () => {
+                const sortField = header.getAttribute('data-sort');
+                
+                // Toggle direction if clicking the same column
+                if (currentSortColumn === sortField) {
+                    currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+                } else {
+                    currentSortColumn = sortField;
+                    currentSortDirection = 'asc';
+                }
+                
+                // Update sort indicators
+                sortableHeaders.forEach(h => {
+                    const indicator = h.querySelector('.sort-indicator');
+                    if (indicator) {
+                        indicator.textContent = '';
+                    }
+                });
+                
+                const currentIndicator = header.querySelector('.sort-indicator');
+                if (currentIndicator) {
+                    currentIndicator.textContent = currentSortDirection === 'asc' ? ' ▲' : ' ▼';
+                }
+                
+                // Sort and display
+                sortAndDisplayTeachers();
+            });
+        });
+    }
+    
+    function sortAndDisplayTeachers() {
+        if (!currentSortColumn || allTeachersData.length === 0) {
+            filterAndDisplayTeachers(searchTeacherInput ? searchTeacherInput.value : '');
+            return;
+        }
+        
+        // Get current search term
+        const searchTerm = searchTeacherInput ? searchTeacherInput.value.toLowerCase() : '';
+        
+        // Filter first
+        let filtered = allTeachersData.filter(doc => {
+            if (!doc.fields) return false;
+            const t = doc.fields;
+            const id = formatFirestoreValue(t.id) || doc.name.split('/').pop();
+            const st = searchTerm;
+            return ((formatFirestoreValue(t.fullname) || '').toLowerCase().includes(st) ||
+                    (formatFirestoreValue(t.email) || '').toLowerCase().includes(st) ||
+                    (id || '').toLowerCase().includes(st) ||
+                    (formatFirestoreValue(t.username) || '').toLowerCase().includes(st));
+        });
+        
+        // Sort
+        filtered.sort((a, b) => {
+            let aVal = '', bVal = '';
+            
+            if (currentSortColumn === 'fullname') {
+                aVal = formatFirestoreValue(a.fields.fullname) || '';
+                bVal = formatFirestoreValue(b.fields.fullname) || '';
+            } else if (currentSortColumn === 'username') {
+                aVal = formatFirestoreValue(a.fields.username) || '';
+                bVal = formatFirestoreValue(b.fields.username) || '';
+            } else if (currentSortColumn === 'email') {
+                aVal = formatFirestoreValue(a.fields.email) || '';
+                bVal = formatFirestoreValue(b.fields.email) || '';
+            }
+            
+            // Convert to lowercase for case-insensitive sorting
+            aVal = aVal.toLowerCase();
+            bVal = bVal.toLowerCase();
+            
+            if (currentSortDirection === 'asc') {
+                return aVal.localeCompare(bVal);
+            } else {
+                return bVal.localeCompare(aVal);
+            }
+        });
+        
+        renderTeacherList(filtered);
+    }
+    
+    // Initialize sorting when DOM is ready
+    setupTableSorting();
 
     // Detail view event listeners
     if (backToTeachersButton) {

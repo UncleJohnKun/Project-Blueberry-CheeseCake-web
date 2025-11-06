@@ -987,6 +987,9 @@ async function initializeTeacherPortal() {
 
             const levelCard = document.createElement('div');
             levelCard.classList.add('level-card');
+            if (isUnlocked) {
+                levelCard.classList.add('enabled');
+            }
 
             levelCard.innerHTML = `
                 <div class="level-card-header">
