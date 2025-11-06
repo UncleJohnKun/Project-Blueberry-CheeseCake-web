@@ -224,6 +224,37 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Archive View -->
+            <div id="archiveView" class="content-view">
+                <header class="admin-header">
+                    <div class="header-content">
+                        <h1 class="header-title">Archived Students</h1>
+                        <div class="header-search-wide">
+                            <input type="text" id="searchArchiveInput" placeholder="Search archived students..." />
+                        </div>
+                    </div>
+                </header>
+
+                <div class="content-container">
+                    <div id="loadingArchive" class="loading-message">Loading archived students...</div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Student Name</th>
+                                    <th>Section</th>
+                                    <th>Archived Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="archiveTableBody">
+                                <!-- Archived student rows will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -293,6 +324,27 @@
                                 <div class="settings-item-description" id="teacherId">Loading...</div>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Data Management Section -->
+                <div class="settings-section">
+                    <h3 class="settings-section-title">Data Management</h3>
+                    <div class="settings-item">
+                        <div class="settings-item-info">
+                            <div class="settings-item-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="21 8 21 21 3 21 3 8"></polyline>
+                                    <rect x="1" y="3" width="22" height="5"></rect>
+                                    <line x1="10" y1="12" x2="14" y2="12"></line>
+                                </svg>
+                            </div>
+                            <div class="settings-item-text">
+                                <div class="settings-item-title">Archived Students</div>
+                                <div class="settings-item-description">View and manage archived students</div>
+                            </div>
+                        </div>
+                        <button id="viewArchiveButton" class="btn-logout">View Archive</button>
                     </div>
                 </div>
 

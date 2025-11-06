@@ -6728,6 +6728,64 @@ button.secondary:hover,
     position: relative;
 }
 
+/* Edit form actions - separate delete button from save/cancel */
+.edit-form .form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-4);
+}
+
+.edit-form .form-actions #deleteStudent {
+    margin-right: auto;
+}
+
+/* Archive view table buttons */
+#archiveView .data-table td .button,
+#archiveTableBody .button {
+    margin-right: 8px !important;
+    margin-bottom: 0 !important;
+    display: inline-block !important;
+    min-width: auto !important;
+    max-width: none !important;
+    width: auto !important;
+    padding: 10px 16px !important;
+    font-size: 0.875rem !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    box-sizing: border-box !important;
+}
+
+#archiveView .data-table td .button:last-child,
+#archiveTableBody .button:last-child {
+    margin-right: 0 !important;
+}
+
+/* Archive table - force left alignment with highest specificity */
+#archiveView .data-table thead tr th:last-child {
+    text-align: left !important;
+    padding-left: 12px !important;
+    padding-right: 20px !important;
+}
+
+#archiveView .data-table tbody tr td:last-child {
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-align: left !important;
+    padding-left: 12px !important;
+    padding-right: 20px !important;
+}
+
+/* Maximum specificity override for archive actions column */
+#archiveView .table-container .data-table th:last-child,
+#archiveView .table-container .data-table td:last-child,
+#archiveView .table-container .data-table tbody tr td:last-child {
+    text-align: left !important;
+    padding-left: 12px !important;
+    padding-right: 20px !important;
+}
+
 .edit-form .form-group select#editSection:hover {
     border-color: var(--accent-yellow);
     background-color: rgba(251, 191, 36, 0.08);
@@ -9637,6 +9695,20 @@ body.dark-mode .data-table td:last-child .btn-edit,
 body.dark-mode .data-table td:last-child .button {
     margin-right: 8px !important;
     margin-left: 0 !important;
+}
+
+/* === ARCHIVE VIEW OVERRIDE - Must come after global data-table styles === */
+/* Force left alignment for archive actions column - highest priority */
+#archiveView .data-table th:last-child,
+#archiveView .data-table td:last-child,
+#archiveView .table-container .data-table th:last-child,
+#archiveView .table-container .data-table td:last-child,
+#archiveView .table-container .data-table tbody tr td:last-child,
+body.dark-mode #archiveView .data-table th:last-child,
+body.dark-mode #archiveView .data-table td:last-child {
+    text-align: left !important;
+    padding-left: 12px !important;
+    padding-right: 200px !important;
 }
 
 /* === Enhanced Progress Bar Visibility in Dark Mode === */

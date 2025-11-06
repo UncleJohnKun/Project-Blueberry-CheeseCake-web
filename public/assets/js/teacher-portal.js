@@ -89,6 +89,14 @@ function calculateStudentProgress(studentFields) {
     return completedLevels / totalLevels;
 }
 
+// === GLOBAL VARIABLES ===
+let currentTeacherId = null;
+let teacherData = null;
+let allStudentsData = [];
+let sectionsData = [];
+let currentEditingSectionId = null;
+let filteredStudents = []; // For student list filtering
+
 document.addEventListener('DOMContentLoaded', async () => {
     console.log("teacherPortal.js: DOMContentLoaded");
     await initializeTeacherPortal();
@@ -229,12 +237,8 @@ async function initializeTeacherPortal() {
 
     const addSectionButton = document.getElementById('addSectionButton');
 
-    // --- TEACHER DATA ---
-    let currentTeacherId = null;
-    let teacherData = null;
-    let allStudentsData = [];
-    let sectionsData = [];
-    let currentEditingSectionId = null;
+    // --- TEACHER DATA (variables declared globally above) ---
+    // currentTeacherId, teacherData, allStudentsData, sectionsData, currentEditingSectionId
 
     // --- INITIALIZE APP ---
     async function initializeApp() {
@@ -481,7 +485,7 @@ async function initializeTeacherPortal() {
     // --- PAGINATION VARIABLES ---
     let currentPage = 1;
     const studentsPerPage = 10;
-    let filteredStudents = [];
+    // filteredStudents is now global
 
     // --- SORTING VARIABLES ---
     let currentSortField = '';
@@ -1140,6 +1144,7 @@ async function initializeTeacherPortal() {
                             <div class="form-actions">
                                 <button type="submit" class="button primary">Save Changes</button>
                                 <button type="button" id="cancelEdit" class="button secondary">Cancel</button>
+                                <button type="button" id="deleteStudent" class="button danger">Archive Student</button>
                             </div>
                         </form>
                     </div>
@@ -1154,6 +1159,7 @@ async function initializeTeacherPortal() {
         const modal = document.getElementById('editStudentModal');
         const closeBtn = document.getElementById('editStudentModalClose');
         const cancelBtn = document.getElementById('cancelEdit');
+        const deleteBtn = document.getElementById('deleteStudent');
         const form = document.getElementById('editStudentForm');
 
         const closeModal = () => {
@@ -1163,6 +1169,11 @@ async function initializeTeacherPortal() {
 
         closeBtn.addEventListener('click', closeModal);
         cancelBtn.addEventListener('click', closeModal);
+
+        // Handle delete button click
+        deleteBtn.addEventListener('click', async () => {
+            await deleteStudentData(studentData, modal);
+        });
 
         // Close modal when clicking outside
         modal.addEventListener('click', (e) => {
@@ -1311,6 +1322,99 @@ async function initializeTeacherPortal() {
         } catch (error) {
             console.error('Error updating student:', error);
             alert('Error updating student: ' + error.message);
+        }
+    }
+
+    async function deleteStudentData(studentData, modal) {
+        try {
+            // Confirm archiving (not permanent deletion)
+            const studentName = studentData.fullname || 'Unknown';
+            const confirmMessage = `Are you sure you want to archive student "${studentName}"?\n\nThe student will be moved to the archive. You can restore or permanently delete them later from the Archive section.`;
+            
+            if (!confirm(confirmMessage)) {
+                return; // User cancelled
+            }
+
+            if (!CONFIG) {
+                throw new Error("Configuration not loaded");
+            }
+
+            const teacherId = currentTeacherId || teacherData?.id;
+            console.log("Archiving student. Teacher ID:", teacherId);
+
+            // Prepare archived student data
+            const archivedStudentData = {
+                ...studentData,
+                archivedAt: new Date().toISOString(),
+                archivedBy: teacherId || 'Unknown',
+                originalDocumentId: studentData.documentId || studentData.id
+            };
+
+            console.log("Archived student data:", archivedStudentData);
+
+            // Convert to Firestore format
+            const firestoreDocument = {
+                fields: {}
+            };
+
+            // Convert all student data fields to Firestore format
+            for (const [key, value] of Object.entries(archivedStudentData)) {
+                firestoreDocument.fields[key] = toFirestoreValue(value);
+            }
+
+            console.log("Firestore document to be saved:", JSON.stringify(firestoreDocument, null, 2));
+
+            // Create archived student in archivedStudents collection
+            const archiveUrl = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents/archivedStudents?key=${CONFIG.apiKey}`;
+            console.log("Posting to archive URL:", archiveUrl);
+            
+            const archiveResponse = await fetch(archiveUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(firestoreDocument)
+            });
+
+            if (!archiveResponse.ok) {
+                const errorText = await archiveResponse.text();
+                console.error("Archive creation failed:", errorText);
+                throw new Error(`Failed to archive student: ${archiveResponse.status} - ${errorText}`);
+            }
+
+            const archiveResult = await archiveResponse.json();
+            console.log("✅ Archive created successfully:", archiveResult);
+
+            // Delete student from active studentData collection
+            const documentId = studentData.documentId || studentData.id;
+            const deleteUrl = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents/studentData/${documentId}?key=${CONFIG.apiKey}`;
+            
+            const deleteResponse = await fetch(deleteUrl, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!deleteResponse.ok) {
+                const errorText = await deleteResponse.text();
+                throw new Error(`Failed to remove student from active list: ${deleteResponse.status} - ${errorText}`);
+            }
+
+            console.log('✅ Student archived successfully:', studentName);
+
+            // Close modal
+            modal.classList.remove('active');
+            setTimeout(() => modal.remove(), 300);
+
+            alert(`Student "${studentName}" has been archived successfully.\n\nYou can restore or permanently delete this student from the Archive section.\n\nThe page will refresh to update the list.`);
+
+            // Full page refresh to ensure everything updates properly
+            window.location.reload();
+
+        } catch (error) {
+            console.error('Error archiving student:', error);
+            alert('Error archiving student: ' + error.message);
         }
     }
 
@@ -1980,6 +2084,25 @@ async function initializeTeacherPortal() {
             });
         } else {
             console.warn("sectionsLink not found");
+        }
+
+        const archiveLink = document.getElementById('archiveLink');
+        const archiveView = document.getElementById('archiveView');
+        const viewArchiveButton = document.getElementById('viewArchiveButton');
+        
+        // Archive button in settings modal
+        if (viewArchiveButton && archiveView) {
+            console.log("Setting up viewArchiveButton event listener");
+            viewArchiveButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log("View Archive button clicked");
+                closeSettingsModal(); // Close settings first
+                showView(archiveView);
+                // Don't set active nav link since it's not in sidebar anymore
+                renderArchiveView();
+            });
+        } else {
+            console.warn("viewArchiveButton or archiveView not found");
         }
 
         if (createStudentLink) {
@@ -3186,6 +3309,8 @@ async function initializeTeacherPortal() {
     window.editSection = showEditSectionModal;
     window.viewStudentsInSection = viewStudentsInSection;
     window.resetToAllStudents = resetToAllStudents;
+    window.fetchStudentsForTeacher = fetchStudentsForTeacher; // Expose for archive restore
+    window.renderStudentList = renderStudentList; // Expose for archive restore
     window.deleteSection = async function(sectionId) {
         const section = sectionsData.find(s => s.id === sectionId);
         if (!section) return;
@@ -3499,6 +3624,349 @@ async function initializeTeacherPortal() {
     }
 }
 
+// === Archive Management Functions ===
+let archivedStudentsData = [];
+
+async function fetchArchivedStudents() {
+    try {
+        console.log("=== START FETCHING ARCHIVED STUDENTS ===");
+        console.log("CONFIG:", CONFIG);
+        
+        if (!CONFIG) {
+            console.error("Configuration not loaded, attempting to load...");
+            CONFIG = await getSecureConfig();
+            if (!CONFIG) {
+                throw new Error("Configuration still not loaded");
+            }
+        }
+
+        const teacherId = currentTeacherId || teacherData?.id;
+        console.log("Teacher ID check - currentTeacherId:", currentTeacherId, "teacherData?.id:", teacherData?.id);
+        
+        if (!teacherId) {
+            console.error("Teacher ID not found - returning empty array");
+            return [];
+        }
+
+        console.log("Fetching archived students for teacher:", teacherId);
+
+        // Fetch archived students for this teacher
+        const url = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents/archivedStudents?key=${CONFIG.apiKey}`;
+        console.log("Fetching from URL:", url);
+        
+        const response = await fetch(url);
+        console.log("Response status:", response.status);
+
+        // If collection doesn't exist yet (404), return empty array
+        if (response.status === 404) {
+            console.log("Archive collection doesn't exist yet - no archived students");
+            return [];
+        }
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch archived students: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        const documents = data.documents || [];
+
+        console.log(`Total archived documents found: ${documents.length}`);
+        
+        if (documents.length === 0) {
+            console.log("No archived documents in database");
+            return [];
+        }
+
+        // Filter archived students by teacher ID and convert from Firestore format
+        archivedStudentsData = documents
+            .map(doc => {
+                const student = {};
+                const fields = doc.fields || {};
+                
+                for (const [key, value] of Object.entries(fields)) {
+                    student[key] = convertFirestoreValue(value);
+                }
+                
+                // Extract document ID from the document name
+                student.archiveDocId = doc.name.split('/').pop();
+                
+                return student;
+            })
+            .filter(student => {
+                const matches = student.archivedBy === teacherId || student.teacherID === teacherId;
+                console.log(`Student: ${student.fullname}, archivedBy: ${student.archivedBy}, teacherID: ${student.teacherID}, currentTeacherId: ${teacherId}, matches: ${matches}`);
+                return matches;
+            });
+
+        console.log(`✅ Filtered to ${archivedStudentsData.length} archived students for teacher ${teacherId}`);
+        
+        if (archivedStudentsData.length > 0) {
+            console.log("Archived students:", archivedStudentsData);
+        }
+        
+        console.log("=== END FETCHING ARCHIVED STUDENTS ===");
+        return archivedStudentsData;
+
+    } catch (error) {
+        console.error('❌ Error fetching archived students:', error);
+        console.error('Error stack:', error.stack);
+        console.log("=== END FETCHING ARCHIVED STUDENTS (WITH ERROR) ===");
+        return [];
+    }
+}
+
+async function renderArchiveView() {
+    const loadingArchive = document.getElementById('loadingArchive');
+    const archiveTableBody = document.getElementById('archiveTableBody');
+    const searchArchiveInput = document.getElementById('searchArchiveInput');
+
+    if (!loadingArchive || !archiveTableBody) {
+        console.error("Archive view elements not found");
+        return;
+    }
+
+    try {
+        console.log("=== RENDERING ARCHIVE VIEW ===");
+        console.log("Current Teacher ID:", currentTeacherId);
+        console.log("Teacher Data ID:", teacherData?.id);
+
+        // Show loading
+        loadingArchive.style.display = 'block';
+        archiveTableBody.innerHTML = '';
+
+        // Fetch archived students with timeout protection
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Fetch timeout after 10 seconds')), 10000)
+        );
+        
+        await Promise.race([
+            fetchArchivedStudents(),
+            timeoutPromise
+        ]);
+
+        // Hide loading
+        loadingArchive.style.display = 'none';
+
+        console.log("Archived students data length:", archivedStudentsData.length);
+
+        if (archivedStudentsData.length === 0) {
+            const teacherId = currentTeacherId || teacherData?.id || 'Unknown';
+            archiveTableBody.innerHTML = `
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 48px; color: var(--text-secondary);">
+                        <div style="font-size: 3rem; margin-bottom: 16px;">📦</div>
+                        <div style="font-size: 1.125rem; font-weight: 500;">No archived students</div>
+                        <div style="font-size: 0.875rem; margin-top: 8px;">Archived students will appear here</div>
+                        <div style="font-size: 0.75rem; margin-top: 16px; color: var(--text-tertiary);">Teacher ID: ${teacherId}</div>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        // Render archived students
+        renderArchivedStudents(archivedStudentsData);
+
+        // Setup search functionality
+        if (searchArchiveInput) {
+            searchArchiveInput.value = '';
+            searchArchiveInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const filtered = archivedStudentsData.filter(student => 
+                    (student.fullname || '').toLowerCase().includes(searchTerm) ||
+                    (student.section || '').toLowerCase().includes(searchTerm) ||
+                    (student.username || '').toLowerCase().includes(searchTerm)
+                );
+                renderArchivedStudents(filtered);
+            });
+        }
+    } catch (error) {
+        console.error("❌ Error rendering archive view:", error);
+        loadingArchive.style.display = 'none';
+        archiveTableBody.innerHTML = `
+            <tr>
+                <td colspan="4" style="text-align: center; padding: 48px; color: var(--text-secondary);">
+                    <div style="font-size: 3rem; margin-bottom: 16px;">⚠️</div>
+                    <div style="font-size: 1.125rem; font-weight: 500; color: var(--btn-danger);">Error Loading Archive</div>
+                    <div style="font-size: 0.875rem; margin-top: 8px;">${error.message}</div>
+                    <div style="font-size: 0.75rem; margin-top: 8px;">Check browser console for details</div>
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function renderArchivedStudents(students) {
+    const archiveTableBody = document.getElementById('archiveTableBody');
+    if (!archiveTableBody) return;
+
+    archiveTableBody.innerHTML = students.map(student => {
+        const archivedDate = student.archivedAt ? new Date(student.archivedAt).toLocaleDateString() : 'Unknown';
+        
+        return `
+            <tr>
+                <td>${student.fullname || 'Unknown'}</td>
+                <td>${student.section || 'No Section'}</td>
+                <td>${archivedDate}</td>
+                <td>
+                    <button class="button primary" onclick="restoreStudent('${student.archiveDocId}', '${(student.fullname || '').replace(/'/g, "\\'")}')">
+                        Restore
+                    </button>
+                    <button class="button danger" onclick="permanentlyDeleteStudent('${student.archiveDocId}', '${(student.fullname || '').replace(/'/g, "\\'")}')">
+                        Delete
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+async function restoreStudent(archiveDocId, studentName) {
+    try {
+        if (!confirm(`Are you sure you want to restore "${studentName}"?\n\nThis student will be moved back to your active students list.`)) {
+            return;
+        }
+
+        if (!CONFIG) {
+            throw new Error("Configuration not loaded");
+        }
+
+        console.log("Starting restore process for:", studentName, "Archive Doc ID:", archiveDocId);
+
+        // Find the archived student
+        const archivedStudent = archivedStudentsData.find(s => s.archiveDocId === archiveDocId);
+        if (!archivedStudent) {
+            throw new Error("Archived student not found in local data");
+        }
+
+        console.log("Found archived student:", archivedStudent);
+
+        // Prepare student data (remove archive-specific fields)
+        const restoredStudentData = { ...archivedStudent };
+        delete restoredStudentData.archivedAt;
+        delete restoredStudentData.archivedBy;
+        delete restoredStudentData.archiveDocId;
+        delete restoredStudentData.originalDocumentId;
+        delete restoredStudentData.documentId; // Remove old document ID
+
+        console.log("Restored student data (before conversion):", restoredStudentData);
+
+        // Convert to Firestore format with explicit handling for level data
+        const firestoreDocument = {
+            fields: {}
+        };
+
+        for (const [key, value] of Object.entries(restoredStudentData)) {
+            // Special handling for level scores - ensure they're integers
+            if (key.match(/^level\d+Score$/)) {
+                const scoreValue = Number(value) || 0;
+                firestoreDocument.fields[key] = { integerValue: String(scoreValue) };
+                console.log(`Converting ${key}: ${value} -> integerValue: ${scoreValue}`);
+            }
+            // Special handling for level finish - ensure they're booleans
+            else if (key.match(/^level\d+Finish$/)) {
+                firestoreDocument.fields[key] = { booleanValue: Boolean(value) };
+                console.log(`Converting ${key}: ${value} -> booleanValue: ${Boolean(value)}`);
+            }
+            // All other fields use standard conversion
+            else {
+                firestoreDocument.fields[key] = toFirestoreValue(value);
+            }
+        }
+
+        console.log("Firestore document to restore:", JSON.stringify(firestoreDocument, null, 2));
+        console.log("Creating new student document in studentData collection...");
+
+        // Add back to studentData collection
+        const restoreUrl = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents/studentData?key=${CONFIG.apiKey}`;
+        const restoreResponse = await fetch(restoreUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(firestoreDocument)
+        });
+
+        if (!restoreResponse.ok) {
+            const errorText = await restoreResponse.text();
+            console.error("Failed to restore student:", errorText);
+            throw new Error(`Failed to restore student: ${restoreResponse.status} - ${errorText}`);
+        }
+
+        const restoreResult = await restoreResponse.json();
+        console.log("✅ Student restored to studentData:", restoreResult);
+
+        // Delete from archive
+        console.log("Deleting from archive collection...");
+        const deleteUrl = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents/archivedStudents/${archiveDocId}?key=${CONFIG.apiKey}`;
+        const deleteResponse = await fetch(deleteUrl, {
+            method: 'DELETE'
+        });
+
+        if (!deleteResponse.ok) {
+            const errorText = await deleteResponse.text();
+            console.error("Failed to remove from archive:", errorText);
+            throw new Error(`Failed to remove from archive: ${deleteResponse.status}`);
+        }
+
+        console.log(`✅ Student "${studentName}" restored successfully and removed from archive`);
+
+        alert(`Student "${studentName}" has been restored successfully!\n\nThe page will refresh to update all data.`);
+
+        // Full page refresh to ensure everything updates properly
+        window.location.reload();
+
+    } catch (error) {
+        console.error('Error restoring student:', error);
+        alert('Error restoring student: ' + error.message);
+    }
+}
+
+async function permanentlyDeleteStudent(archiveDocId, studentName) {
+    try {
+        const confirmMessage = `⚠️ WARNING: You are about to PERMANENTLY delete "${studentName}".\n\nThis action CANNOT be undone. All student data will be lost forever.\n\nAre you absolutely sure?`;
+        
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+
+        // Double confirmation for permanent deletion
+        const doubleConfirm = confirm(`FINAL CONFIRMATION: Permanently delete "${studentName}"?\n\nType "yes" mentally and click OK to proceed.`);
+        if (!doubleConfirm) {
+            return;
+        }
+
+        if (!CONFIG) {
+            throw new Error("Configuration not loaded");
+        }
+
+        // Delete from archive permanently
+        const deleteUrl = `https://firestore.googleapis.com/v1/projects/${CONFIG.projectId}/databases/(default)/documents/archivedStudents/${archiveDocId}?key=${CONFIG.apiKey}`;
+        const deleteResponse = await fetch(deleteUrl, {
+            method: 'DELETE'
+        });
+
+        if (!deleteResponse.ok) {
+            const errorText = await deleteResponse.text();
+            throw new Error(`Failed to delete student: ${deleteResponse.status} - ${errorText}`);
+        }
+
+        console.log(`✅ Student "${studentName}" permanently deleted`);
+        alert(`Student "${studentName}" has been permanently deleted.\n\nThe page will refresh to update the archive list.`);
+
+        // Full page refresh to ensure everything updates properly
+        window.location.reload();
+
+    } catch (error) {
+        console.error('Error permanently deleting student:', error);
+        alert('Error permanently deleting student: ' + error.message);
+    }
+}
+
+// Make archive functions globally accessible
+window.restoreStudent = restoreStudent;
+window.permanentlyDeleteStudent = permanentlyDeleteStudent;
+
 // Sidebar Toggle Functionality
 document.addEventListener('DOMContentLoaded', function() {
     const sidebarToggle = document.getElementById('sidebarToggle');
@@ -3523,4 +3991,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
 
